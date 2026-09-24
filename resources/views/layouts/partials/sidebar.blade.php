@@ -37,6 +37,37 @@
           </a>
         </li>
 
+        <li class="nav-header">ACADEMIC CORE</li>
+        <li class="nav-item {{ request()->is('academic*') ? 'menu-open' : '' }}">
+          <a href="#" class="nav-link {{ request()->is('academic*') ? 'active' : '' }}">
+            <i class="nav-icon bi bi-diagram-3-fill"></i>
+            <p>
+              Academic Structure
+              <i class="nav-arrow bi bi-chevron-right"></i>
+            </p>
+          </a>
+          <ul class="nav nav-treeview">
+            <li class="nav-item">
+              <a href="{{ route('academic.campuses.index') }}" class="nav-link {{ request()->routeIs('academic.campuses.*') ? 'active' : '' }}">
+                <i class="nav-icon bi bi-buildings"></i>
+                <p>Campuses</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{{ route('academic.faculties.index') }}" class="nav-link {{ request()->routeIs('academic.faculties.*') ? 'active' : '' }}">
+                <i class="nav-icon bi bi-mortarboard"></i>
+                <p>Faculties</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{{ route('academic.university.edit') }}" class="nav-link {{ request()->routeIs('academic.university.*') ? 'active' : '' }}">
+                <i class="nav-icon bi bi-bank"></i>
+                <p>Institution Profile</p>
+              </a>
+            </li>
+          </ul>
+        </li>
+
         <li class="nav-header">SYSTEM</li>
         <li class="nav-item">
           <a href="#" class="nav-link">
