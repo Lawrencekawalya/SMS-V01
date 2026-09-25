@@ -15,11 +15,24 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        User::firstOrCreate(
+            ['email' => 'admin@apex.ac.ug'],
+            [
+                'name' => 'System Administrator',
+                'password' => bcrypt('password'),
+            ]
+        );
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        $this->call([
+            UniversitySeeder::class,
+            CampusSeeder::class,
+            FacultySeeder::class,
+            DepartmentSeeder::class,
+            ProgrammeSeeder::class,
+            AcademicCalendarSeeder::class,
+            CourseUnitSeeder::class,
+            CurriculumSeeder::class,
+            StudentSeeder::class,
         ]);
     }
 }

@@ -14,10 +14,10 @@ class UniversityController extends Controller
      */
     public function edit(): View
     {
-        $university = University::firstOrCreate(
-            ['code' => 'APEX-UNI'],
-            ['name' => 'Apex University of Science and Technology']
-        );
+        $university = University::first() ?? University::create([
+            'name' => 'Apex University of Science and Technology',
+            'code' => 'APEX-UNI',
+        ]);
 
         return view('academic.university.edit', compact('university'));
     }

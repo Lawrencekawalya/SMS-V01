@@ -21,7 +21,7 @@ class CampusController extends Controller
             ->withCount('faculties')
             ->orderByDesc('is_main_campus')
             ->orderBy('name')
-            ->paginate(10);
+            ->get();
 
         return view('academic.campuses.index', compact('campuses'));
     }

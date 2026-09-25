@@ -20,13 +20,13 @@ class FacultyController extends Controller
     {
         $campusId = $request->query('campus_id');
 
-        $query = Faculty::with(['campus', 'dean']);
+        $query = Faculty::with(['campus', 'dean'])->withCount('departments');
 
         if ($campusId) {
             $query->where('campus_id', $campusId);
         }
 
-        $faculties = $query->orderBy('name')->paginate(10)->withQueryString();
+        $faculties = $query->orderBy('name')->get();
         $campuses = Campus::orderBy('name')->get();
 
         return view('academic.faculties.index', compact('faculties', 'campuses', 'campusId'));
@@ -60,7 +60,7 @@ class FacultyController extends Controller
      */
     public function show(Faculty $faculty): View
     {
-        $faculty->load(['campus', 'dean']);
+        $faculty->load(['campus', 'dean', 'departments.hod', 'departments.programmes']);
 
         return view('academic.faculties.show', compact('faculty'));
     }
@@ -93,6 +93,12 @@ class FacultyController extends Controller
      */
     public function destroy(Faculty $faculty): RedirectResponse
     {
+        if ($faculty->departments()->exists()) {
+            return redirect()
+                ->route('academic.faculties.index')
+                ->with('error', 'Cannot delete faculty because it contains active departments.');
+        }
+
         $faculty->delete();
 
         return redirect()

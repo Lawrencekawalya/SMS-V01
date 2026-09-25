@@ -1,0 +1,154 @@
+/**
+ * AdminLTE v4 Tabulator Integration Stylesheet
+ * Strictly Bootstrap 5 & AdminLTE v4 compliant (No Tailwind CSS)
+ * Perfectly matches AdminLTE 4 official Data Tables specification.
+ */
+
+.tabulator {
+  border: none !important;
+  background-color: transparent !important;
+  font-size: 0.875rem;
+}
+
+/* Header styling */
+.tabulator .tabulator-header {
+  border-bottom: 2px solid var(--bs-border-color) !important;
+  background-color: transparent !important;
+  color: inherit;
+  font-weight: 600;
+}
+
+.tabulator .tabulator-header .tabulator-col {
+  background-color: transparent !important;
+  border-right: none !important;
+}
+
+.tabulator .tabulator-header .tabulator-col .tabulator-col-content {
+  padding: 8px 12px;
+}
+
+/* Column Header Filter inputs */
+.tabulator .tabulator-header .tabulator-col input {
+  box-sizing: border-box;
+  border-radius: var(--bs-border-radius-sm, 0.25rem);
+  border: 1px solid var(--bs-border-color, #dee2e6);
+  background-color: var(--bs-tertiary-bg, #f8f9fa);
+  color: var(--bs-body-color, #212529);
+  padding: 3px 8px;
+  font-size: 0.8125rem;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.tabulator .tabulator-header .tabulator-col input:focus {
+  border-color: var(--bs-primary, #0d6efd);
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+/* Rows & Cells */
+.tabulator .tabulator-tableholder {
+  background-color: transparent !important;
+}
+
+.tabulator .tabulator-tableholder .tabulator-table {
+  background-color: transparent !important;
+  color: inherit !important;
+}
+
+.tabulator-row {
+  background-color: transparent !important;
+  border-bottom: 1px solid var(--bs-border-color) !important;
+  color: inherit !important;
+}
+
+.tabulator-row:hover {
+  background-color: var(--bs-tertiary-bg) !important;
+}
+
+.tabulator-row.tabulator-selectable:hover {
+  background-color: var(--bs-tertiary-bg) !important;
+}
+
+.tabulator-cell {
+  padding: 8px 12px !important;
+  border-right: none !important;
+}
+
+/* Footer & Pagination (matches official AdminLTE 4 demo) */
+.tabulator .tabulator-footer,
+.tabulator .tabulator-footer .tabulator-footer-contents,
+.tabulator .tabulator-footer .tabulator-paginator {
+  background-color: #dee2e6 !important;
+  background: #dee2e6 !important;
+  color: #212529 !important;
+}
+
+.tabulator .tabulator-footer {
+  border-top: 1px solid #ced4da !important;
+  padding: 6px 12px !important;
+  border-radius: var(--bs-border-radius-sm, 0.25rem);
+  user-select: none;
+}
+
+.tabulator .tabulator-footer .tabulator-paginator {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.tabulator .tabulator-footer .tabulator-paginator label {
+  font-weight: 500;
+  margin-right: 4px;
+  color: #212529 !important;
+}
+
+.tabulator .tabulator-footer .tabulator-page-size {
+  background-color: #fff !important;
+  color: #212529 !important;
+  border: 1px solid #ced4da !important;
+  border-radius: var(--bs-border-radius-sm, 0.25rem);
+  padding: 2px 6px;
+  margin: 0 8px 0 2px;
+  font-size: 0.875rem;
+  outline: none;
+}
+
+.tabulator .tabulator-footer .tabulator-page {
+  background-color: #fff !important;
+  color: #212529 !important;
+  border: 1px solid #ced4da !important;
+  border-radius: var(--bs-border-radius-sm, 0.25rem);
+  padding: 4px 10px;
+  margin: 0 1px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.15s ease-in-out;
+}
+
+.tabulator .tabulator-footer .tabulator-page:not(:disabled):hover {
+  background-color: #e9ecef !important;
+  color: #0d6efd !important;
+  border-color: #ced4da !important;
+}
+
+.tabulator .tabulator-footer .tabulator-page.active {
+  background-color: #0d6efd !important;
+  border-color: #0d6efd !important;
+  color: #fff !important;
+}
+
+.tabulator .tabulator-footer .tabulator-page:disabled {
+  color: #8c959d !important;
+  background-color: #f8f9fa !important;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Hide horizontal scrollbar on medium-large desktop viewports when layout fits */
+@media (min-width: 992px) {
+  .tabulator .tabulator-tableholder {
+    overflow-x: hidden;
+  }
+}

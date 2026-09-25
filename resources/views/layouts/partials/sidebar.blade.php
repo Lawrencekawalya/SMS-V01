@@ -60,6 +60,48 @@
               </a>
             </li>
             <li class="nav-item">
+              <a href="{{ route('academic.departments.index') }}" class="nav-link {{ request()->routeIs('academic.departments.*') ? 'active' : '' }}">
+                <i class="nav-icon bi bi-diagram-3"></i>
+                <p>Departments</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{{ route('academic.programmes.index') }}" class="nav-link {{ request()->routeIs('academic.programmes.*') ? 'active' : '' }}">
+                <i class="nav-icon bi bi-award"></i>
+                <p>Programmes</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{{ route('academic.curriculums.index') }}" class="nav-link {{ request()->routeIs('academic.curriculums.*') ? 'active' : '' }}">
+                <i class="nav-icon bi bi-mortarboard-fill"></i>
+                <p>Curriculums</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{{ route('academic.courses.index') }}" class="nav-link {{ request()->routeIs('academic.courses.*') ? 'active' : '' }}">
+                <i class="nav-icon bi bi-journal-bookmark-fill"></i>
+                <p>Course Catalog</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{{ route('academic.academic-years.index') }}" class="nav-link {{ request()->routeIs('academic.academic-years.*') || request()->routeIs('academic.semesters.*') ? 'active' : '' }}">
+                <i class="nav-icon bi bi-calendar3"></i>
+                <p>Academic Calendar</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{{ route('academic.events.index') }}" class="nav-link {{ request()->routeIs('academic.events.*') ? 'active' : '' }}">
+                <i class="nav-icon bi bi-calendar-event"></i>
+                <p>Events & Almanac</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{{ route('academic.students.index') }}" class="nav-link {{ request()->routeIs('academic.students.*') ? 'active' : '' }}">
+                <i class="nav-icon bi bi-people"></i>
+                <p>Students</p>
+              </a>
+            </li>
+            <li class="nav-item">
               <a href="{{ route('academic.university.edit') }}" class="nav-link {{ request()->routeIs('academic.university.*') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-bank"></i>
                 <p>Institution Profile</p>

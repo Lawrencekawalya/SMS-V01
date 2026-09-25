@@ -9,59 +9,105 @@
 @endsection
 
 @section('content')
+  @php
+    $currentYear = \App\Models\AcademicYear::where('is_current', true)->first();
+    $activeSemester = \App\Models\Semester::where('is_active', true)->first();
+  @endphp
+
+  @if ($currentYear && $activeSemester)
+    <div class="alert alert-success d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4 shadow-sm" role="alert">
+      <div>
+        <i class="bi bi-broadcast me-2 fs-5"></i>
+        <strong>Active Academic Session:</strong> {{ $currentYear->name }} &mdash; {{ $activeSemester->name }}
+        <span class="badge text-bg-light ms-2 border">{{ $activeSemester->start_date->format('M d, Y') }} &ndash; {{ $activeSemester->end_date->format('M d, Y') }}</span>
+      </div>
+      <a href="{{ route('academic.academic-years.index') }}" class="btn btn-sm btn-success border">
+        <i class="bi bi-calendar3 me-1"></i> Academic Calendar
+      </a>
+    </div>
+  @endif
+
   <!--begin::Row Info Boxes-->
-  <div class="row">
+  <div class="row g-3 mb-4">
     <!--begin::Col-->
-    <div class="col-12 col-sm-6 col-md-3">
-      <div class="info-box">
+    <div class="col-6 col-md-4 col-xl-2">
+      <div class="info-box mb-0">
         <span class="info-box-icon text-bg-primary shadow-sm">
-          <i class="bi bi-chat-left-text-fill"></i>
+          <i class="bi bi-buildings"></i>
         </span>
         <div class="info-box-content">
-          <span class="info-box-text">Messages</span>
-          <span class="info-box-number">0</span>
+          <span class="info-box-text">Campuses</span>
+          <span class="info-box-number">{{ \App\Models\Campus::count() }}</span>
         </div>
       </div>
     </div>
     <!--end::Col-->
 
     <!--begin::Col-->
-    <div class="col-12 col-sm-6 col-md-3">
-      <div class="info-box">
+    <div class="col-6 col-md-4 col-xl-2">
+      <div class="info-box mb-0">
         <span class="info-box-icon text-bg-success shadow-sm">
-          <i class="bi bi-check2-circle"></i>
+          <i class="bi bi-mortarboard"></i>
         </span>
         <div class="info-box-content">
-          <span class="info-box-text">Delivered</span>
-          <span class="info-box-number">100%</span>
+          <span class="info-box-text">Faculties</span>
+          <span class="info-box-number">{{ \App\Models\Faculty::count() }}</span>
         </div>
       </div>
     </div>
     <!--end::Col-->
 
     <!--begin::Col-->
-    <div class="col-12 col-sm-6 col-md-3">
-      <div class="info-box">
+    <div class="col-6 col-md-4 col-xl-2">
+      <div class="info-box mb-0">
         <span class="info-box-icon text-bg-warning shadow-sm">
-          <i class="bi bi-people-fill"></i>
+          <i class="bi bi-diagram-3-fill"></i>
         </span>
         <div class="info-box-content">
-          <span class="info-box-text">Contacts</span>
-          <span class="info-box-number">0</span>
+          <span class="info-box-text">Departments</span>
+          <span class="info-box-number">{{ \App\Models\Department::count() }}</span>
         </div>
       </div>
     </div>
     <!--end::Col-->
 
     <!--begin::Col-->
-    <div class="col-12 col-sm-6 col-md-3">
-      <div class="info-box">
-        <span class="info-box-icon text-bg-danger shadow-sm">
-          <i class="bi bi-hdd-network-fill"></i>
+    <div class="col-6 col-md-4 col-xl-2">
+      <div class="info-box mb-0">
+        <span class="info-box-icon text-bg-info shadow-sm">
+          <i class="bi bi-award-fill"></i>
         </span>
         <div class="info-box-content">
-          <span class="info-box-text">System Status</span>
-          <span class="info-box-number text-success">Online</span>
+          <span class="info-box-text">Programmes</span>
+          <span class="info-box-number">{{ \App\Models\Programme::count() }}</span>
+        </div>
+      </div>
+    </div>
+    <!--end::Col-->
+
+    <!--begin::Col-->
+    <div class="col-6 col-md-4 col-xl-2">
+      <div class="info-box mb-0">
+        <span class="info-box-icon text-bg-secondary shadow-sm">
+          <i class="bi bi-journal-bookmark-fill"></i>
+        </span>
+        <div class="info-box-content">
+          <span class="info-box-text">Courses</span>
+          <span class="info-box-number">{{ \App\Models\CourseUnit::count() }}</span>
+        </div>
+      </div>
+    </div>
+    <!--end::Col-->
+
+    <!--begin::Col-->
+    <div class="col-6 col-md-4 col-xl-2">
+      <div class="info-box mb-0">
+        <span class="info-box-icon text-bg-danger shadow-sm">
+          <i class="bi bi-mortarboard-fill"></i>
+        </span>
+        <div class="info-box-content">
+          <span class="info-box-text">Curriculums</span>
+          <span class="info-box-number">{{ \App\Models\Curriculum::count() }}</span>
         </div>
       </div>
     </div>

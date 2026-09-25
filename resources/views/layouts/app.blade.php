@@ -63,6 +63,11 @@
     <link rel="stylesheet" href="{{ asset('vendor/adminlte/css/adminlte.min.css') }}" />
     <!--end::Required Plugin(AdminLTE)-->
 
+    <!--begin::Plugin(Tabulator / DataTables for AdminLTE 4)-->
+    <link rel="stylesheet" href="{{ asset('vendor/tabulator/css/tabulator_bootstrap5.min.css') }}" />
+    <link rel="stylesheet" href="{{ asset('vendor/tabulator/css/adminlte-tabulator.css') }}" />
+    <!--end::Plugin(Tabulator / DataTables for AdminLTE 4)-->
+
     @stack('styles')
   </head>
   <!--end::Head-->
@@ -175,6 +180,11 @@
       });
     </script>
     <!--end::OverlayScrollbars Configure-->
+
+    <!--begin::Plugin(Tabulator / DataTables for AdminLTE 4)-->
+    <script src="{{ asset('vendor/tabulator/js/tabulator.min.js') }}"></script>
+    <script src="{{ asset('vendor/tabulator/js/adminlte-tabulator.js') }}"></script>
+    <!--end::Plugin(Tabulator / DataTables for AdminLTE 4)-->
 
     @stack('scripts')
     <!--end::Script-->

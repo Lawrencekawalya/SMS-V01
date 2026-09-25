@@ -186,5 +186,12 @@ class AcademicStructurePhase1Test extends TestCase
             'name' => 'Apex Premier University of Uganda',
             'code' => 'APEX-PREMIER',
         ]);
+
+        // Verify the edit page loads the updated university without creating duplicate records
+        $editResponse = $this->get(route('academic.university.edit'));
+        $editResponse->assertStatus(200);
+        $editResponse->assertSee('Apex Premier University of Uganda');
+        $editResponse->assertSee('APEX-PREMIER');
+        $this->assertEquals(1, University::count());
     }
 }

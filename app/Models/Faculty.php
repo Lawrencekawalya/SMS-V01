@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Faculty extends Model
 {
@@ -45,6 +46,16 @@ class Faculty extends Model
     public function dean(): BelongsTo
     {
         return $this->belongsTo(User::class, 'dean_user_id');
+    }
+
+    /**
+     * Get the departments under this faculty.
+     *
+     * @return HasMany<Department, $this>
+     */
+    public function departments(): HasMany
+    {
+        return $this->hasMany(Department::class);
     }
 
     /**

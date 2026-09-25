@@ -76,18 +76,65 @@
     <div class="col-12 col-lg-7">
       <div class="card card-info card-outline mb-4">
         <div class="card-header">
-          <h3 class="card-title">Departmental Hierarchy</h3>
+          <h3 class="card-title">Departments under {{ $faculty->code }} ({{ $faculty->departments->count() }})</h3>
           <div class="card-tools me-0">
-            <span class="badge text-bg-info">Phase 2 Deliverable</span>
+            <a href="{{ route('academic.departments.create', ['faculty_id' => $faculty->id]) }}" class="btn btn-sm btn-primary">
+              <i class="bi bi-plus-circle me-1"></i> Add Department
+            </a>
           </div>
         </div>
-        <div class="card-body">
-          <div class="text-center text-muted py-4">
-            <i class="bi bi-diagram-3 fs-1 text-primary opacity-50 d-block mb-2"></i>
-            <h5>Departments under {{ $faculty->code }}</h5>
-            <p class="small text-muted max-w-sm mx-auto">
-              Departments (e.g. Computer Science, Mathematics) and their academic programmes will be linked directly to this faculty in <strong>Phase 2</strong>.
-            </p>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover table-striped align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Code</th>
+                  <th>Department Name</th>
+                  <th>Head of Dept (HOD)</th>
+                  <th>Programmes</th>
+                  <th class="text-end">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @forelse ($faculty->departments as $department)
+                  <tr>
+                    <td><span class="badge text-bg-secondary">{{ $department->code }}</span></td>
+                    <td class="fw-bold">
+                      <a href="{{ route('academic.departments.show', $department) }}" class="text-decoration-none">
+                        {{ $department->name }}
+                      </a>
+                    </td>
+                    <td>
+                      @if ($department->hod)
+                        <i class="bi bi-person-badge text-primary me-1"></i> {{ $department->hod->name }}
+                      @else
+                        <span class="text-muted fst-italic">Not Assigned</span>
+                      @endif
+                    </td>
+                    <td>
+                      <span class="badge text-bg-info">
+                        {{ $department->programmes->count() }} {{ Str::plural('Programme', $department->programmes->count()) }}
+                      </span>
+                    </td>
+                    <td class="text-end">
+                      <a href="{{ route('academic.departments.show', $department) }}" class="btn btn-sm btn-outline-info" title="View Details">
+                        <i class="bi bi-eye"></i>
+                      </a>
+                      <a href="{{ route('academic.departments.edit', $department) }}" class="btn btn-sm btn-outline-warning" title="Edit Department">
+                        <i class="bi bi-pencil"></i>
+                      </a>
+                    </td>
+                  </tr>
+                @empty
+                  <tr>
+                    <td colspan="5" class="text-center text-muted py-4">
+                      <i class="bi bi-diagram-3 fs-1 text-primary opacity-50 d-block mb-2"></i>
+                      No departments created under this faculty yet. Click "Add Department" above.
+                    </td>
+                  </tr>
+                @endforelse
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
