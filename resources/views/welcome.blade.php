@@ -115,8 +115,124 @@
   </div>
   <!--end::Row Info Boxes-->
 
+  <!--begin::Course Registration & Enrollment Suite KPI Section-->
+  @php
+    $totalStudents = \App\Models\Student::count();
+    $totalRegistered = $activeSemester ? \App\Models\CourseRegistration::where('semester_id', $activeSemester->id)->count() : 0;
+    $pendingApprovals = $activeSemester ? \App\Models\CourseRegistration::where('semester_id', $activeSemester->id)->whereIn('status', ['submitted', 'add_drop_pending'])->count() : 0;
+    $approvedSlips = $activeSemester ? \App\Models\CourseRegistration::where('semester_id', $activeSemester->id)->where('status', 'approved')->count() : 0;
+    $addDropPending = $activeSemester ? \App\Models\CourseRegistration::where('semester_id', $activeSemester->id)->where('status', 'add_drop_pending')->count() : 0;
+    $enrollmentRate = $totalStudents > 0 ? round(($totalRegistered / $totalStudents) * 100, 1) : 0;
+  @endphp
+
+  <div class="card card-outline card-primary shadow-sm mb-4">
+    <div class="card-header">
+      <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 w-100">
+        <h3 class="card-title fw-bold mb-0">
+          <i class="bi bi-journal-check text-primary me-2"></i>Course Registration & Semester Enrollment Hub
+        </h3>
+        <div class="card-tools d-flex gap-2 me-0 ms-auto">
+          <a href="{{ route('academic.registrations.create') }}" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-circle me-1"></i> Register Student
+          </a>
+          @if (config('academic.require_registration_approval', false))
+            <a href="{{ route('academic.approvals.index') }}" class="btn btn-warning btn-sm">
+              <i class="bi bi-clipboard-check me-1"></i> Approvals Portal
+            </a>
+          @endif
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="row g-3 mb-3">
+        <div class="col-12 col-sm-6 col-lg-3">
+          <div class="p-3 border rounded bg-body-secondary text-center">
+            <span class="text-muted small text-uppercase fw-semibold d-block">Term Registrations</span>
+            <div class="fs-3 fw-bold text-primary">{{ number_format($totalRegistered) }}</div>
+            <div class="small text-muted">{{ number_format($totalStudents) }} Total Admitted</div>
+          </div>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-3">
+          <div class="p-3 border rounded bg-body-secondary text-center">
+            <span class="text-muted small text-uppercase fw-semibold d-block">Pending Advisor Review</span>
+            <div class="fs-3 fw-bold text-warning">{{ number_format($pendingApprovals) }}</div>
+            <div class="small text-muted">Awaiting Verification</div>
+          </div>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-3">
+          <div class="p-3 border rounded bg-body-secondary text-center">
+            <span class="text-muted small text-uppercase fw-semibold d-block">Approved Slips</span>
+            <div class="fs-3 fw-bold text-success">{{ number_format($approvedSlips) }}</div>
+            <div class="small text-muted">Enrollment Finalized</div>
+          </div>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-3">
+          <div class="p-3 border rounded bg-body-secondary text-center">
+            <span class="text-muted small text-uppercase fw-semibold d-block">Add / Drop Changes</span>
+            <div class="fs-3 fw-bold text-info">{{ number_format($addDropPending) }}</div>
+            <div class="small text-muted">Elective Revisions</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Enrollment Rate Progress -->
+      <div class="mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-1 small fw-semibold">
+          <span>Campus Enrollment Rate ({{ $activeSemester->name ?? 'Current Semester' }})</span>
+          <span class="text-primary">{{ $enrollmentRate }}%</span>
+        </div>
+        <div class="progress" style="height: 10px;">
+          <div class="progress-bar bg-primary" role="progressbar" style="width: {{ $enrollmentRate }}%;" aria-valuenow="{{ $enrollmentRate }}" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+      </div>
+
+      <!-- Quick Interactive Personas Demonstration Bar -->
+      <div class="p-3 border rounded bg-body-tertiary">
+        <h6 class="fw-bold mb-2 text-uppercase text-muted small">
+          <i class="bi bi-person-lines-fill me-1"></i> Quick Simulated Personas & Demonstration Portals:
+        </h6>
+        @php
+          $linkColClass = config('academic.require_registration_approval', false) ? 'col-md-3' : 'col-md-4';
+        @endphp
+        <div class="row g-2">
+          <div class="{{ $linkColClass }}">
+            <a href="{{ route('academic.registrations.create', ['student_id' => 1]) }}" class="btn btn-outline-primary btn-sm w-100 text-start text-truncate">
+              <i class="bi bi-person-fill me-1"></i> Ronald (BSCS Fresher)
+            </a>
+          </div>
+          <div class="{{ $linkColClass }}">
+            <a href="{{ route('academic.registrations.index') }}" class="btn btn-outline-success btn-sm w-100 text-start text-truncate">
+              <i class="bi bi-arrow-left-right me-1"></i> Sarah (BSSE Add/Drop)
+            </a>
+          </div>
+          @if (config('academic.enforce_prerequisites', false))
+            <div class="{{ $linkColClass }}">
+              <a href="{{ route('academic.registrations.eligibility', ['student_id' => 5]) }}" class="btn btn-outline-info btn-sm w-100 text-start text-truncate">
+                <i class="bi bi-shield-check me-1"></i> Emmanuel (DCA Rules)
+              </a>
+            </div>
+          @else
+            <div class="{{ $linkColClass }}">
+              <a href="{{ route('academic.registrations.active-session') }}" class="btn btn-outline-success btn-sm w-100 text-start text-truncate">
+                <i class="bi bi-people-fill me-1"></i> Active Session Cohorts
+              </a>
+            </div>
+          @endif
+          @if (config('academic.require_registration_approval', false))
+            <div class="{{ $linkColClass }}">
+              <a href="{{ route('academic.approvals.index') }}" class="btn btn-outline-warning btn-sm w-100 text-start text-truncate">
+                <i class="bi bi-clipboard-check me-1"></i> Advisor Approvals Hub
+              </a>
+            </div>
+          @endif
+        </div>
+      </div>
+    </div>
+  </div>
+  <!--end::Course Registration & Enrollment Suite KPI Section-->
+
   <!--begin::Row Main Cards-->
-  <div class="row">
+  {{-- <div class="row">
     <div class="col-lg-8">
       <div class="card card-primary card-outline mb-4">
         <div class="card-header">
@@ -139,11 +255,11 @@
             fullscreen support, and standard Bootstrap 5 components.
           </p>
 
-          <a href="#" class="btn btn-primary">
-            <i class="bi bi-plus-circle me-1"></i> New SMS Campaign
+          <a href="{{ route('academic.registrations.index') }}" class="btn btn-primary">
+            <i class="bi bi-journal-text me-1"></i> Course Registrations
           </a>
-          <a href="#" class="btn btn-outline-secondary ms-2">
-            <i class="bi bi-gear me-1"></i> Configure Gateway
+          <a href="{{ route('academic.approvals.index') }}" class="btn btn-outline-secondary ms-2">
+            <i class="bi bi-clipboard-check me-1"></i> Review Approvals
           </a>
         </div>
       </div>
@@ -214,6 +330,6 @@
         </div>
       </div>
     </div>
-  </div>
+  </div> --}}
   <!--end::Row Main Cards-->
 @endsection

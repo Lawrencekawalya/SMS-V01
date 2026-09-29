@@ -12,6 +12,52 @@
       <li class="nav-item d-none d-md-block">
         <a href="{{ url('/') }}" class="nav-link">Dashboard</a>
       </li>
+      <li class="nav-item dropdown d-none d-lg-block">
+        <a class="nav-link dropdown-toggle" href="#" id="personaQuickSwitcher" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+          <i class="bi bi-person-lines-fill me-1 text-primary"></i>
+          <span class="badge text-bg-primary-subtle text-primary border me-1">Demo</span>
+          <span>Student Personas</span>
+        </a>
+        <ul class="dropdown-menu shadow" aria-labelledby="personaQuickSwitcher" style="min-width: 320px;">
+          <li class="dropdown-header small text-uppercase fw-bold text-muted">Simulated Enrollment Journeys</li>
+          <li>
+            <a class="dropdown-item py-2" href="{{ route('academic.registrations.create', ['student_id' => 1]) }}">
+              <div class="fw-bold text-primary"><i class="bi bi-person-fill me-1"></i> Ronald Mukasa</div>
+              <div class="small text-muted">BSCS Fresher &bull; Reg: 26/BSCS/001 &bull; Sem 1 Workspace</div>
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item py-2" href="{{ route('academic.registrations.index') }}">
+              <div class="fw-bold text-success"><i class="bi bi-arrow-left-right me-1"></i> Sarah Namubiru</div>
+              <div class="small text-muted">BSSE Year 2 &bull; Reg: 25/BSSE/008 &bull; Add / Drop Workspace</div>
+            </a>
+          </li>
+          @if (config('academic.enforce_prerequisites', false))
+            <li>
+              <a class="dropdown-item py-2" href="{{ route('academic.registrations.eligibility', ['student_id' => 5]) }}">
+                <div class="fw-bold text-info"><i class="bi bi-shield-check me-1"></i> Emmanuel Twinomujuni</div>
+                <div class="small text-muted">DCA Diploma &bull; Reg: 26/DCA/001 &bull; Stage Restrictions</div>
+              </a>
+            </li>
+          @else
+            <li>
+              <a class="dropdown-item py-2" href="{{ route('academic.registrations.active-session') }}">
+                <div class="fw-bold text-success"><i class="bi bi-people-fill me-1"></i> Active Session Cohorts</div>
+                <div class="small text-muted">Multi-Stage Enrollment Breakdown &amp; Progression</div>
+              </a>
+            </li>
+          @endif
+          @if (config('academic.require_registration_approval', false))
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <a class="dropdown-item py-2" href="{{ route('academic.approvals.index') }}">
+                <div class="fw-bold text-warning"><i class="bi bi-clipboard-check me-1"></i> Academic Advisor Portal</div>
+                <div class="small text-muted">Review, Verify, and Batch Approve Slips</div>
+              </a>
+            </li>
+          @endif
+        </ul>
+      </li>
     </ul>
     <!--end::Start Navbar Links-->
 
@@ -177,7 +223,7 @@
             />
             <p>
               {{ auth()->user()->name ?? 'Administrator' }}
-              <small>{{ auth()->user()->email ?? 'admin@sms-v01.local' }}</small>
+              <small>{{ auth()->user()->email ?? 'admin@bsu.ac.ug' }}</small>
             </p>
           </li>
           <!--end::User Image-->

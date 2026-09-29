@@ -6,6 +6,7 @@ use App\Models\AcademicYear;
 use App\Models\Campus;
 use App\Models\Programme;
 use App\Models\Student;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class StudentSeeder extends Seeder
@@ -15,7 +16,7 @@ class StudentSeeder extends Seeder
      */
     public function run(): void
     {
-        $mainCampus = Campus::where('is_main', true)->first() ?? Campus::first();
+        $mainCampus = Campus::where('is_main_campus', true)->first() ?? Campus::first();
         $currentYear = AcademicYear::where('is_current', true)->first() ?? AcademicYear::first();
         $previousYear = AcademicYear::where('is_current', false)->first() ?? $currentYear;
 
@@ -25,6 +26,7 @@ class StudentSeeder extends Seeder
             'BIT' => Programme::where('code', 'BIT')->with('curriculums')->first(),
             'DCA' => Programme::where('code', 'DCA')->with('curriculums')->first(),
             'BBA' => Programme::where('code', 'BBA')->with('curriculums')->first(),
+            'DIT' => Programme::where('code', 'DIT')->with('curriculums')->first(),
         ];
 
         if (! $mainCampus || ! $currentYear) {
@@ -208,6 +210,24 @@ class StudentSeeder extends Seeder
                 'gpa' => 0.00,
                 'mode' => 'Day',
             ],
+            // DIT Demonstration Student
+            [
+                'reg' => '26/BSU/DIT/001',
+                'std_no' => '202600601',
+                'first_name' => 'Laurence',
+                'last_name' => 'Kawalya',
+                'other_names' => null,
+                'gender' => 'male',
+                'email' => 'laurence.kawalya@student.bsu.ac.ug',
+                'phone' => '+256701987654',
+                'prog_code' => 'DIT',
+                'adm_year_id' => $currentYear->id,
+                'year' => 1,
+                'sem' => 1,
+                'status' => 'active',
+                'gpa' => 0.00,
+                'mode' => 'Day',
+            ],
         ];
 
         foreach ($sampleStudents as $s) {
@@ -220,6 +240,14 @@ class StudentSeeder extends Seeder
             if (! $curriculum) {
                 continue;
             }
+
+            $user = User::firstOrCreate(
+                ['email' => $s['email']],
+                [
+                    'name' => trim("{$s['first_name']} {$s['last_name']}"),
+                    'password' => bcrypt('password'),
+                ]
+            );
 
             Student::updateOrCreate(
                 ['registration_number' => $s['reg']],
@@ -241,6 +269,7 @@ class StudentSeeder extends Seeder
                     'current_semester' => $s['sem'],
                     'status' => $s['status'],
                     'cumulative_gpa' => $s['gpa'],
+                    'user_id' => $user->id,
                 ]
             );
         }

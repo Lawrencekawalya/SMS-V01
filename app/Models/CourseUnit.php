@@ -87,6 +87,36 @@ class CourseUnit extends Model
     }
 
     /**
+     * Get the prerequisite courses required before taking this course unit.
+     *
+     * @return BelongsToMany<CourseUnit, $this>
+     */
+    public function prerequisites(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            CourseUnit::class,
+            'course_prerequisites',
+            'course_unit_id',
+            'prerequisite_course_unit_id'
+        )->withTimestamps();
+    }
+
+    /**
+     * Get the courses that require this course unit as a prerequisite.
+     *
+     * @return BelongsToMany<CourseUnit, $this>
+     */
+    public function prerequisiteFor(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            CourseUnit::class,
+            'course_prerequisites',
+            'prerequisite_course_unit_id',
+            'course_unit_id'
+        )->withTimestamps();
+    }
+
+    /**
      * Scope a query to only include active course units.
      *
      * @param  Builder<CourseUnit>  $query

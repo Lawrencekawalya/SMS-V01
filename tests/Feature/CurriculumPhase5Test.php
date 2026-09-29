@@ -362,4 +362,51 @@ class CurriculumPhase5Test extends TestCase
         $response->assertSee('Create Curriculum Version');
         $response->assertDontSee('Phase 5 Deliverable');
     }
+
+    public function test_can_update_stage_credit_limits_via_ajax(): void
+    {
+        $curriculum = Curriculum::factory()->create([
+            'programme_id' => $this->programme->id,
+        ]);
+
+        $payload = [
+            'study_year' => 1,
+            'semester' => 1,
+            'min_credits' => 12.0,
+            'max_credits' => 28.0,
+        ];
+
+        $response = $this->postJson(route('academic.curriculums.stage-credit-limits.update', $curriculum), $payload);
+
+        $response->assertStatus(200);
+        $response->assertJson([
+            'success' => true,
+            'study_year' => 1,
+            'semester' => 1,
+            'min_credits' => 12.0,
+            'max_credits' => 28.0,
+        ]);
+
+        $curriculum->refresh();
+        $this->assertEquals(['min' => 12.0, 'max' => 28.0], $curriculum->getStageCreditBounds(1, 1));
+    }
+
+    public function test_stage_credit_limits_validation_rejects_max_less_than_min(): void
+    {
+        $curriculum = Curriculum::factory()->create([
+            'programme_id' => $this->programme->id,
+        ]);
+
+        $payload = [
+            'study_year' => 1,
+            'semester' => 1,
+            'min_credits' => 20.0,
+            'max_credits' => 15.0,
+        ];
+
+        $response = $this->postJson(route('academic.curriculums.stage-credit-limits.update', $curriculum), $payload);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['max_credits']);
+    }
 }

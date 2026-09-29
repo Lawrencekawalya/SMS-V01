@@ -119,6 +119,12 @@ class Semester extends Model
             return false;
         }
 
-        return now()->startOfDay()->lte($this->add_drop_deadline->endOfDay());
+        $today = now()->startOfDay();
+
+        if ($this->start_date && $today->lt($this->start_date->startOfDay())) {
+            return false;
+        }
+
+        return $today->lte($this->add_drop_deadline->endOfDay());
     }
 }

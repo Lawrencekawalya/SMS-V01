@@ -123,13 +123,45 @@
               <!-- Semester 1 Column -->
               <div class="col-12 col-xl-6">
                 <div class="card card-outline card-primary h-100">
-                  <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">
+                  @php
+                    $stage1Bounds = $curriculum->getStageCreditBounds($year, 1);
+                  @endphp
+                  <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+                    <h5 class="card-title mb-0 d-flex align-items-center">
                       <i class="bi bi-1-circle me-1 text-primary"></i> Semester 1 Schedule
                     </h5>
-                    <span class="badge text-bg-light border fw-bold">
-                      {{ number_format($matrix[$year][1]['credits'] ?? 0, 1) }} CU
-                    </span>
+                    <div class="d-flex align-items-center gap-2">
+                      <form class="stage-credit-form d-flex align-items-center"
+                            data-url="{{ route('academic.curriculums.stage-credit-limits.update', $curriculum) }}"
+                            data-year="{{ $year }}"
+                            data-semester="1">
+                        @csrf
+                        <div class="input-group input-group-sm" style="width: 230px;">
+                          <span class="input-group-text py-0 px-2 text-body-secondary small" title="Minimum required semester credits">Min</span>
+                          <input type="number"
+                                 name="min_credits"
+                                 class="form-control form-control-sm text-center px-1"
+                                 value="{{ number_format($stage1Bounds['min'], 1) }}"
+                                 step="0.5" min="0" max="40"
+                                 title="Minimum semester credits"
+                                 required>
+                          <span class="input-group-text py-0 px-2 text-body-secondary small" title="Maximum allowed semester credits">Max</span>
+                          <input type="number"
+                                 name="max_credits"
+                                 class="form-control form-control-sm text-center px-1"
+                                 value="{{ number_format($stage1Bounds['max'], 1) }}"
+                                 step="0.5" min="0" max="60"
+                                 title="Maximum semester credits"
+                                 required>
+                          <button type="submit" class="btn btn-sm btn-outline-primary py-0 px-2 btn-save-bounds" title="Save Credit Limits">
+                            <i class="bi bi-check2"></i>
+                          </button>
+                        </div>
+                      </form>
+                      <span class="badge text-bg-light border fw-bold text-nowrap">
+                        {{ number_format($matrix[$year][1]['credits'] ?? 0, 1) }} CU
+                      </span>
+                    </div>
                   </div>
                   <div class="card-body p-0">
                     @php
@@ -212,13 +244,45 @@
               <!-- Semester 2 Column -->
               <div class="col-12 col-xl-6">
                 <div class="card card-outline card-success h-100">
-                  <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">
+                  @php
+                    $stage2Bounds = $curriculum->getStageCreditBounds($year, 2);
+                  @endphp
+                  <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+                    <h5 class="card-title mb-0 d-flex align-items-center">
                       <i class="bi bi-2-circle me-1 text-success"></i> Semester 2 Schedule
                     </h5>
-                    <span class="badge text-bg-light border fw-bold">
-                      {{ number_format($matrix[$year][2]['credits'] ?? 0, 1) }} CU
-                    </span>
+                    <div class="d-flex align-items-center gap-2">
+                      <form class="stage-credit-form d-flex align-items-center"
+                            data-url="{{ route('academic.curriculums.stage-credit-limits.update', $curriculum) }}"
+                            data-year="{{ $year }}"
+                            data-semester="2">
+                        @csrf
+                        <div class="input-group input-group-sm" style="width: 230px;">
+                          <span class="input-group-text py-0 px-2 text-body-secondary small" title="Minimum required semester credits">Min</span>
+                          <input type="number"
+                                 name="min_credits"
+                                 class="form-control form-control-sm text-center px-1"
+                                 value="{{ number_format($stage2Bounds['min'], 1) }}"
+                                 step="0.5" min="0" max="40"
+                                 title="Minimum semester credits"
+                                 required>
+                          <span class="input-group-text py-0 px-2 text-body-secondary small" title="Maximum allowed semester credits">Max</span>
+                          <input type="number"
+                                 name="max_credits"
+                                 class="form-control form-control-sm text-center px-1"
+                                 value="{{ number_format($stage2Bounds['max'], 1) }}"
+                                 step="0.5" min="0" max="60"
+                                 title="Maximum semester credits"
+                                 required>
+                          <button type="submit" class="btn btn-sm btn-outline-success py-0 px-2 btn-save-bounds" title="Save Credit Limits">
+                            <i class="bi bi-check2"></i>
+                          </button>
+                        </div>
+                      </form>
+                      <span class="badge text-bg-light border fw-bold text-nowrap">
+                        {{ number_format($matrix[$year][2]['credits'] ?? 0, 1) }} CU
+                      </span>
+                    </div>
                   </div>
                   <div class="card-body p-0">
                     @php
@@ -308,7 +372,7 @@
   <div class="modal fade" id="assignCourseModal" tabindex="-1" aria-labelledby="assignCourseModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
-        <form action="{{ route('academic.curriculums.courses.store', $curriculum) }}" method="POST">
+        <form action="{{ route('academic.curriculums.courses.store', $curriculum) }}" method="POST" id="allocateCourseForm">
           @csrf
           <div class="modal-header">
             <h5 class="modal-title" id="assignCourseModalLabel">
@@ -324,18 +388,90 @@
             @else
               <div class="row g-3">
                 <div class="col-12">
-                  <label for="modal_course_unit_id" class="form-label fw-bold">Select Course Unit <span class="text-danger">*</span></label>
-                  <select name="course_unit_id" id="modal_course_unit_id" class="form-select @error('course_unit_id') is-invalid @enderror" required>
-                    <option value="">-- Choose Course Unit from Master Catalog --</option>
-                    @foreach ($availableCourses as $c)
-                      <option value="{{ $c->id }}">
-                        {{ $c->code }} &mdash; {{ $c->name }} ({{ number_format($c->credit_units, 1) }} CU &bull; {{ $c->department->name ?? '' }})
-                      </option>
-                    @endforeach
-                  </select>
+                  <label class="form-label fw-bold">Select Course Unit <span class="text-danger">*</span></label>
+
+                  {{-- Hidden input for form submission --}}
+                  <input type="hidden" name="course_unit_id" id="modal_course_unit_id" value="{{ old('course_unit_id') }}" required>
+
+                  {{-- Searchable Input & Dropdown Container --}}
+                  <div class="position-relative" id="course_search_container">
+                    <div class="input-group">
+                      <span class="input-group-text bg-body-secondary"><i class="bi bi-search"></i></span>
+                      <input type="text"
+                             id="course_search_input"
+                             class="form-control @error('course_unit_id') is-invalid @enderror"
+                             placeholder="Type course code (e.g. DIT, CSC) or course title to search..."
+                             autocomplete="off">
+                      <button class="btn btn-outline-secondary d-none" type="button" id="course_search_clear" title="Clear search text">
+                        <i class="bi bi-x-lg"></i>
+                      </button>
+                    </div>
+
+                    {{-- Live Dropdown Results Menu --}}
+                    <div id="course_search_results"
+                         class="dropdown-menu w-100 shadow border p-0 mt-1"
+                         style="max-height: 280px; overflow-y: auto; display: none; z-index: 1060;">
+                      <div class="p-2 border-bottom bg-body-tertiary small text-muted d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-book me-1"></i> Course Catalog</span>
+                        <span id="course_search_count" class="badge bg-secondary-subtle text-secondary">{{ $availableCourses->count() }} available</span>
+                      </div>
+                      <div id="course_search_list" class="list-group list-group-flush">
+                        @foreach ($availableCourses as $c)
+                          <button type="button"
+                                  class="list-group-item list-group-item-action course-search-item px-3 py-2 text-start border-bottom-0"
+                                  data-id="{{ $c->id }}"
+                                  data-code="{{ $c->code }}"
+                                  data-name="{{ $c->name }}"
+                                  data-credits="{{ number_format($c->credit_units, 1) }}"
+                                  data-dept="{{ $c->department->name ?? 'General' }}"
+                                  data-search="{{ strtolower($c->code . ' ' . $c->name . ' ' . ($c->department->name ?? '')) }}">
+                            <div class="d-flex justify-content-between align-items-center">
+                              <div>
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle font-monospace me-1">{{ $c->code }}</span>
+                                <span class="fw-semibold">{{ $c->name }}</span>
+                              </div>
+                              <span class="badge bg-secondary-subtle text-secondary">{{ number_format($c->credit_units, 1) }} CU</span>
+                            </div>
+                            <div class="small text-muted mt-1 ps-1">
+                              <i class="bi bi-building me-1"></i>{{ $c->department->name ?? 'General Department' }}
+                            </div>
+                          </button>
+                        @endforeach
+                      </div>
+                      <div id="course_search_empty" class="p-3 text-center text-muted d-none">
+                        <i class="bi bi-search text-secondary d-block fs-4 mb-1"></i>
+                        <span>No matching course units found</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {{-- Selected Course Display Card --}}
+                  <div id="selected_course_card" class="card border-primary-subtle bg-primary-subtle bg-opacity-10 mt-2 d-none">
+                    <div class="card-body p-2 d-flex align-items-center justify-content-between">
+                      <div class="d-flex align-items-center gap-2">
+                        <div class="rounded bg-primary text-white p-2 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+                          <i class="bi bi-journal-check fs-5"></i>
+                        </div>
+                        <div>
+                          <div class="d-flex align-items-center gap-1">
+                            <span class="badge bg-primary font-monospace" id="selected_course_code"></span>
+                            <strong class="text-body" id="selected_course_name"></strong>
+                          </div>
+                          <div class="small text-muted" id="selected_course_meta"></div>
+                        </div>
+                      </div>
+                      <button type="button" class="btn btn-sm btn-outline-danger" id="btn_change_course" title="Change Course">
+                        <i class="bi bi-arrow-repeat me-1"></i> Change
+                      </button>
+                    </div>
+                  </div>
+
                   @error('course_unit_id')
-                    <div class="invalid-feedback">{{ $message }}</div>
+                    <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle me-1"></i>{{ $message }}</div>
                   @enderror
+                  <div class="text-danger small mt-1 d-none" id="course_required_feedback">
+                    <i class="bi bi-exclamation-triangle me-1"></i> Please search and select a course unit to allocate.
+                  </div>
                 </div>
 
                 <div class="col-md-4">
@@ -392,5 +528,287 @@
       if (yearSelect) yearSelect.value = year;
       if (semSelect) semSelect.value = semester;
     }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      const searchInput = document.getElementById('course_search_input');
+      const searchWrapper = document.getElementById('course_search_container');
+      const searchResults = document.getElementById('course_search_results');
+      const searchList = document.getElementById('course_search_list');
+      const searchEmpty = document.getElementById('course_search_empty');
+      const searchCount = document.getElementById('course_search_count');
+      const searchClear = document.getElementById('course_search_clear');
+      const hiddenIdInput = document.getElementById('modal_course_unit_id');
+      const selectedCourseCard = document.getElementById('selected_course_card');
+      const selectedCourseCode = document.getElementById('selected_course_code');
+      const selectedCourseName = document.getElementById('selected_course_name');
+      const selectedCourseMeta = document.getElementById('selected_course_meta');
+      const btnChangeCourse = document.getElementById('btn_change_course');
+      const requiredFeedback = document.getElementById('course_required_feedback');
+      const assignModal = document.getElementById('assignCourseModal');
+      const allocateForm = document.getElementById('allocateCourseForm');
+
+      if (!searchInput || !searchList) return;
+
+      const items = Array.from(searchList.querySelectorAll('.course-search-item'));
+      let activeIndex = -1;
+
+      function openDropdown() {
+        searchResults.style.display = 'block';
+      }
+
+      function closeDropdown() {
+        searchResults.style.display = 'none';
+        activeIndex = -1;
+        clearHighlight();
+      }
+
+      function clearHighlight() {
+        items.forEach(el => el.classList.remove('active'));
+      }
+
+      function setHighlight(index) {
+        clearHighlight();
+        const visible = items.filter(el => !el.classList.contains('d-none'));
+        if (index >= 0 && index < visible.length) {
+          visible[index].classList.add('active');
+          visible[index].scrollIntoView({ block: 'nearest' });
+          activeIndex = index;
+        }
+      }
+
+      function filterCourses(query) {
+        const q = query.trim().toLowerCase();
+        let matchCount = 0;
+
+        items.forEach(item => {
+          const text = item.dataset.search || '';
+          if (!q || text.includes(q)) {
+            item.classList.remove('d-none');
+            matchCount++;
+          } else {
+            item.classList.add('d-none');
+          }
+        });
+
+        if (searchCount) {
+          searchCount.textContent = q ? `${matchCount} match${matchCount === 1 ? '' : 'es'}` : `${matchCount} available`;
+        }
+
+        if (searchEmpty) {
+          if (matchCount === 0) {
+            searchEmpty.classList.remove('d-none');
+          } else {
+            searchEmpty.classList.add('d-none');
+          }
+        }
+
+        if (searchClear) {
+          if (q.length > 0) {
+            searchClear.classList.remove('d-none');
+          } else {
+            searchClear.classList.add('d-none');
+          }
+        }
+
+        openDropdown();
+      }
+
+      function selectCourse(item) {
+        const id = item.dataset.id;
+        const code = item.dataset.code;
+        const name = item.dataset.name;
+        const credits = item.dataset.credits;
+        const dept = item.dataset.dept;
+
+        hiddenIdInput.value = id;
+        selectedCourseCode.textContent = code;
+        selectedCourseName.textContent = name;
+        selectedCourseMeta.textContent = `${credits} CU • ${dept}`;
+
+        searchWrapper.classList.add('d-none');
+        selectedCourseCard.classList.remove('d-none');
+        if (requiredFeedback) requiredFeedback.classList.add('d-none');
+        searchInput.classList.remove('is-invalid');
+        closeDropdown();
+      }
+
+      function resetSelection() {
+        hiddenIdInput.value = '';
+        selectedCourseCard.classList.add('d-none');
+        searchWrapper.classList.remove('d-none');
+        searchInput.value = '';
+        filterCourses('');
+        searchInput.focus();
+      }
+
+      // Check if there was a previously selected ID (e.g. from validation redirect)
+      if (hiddenIdInput.value) {
+        const preselected = items.find(el => el.dataset.id === hiddenIdInput.value);
+        if (preselected) {
+          selectCourse(preselected);
+        }
+      }
+
+      searchInput.addEventListener('focus', function () {
+        openDropdown();
+        filterCourses(this.value);
+      });
+
+      searchInput.addEventListener('input', function () {
+        filterCourses(this.value);
+        activeIndex = -1;
+      });
+
+      if (searchClear) {
+        searchClear.addEventListener('click', function () {
+          searchInput.value = '';
+          filterCourses('');
+          searchInput.focus();
+        });
+      }
+
+      if (btnChangeCourse) {
+        btnChangeCourse.addEventListener('click', resetSelection);
+      }
+
+      searchList.addEventListener('click', function (e) {
+        const btn = e.target.closest('.course-search-item');
+        if (btn) {
+          selectCourse(btn);
+        }
+      });
+
+      searchInput.addEventListener('keydown', function (e) {
+        const visible = items.filter(el => !el.classList.contains('d-none'));
+        if (searchResults.style.display !== 'block') {
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+            openDropdown();
+          }
+          return;
+        }
+
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          const next = activeIndex + 1 < visible.length ? activeIndex + 1 : 0;
+          setHighlight(next);
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          const prev = activeIndex - 1 >= 0 ? activeIndex - 1 : visible.length - 1;
+          setHighlight(prev);
+        } else if (e.key === 'Enter') {
+          e.preventDefault();
+          if (activeIndex >= 0 && activeIndex < visible.length) {
+            selectCourse(visible[activeIndex]);
+          }
+        } else if (e.key === 'Escape') {
+          closeDropdown();
+        }
+      });
+
+      document.addEventListener('click', function (e) {
+        if (searchWrapper && !searchWrapper.contains(e.target)) {
+          closeDropdown();
+        }
+      });
+
+      if (allocateForm) {
+        allocateForm.addEventListener('submit', function (e) {
+          if (!hiddenIdInput.value) {
+            e.preventDefault();
+            if (requiredFeedback) requiredFeedback.classList.remove('d-none');
+            searchInput.classList.add('is-invalid');
+            searchInput.focus();
+            openDropdown();
+          }
+        });
+      }
+
+      if (assignModal) {
+        assignModal.addEventListener('shown.bs.modal', function () {
+          if (!hiddenIdInput.value) {
+            searchInput.focus();
+            openDropdown();
+          }
+        });
+
+        assignModal.addEventListener('hidden.bs.modal', function () {
+          closeDropdown();
+          if (!hiddenIdInput.value) {
+            resetSelection();
+          }
+        });
+      }
+
+      // Inline Stage Credit Limits AJAX Handler
+      document.querySelectorAll('.stage-credit-form').forEach(form => {
+        form.addEventListener('submit', async function (e) {
+          e.preventDefault();
+          const submitBtn = this.querySelector('.btn-save-bounds');
+          const minInput = this.querySelector('input[name="min_credits"]');
+          const maxInput = this.querySelector('input[name="max_credits"]');
+          const url = this.dataset.url;
+          const year = this.dataset.year;
+          const semester = this.dataset.semester;
+
+          const minVal = parseFloat(minInput.value);
+          const maxVal = parseFloat(maxInput.value);
+
+          if (isNaN(minVal) || isNaN(maxVal)) {
+            alert('Please enter valid numeric credit values.');
+            return;
+          }
+
+          if (maxVal < minVal) {
+            alert('Maximum credits cannot be less than minimum credits.');
+            maxInput.focus();
+            return;
+          }
+
+          const originalHtml = submitBtn.innerHTML;
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span>';
+
+          try {
+            const response = await fetch(url, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+              },
+              body: JSON.stringify({
+                study_year: parseInt(year),
+                semester: parseInt(semester),
+                min_credits: minVal,
+                max_credits: maxVal
+              })
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+              submitBtn.classList.remove('btn-outline-primary', 'btn-outline-success');
+              submitBtn.classList.add('btn-success');
+              submitBtn.innerHTML = '<i class="bi bi-check-circle-fill"></i>';
+
+              setTimeout(() => {
+                submitBtn.classList.remove('btn-success');
+                submitBtn.classList.add(semester === '1' ? 'btn-outline-primary' : 'btn-outline-success');
+                submitBtn.innerHTML = originalHtml;
+                submitBtn.disabled = false;
+              }, 1500);
+            } else {
+              alert(data.message || 'Failed to update credit bounds.');
+              submitBtn.innerHTML = originalHtml;
+              submitBtn.disabled = false;
+            }
+          } catch (err) {
+            alert('A network error occurred while updating credit limits.');
+            submitBtn.innerHTML = originalHtml;
+            submitBtn.disabled = false;
+          }
+        });
+      });
+    });
   </script>
 @endpush

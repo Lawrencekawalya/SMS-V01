@@ -71,6 +71,19 @@ class ProgrammeSeeder extends Seeder
                     'status' => 'active',
                 ]
             );
+
+            Programme::firstOrCreate(
+                ['code' => 'DIT'],
+                [
+                    'department_id' => $deptIT->id,
+                    'name' => 'Diploma in Information Technology',
+                    'award_type' => 'Diploma',
+                    'duration_years' => 2,
+                    'required_credits_to_graduate' => 91,
+                    'description' => 'A 2-year practical diploma offering comprehensive IT systems, networking, databases, programming, and maintenance skills.',
+                    'status' => 'active',
+                ]
+            );
         }
 
         if ($deptAF) {

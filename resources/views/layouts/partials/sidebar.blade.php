@@ -37,9 +37,36 @@
           </a>
         </li>
 
+        @php
+          $isAcademicStructureActive = request()->routeIs([
+            'academic.campuses.*',
+            'academic.faculties.*',
+            'academic.departments.*',
+            'academic.programmes.*',
+            'academic.curriculums.*',
+            'academic.courses.*',
+            'academic.academic-years.*',
+            'academic.semesters.*',
+            'academic.events.*',
+            'academic.students.*',
+            'academic.university.*',
+          ]);
+
+          $isCourseRegistrationActive = request()->routeIs([
+            'academic.registrations.*',
+            'academic.approvals.*',
+          ]);
+
+          $pendingApprovalsCount = \Illuminate\Support\Facades\Schema::hasTable('course_registrations')
+            ? \App\Models\CourseRegistration::whereIn('status', ['submitted', 'add_drop_pending'])->count()
+            : 0;
+        @endphp
+
         <li class="nav-header">ACADEMIC CORE</li>
-        <li class="nav-item {{ request()->is('academic*') ? 'menu-open' : '' }}">
-          <a href="#" class="nav-link {{ request()->is('academic*') ? 'active' : '' }}">
+
+        <!--begin::Academic Structure Treeview-->
+        <li class="nav-item {{ $isAcademicStructureActive ? 'menu-open' : '' }}">
+          <a href="#" class="nav-link {{ $isAcademicStructureActive ? 'active' : '' }}">
             <i class="nav-icon bi bi-diagram-3-fill"></i>
             <p>
               Academic Structure
@@ -80,7 +107,7 @@
             <li class="nav-item">
               <a href="{{ route('academic.courses.index') }}" class="nav-link {{ request()->routeIs('academic.courses.*') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-journal-bookmark-fill"></i>
-                <p>Course Catalog</p>
+                <p>Course Unit Catalog</p>
               </a>
             </li>
             <li class="nav-item">
@@ -109,6 +136,63 @@
             </li>
           </ul>
         </li>
+        <!--end::Academic Structure Treeview-->
+
+        <!--begin::Course Registration Treeview-->
+        <li class="nav-item {{ $isCourseRegistrationActive ? 'menu-open' : '' }}">
+          <a href="#" class="nav-link {{ $isCourseRegistrationActive ? 'active' : '' }}">
+            <i class="nav-icon bi bi-journal-check"></i>
+            <p>
+              Course Registration
+              @if ($pendingApprovalsCount > 0)
+                <span class="badge text-bg-warning ms-1">{{ $pendingApprovalsCount }}</span>
+              @endif
+              <i class="nav-arrow bi bi-chevron-right"></i>
+            </p>
+          </a>
+          <ul class="nav nav-treeview">
+            <li class="nav-item">
+              <a href="{{ route('academic.registrations.index') }}" class="nav-link {{ request()->routeIs('academic.registrations.index') || (request()->routeIs('academic.registrations.show') && !request()->routeIs('academic.registrations.print')) ? 'active' : '' }}">
+                <i class="nav-icon bi bi-journal-text"></i>
+                <p>Registration Slips</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{{ route('academic.registrations.create') }}" class="nav-link {{ request()->routeIs('academic.registrations.create') ? 'active' : '' }}">
+                <i class="nav-icon bi bi-pencil-square"></i>
+                <p>Register Courses</p>
+              </a>
+            </li>
+            @if (config('academic.enforce_prerequisites', false))
+              <li class="nav-item">
+                <a href="{{ route('academic.registrations.eligibility') }}" class="nav-link {{ request()->routeIs('academic.registrations.eligibility') ? 'active' : '' }}">
+                  <i class="nav-icon bi bi-shield-check"></i>
+                  <p>Course Eligibility</p>
+                </a>
+              </li>
+            @endif
+            @if (config('academic.require_registration_approval', false))
+              <li class="nav-item">
+                <a href="{{ route('academic.approvals.index') }}" class="nav-link {{ request()->routeIs('academic.approvals.*') ? 'active' : '' }}">
+                  <i class="nav-icon bi bi-clipboard-check"></i>
+                  <p>
+                    Advisor Approvals
+                    @if ($pendingApprovalsCount > 0)
+                      <span class="badge text-bg-warning ms-1">{{ $pendingApprovalsCount }}</span>
+                    @endif
+                  </p>
+                </a>
+              </li>
+            @endif
+            <li class="nav-item">
+              <a href="{{ route('academic.registrations.active-session') }}" class="nav-link {{ request()->routeIs('academic.registrations.active-session') ? 'active' : '' }}">
+                <i class="nav-icon bi bi-calendar2-check"></i>
+                <p>Active Session Cohorts</p>
+              </a>
+            </li>
+          </ul>
+        </li>
+        <!--end::Course Registration Treeview-->
 
         <li class="nav-header">SYSTEM</li>
         <li class="nav-item">

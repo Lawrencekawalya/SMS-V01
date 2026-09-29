@@ -18,7 +18,7 @@ class DepartmentSeeder extends Seeder
         $fbe = Faculty::where('code', 'FBE')->first();
 
         $hodCS = User::firstOrCreate(
-            ['email' => 'hod.cs@apex.ac.ug'],
+            ['email' => 'hod.cs@bsu.ac.ug'],
             [
                 'name' => 'Dr. Robert Kato',
                 'password' => bcrypt('password'),
@@ -26,7 +26,7 @@ class DepartmentSeeder extends Seeder
         );
 
         $hodIT = User::firstOrCreate(
-            ['email' => 'hod.it@apex.ac.ug'],
+            ['email' => 'hod.it@bsu.ac.ug'],
             [
                 'name' => 'Dr. Juliet Namukasa',
                 'password' => bcrypt('password'),
@@ -34,7 +34,7 @@ class DepartmentSeeder extends Seeder
         );
 
         $hodAF = User::firstOrCreate(
-            ['email' => 'hod.af@apex.ac.ug'],
+            ['email' => 'hod.af@bsu.ac.ug'],
             [
                 'name' => 'Dr. Patrick Omondi',
                 'password' => bcrypt('password'),

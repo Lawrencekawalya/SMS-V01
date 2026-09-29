@@ -15,8 +15,8 @@ class UniversityController extends Controller
     public function edit(): View
     {
         $university = University::first() ?? University::create([
-            'name' => 'Apex University of Science and Technology',
-            'code' => 'APEX-UNI',
+            'name' => 'Bishop Stuart University',
+            'code' => 'BSU',
         ]);
 
         return view('academic.university.edit', compact('university'));

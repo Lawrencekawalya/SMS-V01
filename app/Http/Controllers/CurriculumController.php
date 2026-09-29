@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateCurriculumRequest;
 use App\Models\CourseUnit;
 use App\Models\Curriculum;
 use App\Models\Programme;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -155,5 +156,39 @@ class CurriculumController extends Controller
 
         return redirect()->route('academic.curriculums.index')
             ->with('success', "Curriculum '{$name}' deleted successfully.");
+    }
+
+    /**
+     * Update min and max credit bounds for a specific study stage in the curriculum.
+     */
+    public function updateStageCreditLimits(Request $request, Curriculum $curriculum): JsonResponse|RedirectResponse
+    {
+        $validated = $request->validate([
+            'study_year' => ['required', 'integer', 'min:1', 'max:7'],
+            'semester' => ['required', 'integer', 'in:1,2'],
+            'min_credits' => ['required', 'numeric', 'min:0', 'max:50'],
+            'max_credits' => ['required', 'numeric', 'min:0', 'max:60', 'gte:min_credits'],
+        ]);
+
+        $curriculum->setStageCreditBounds(
+            (int) $validated['study_year'],
+            (int) $validated['semester'],
+            (float) $validated['min_credits'],
+            (float) $validated['max_credits']
+        );
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => "Credit bounds for Year {$validated['study_year']}, Semester {$validated['semester']} updated to Min: {$validated['min_credits']} CU, Max: {$validated['max_credits']} CU.",
+                'study_year' => (int) $validated['study_year'],
+                'semester' => (int) $validated['semester'],
+                'min_credits' => (float) $validated['min_credits'],
+                'max_credits' => (float) $validated['max_credits'],
+            ]);
+        }
+
+        return redirect()->route('academic.curriculums.show', $curriculum)
+            ->with('success', "Credit bounds for Year {$validated['study_year']}, Semester {$validated['semester']} updated.");
     }
 }

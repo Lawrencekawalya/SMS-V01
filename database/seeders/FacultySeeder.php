@@ -21,7 +21,7 @@ class FacultySeeder extends Seeder
         }
 
         $deanScience = User::firstOrCreate(
-            ['email' => 'dean.science@apex.ac.ug'],
+            ['email' => 'dean.science@bsu.ac.ug'],
             [
                 'name' => 'Prof. Charles Mukasa',
                 'password' => bcrypt('password'),
@@ -29,7 +29,7 @@ class FacultySeeder extends Seeder
         );
 
         $deanBusiness = User::firstOrCreate(
-            ['email' => 'dean.business@apex.ac.ug'],
+            ['email' => 'dean.business@bsu.ac.ug'],
             [
                 'name' => 'Dr. Sarah Nalwanga',
                 'password' => bcrypt('password'),

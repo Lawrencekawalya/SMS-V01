@@ -13,13 +13,13 @@ class UniversitySeeder extends Seeder
     public function run(): void
     {
         University::firstOrCreate(
-            ['code' => 'APEX-UNI'],
+            ['code' => 'BSU'],
             [
-                'name' => 'Apex University of Science and Technology',
-                'email' => 'info@apex.ac.ug',
-                'phone' => '+256 414 123456',
-                'address' => 'Plot 45 Academic Hill, Kampala, Uganda',
-                'website' => 'https://apex.ac.ug',
+                'name' => 'Bishop Stuart University',
+                'email' => 'info@bsu.ac.ug',
+                'phone' => '+256 707 200703',
+                'address' => 'Buremba-Kakoba Road, P.O. Box 09, Mbarara, Uganda',
+                'website' => 'https://www.bsu.ac.ug',
             ]
         );
     }

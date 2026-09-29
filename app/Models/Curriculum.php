@@ -33,6 +33,7 @@ class Curriculum extends Model
         'start_academic_year',
         'end_academic_year',
         'min_graduation_credits',
+        'stage_credit_limits',
         'is_active',
     ];
 
@@ -47,8 +48,44 @@ class Curriculum extends Model
             'start_academic_year' => 'integer',
             'end_academic_year' => 'integer',
             'min_graduation_credits' => 'integer',
+            'stage_credit_limits' => 'array',
             'is_active' => 'boolean',
         ];
+    }
+
+    /**
+     * Get credit bounds for a given study year and semester stage.
+     *
+     * @return array{min: float, max: float}
+     */
+    public function getStageCreditBounds(int $studyYear, int $semester): array
+    {
+        $key = "Y{$studyYear}S{$semester}";
+        $limits = $this->stage_credit_limits ?? [];
+
+        $min = isset($limits[$key]['min']) ? (float) $limits[$key]['min'] : 12.0;
+        $max = isset($limits[$key]['max']) ? (float) $limits[$key]['max'] : 24.0;
+
+        return [
+            'min' => $min,
+            'max' => $max,
+        ];
+    }
+
+    /**
+     * Set credit bounds for a given study year and semester stage.
+     */
+    public function setStageCreditBounds(int $studyYear, int $semester, float $min, float $max): void
+    {
+        $key = "Y{$studyYear}S{$semester}";
+        $limits = $this->stage_credit_limits ?? [];
+        $limits[$key] = [
+            'min' => $min,
+            'max' => $max,
+        ];
+
+        $this->stage_credit_limits = $limits;
+        $this->save();
     }
 
     /**

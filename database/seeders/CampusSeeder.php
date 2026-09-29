@@ -14,8 +14,8 @@ class CampusSeeder extends Seeder
     public function run(): void
     {
         $university = University::first() ?? University::create([
-            'name' => 'Apex University of Science and Technology',
-            'code' => 'APEX-UNI',
+            'name' => 'Bishop Stuart University',
+            'code' => 'BSU',
         ]);
 
         Campus::firstOrCreate(

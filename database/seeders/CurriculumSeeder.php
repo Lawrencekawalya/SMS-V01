@@ -259,5 +259,83 @@ class CurriculumSeeder extends Seeder
                 }
             }
         }
+
+        // 6. DIT 2021-2024 Revised IT Curriculum (Diploma in Information Technology)
+        $dit = Programme::where('code', 'DIT')->first();
+        if ($dit) {
+            $curriculumDit = Curriculum::updateOrCreate(
+                [
+                    'programme_id' => $dit->id,
+                    'version_name' => '2021-2024-Revised IT',
+                ],
+                [
+                    'start_academic_year' => 2021,
+                    'end_academic_year' => 2024,
+                    'min_graduation_credits' => 91,
+                    'stage_credit_limits' => [
+                        'Y1S1' => ['min' => 12.0, 'max' => 28.0],
+                        'Y1S2' => ['min' => 12.0, 'max' => 26.0],
+                        'Y2S1' => ['min' => 12.0, 'max' => 24.0],
+                        'Y2S2' => ['min' => 12.0, 'max' => 18.0],
+                    ],
+                    'is_active' => true,
+                ]
+            );
+
+            $ditMappings = [
+                // Year 1, Sem 1 (27 CU)
+                ['code' => 'DIT1101', 'year' => 1, 'sem' => 1, 'type' => 'Core'],
+                ['code' => 'DIT1102', 'year' => 1, 'sem' => 1, 'type' => 'Core'],
+                ['code' => 'DIT1103', 'year' => 1, 'sem' => 1, 'type' => 'Core'],
+                ['code' => 'DIT1104', 'year' => 1, 'sem' => 1, 'type' => 'Core'],
+                ['code' => 'DIT1105', 'year' => 1, 'sem' => 1, 'type' => 'Core'],
+                ['code' => 'DIT1106', 'year' => 1, 'sem' => 1, 'type' => 'Core'],
+                ['code' => 'DIT1107', 'year' => 1, 'sem' => 1, 'type' => 'Core'],
+                ['code' => 'DIT1108', 'year' => 1, 'sem' => 1, 'type' => 'Core'],
+
+                // Year 1, Sem 2 (25 CU)
+                ['code' => 'DIT1201', 'year' => 1, 'sem' => 2, 'type' => 'Core'],
+                ['code' => 'DIT1202', 'year' => 1, 'sem' => 2, 'type' => 'Core'],
+                ['code' => 'DIT1203', 'year' => 1, 'sem' => 2, 'type' => 'Core'],
+                ['code' => 'DIT1204', 'year' => 1, 'sem' => 2, 'type' => 'Core'],
+                ['code' => 'DIT1205', 'year' => 1, 'sem' => 2, 'type' => 'Core'],
+                ['code' => 'DIT1206', 'year' => 1, 'sem' => 2, 'type' => 'Core'],
+                ['code' => 'DIT1207', 'year' => 1, 'sem' => 2, 'type' => 'Core'],
+
+                // Year 2, Sem 1 (23 CU)
+                ['code' => 'DIT2101', 'year' => 2, 'sem' => 1, 'type' => 'Core'],
+                ['code' => 'DIT2102', 'year' => 2, 'sem' => 1, 'type' => 'Core'],
+                ['code' => 'DIT2103', 'year' => 2, 'sem' => 1, 'type' => 'Core'],
+                ['code' => 'DIT2104', 'year' => 2, 'sem' => 1, 'type' => 'Core'],
+                ['code' => 'DIT2105', 'year' => 2, 'sem' => 1, 'type' => 'Core'],
+                ['code' => 'DIT2106', 'year' => 2, 'sem' => 1, 'type' => 'Core'],
+                ['code' => 'DIT2107', 'year' => 2, 'sem' => 1, 'type' => 'Core'],
+
+                // Year 2, Sem 2 (16 CU)
+                ['code' => 'DIT2201', 'year' => 2, 'sem' => 2, 'type' => 'Core'],
+                ['code' => 'DIT2202', 'year' => 2, 'sem' => 2, 'type' => 'Core'],
+                ['code' => 'DIT2203', 'year' => 2, 'sem' => 2, 'type' => 'Core'],
+                ['code' => 'DIT2204', 'year' => 2, 'sem' => 2, 'type' => 'Core'],
+                ['code' => 'DIT2205', 'year' => 2, 'sem' => 2, 'type' => 'Core'],
+                ['code' => 'DIT2206', 'year' => 2, 'sem' => 2, 'type' => 'Core'],
+            ];
+
+            foreach ($ditMappings as $m) {
+                $course = CourseUnit::where('code', $m['code'])->first();
+                if ($course) {
+                    CurriculumCourse::updateOrCreate(
+                        [
+                            'curriculum_id' => $curriculumDit->id,
+                            'course_unit_id' => $course->id,
+                        ],
+                        [
+                            'study_year' => $m['year'],
+                            'semester' => $m['sem'],
+                            'course_type' => $m['type'],
+                        ]
+                    );
+                }
+            }
+        }
     }
 }

@@ -16,7 +16,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         User::firstOrCreate(
-            ['email' => 'admin@apex.ac.ug'],
+            ['email' => 'admin@bsu.ac.ug'],
             [
                 'name' => 'System Administrator',
                 'password' => bcrypt('password'),
@@ -33,6 +33,7 @@ class DatabaseSeeder extends Seeder
             CourseUnitSeeder::class,
             CurriculumSeeder::class,
             StudentSeeder::class,
+            CourseRegistrationSeeder::class,
         ]);
     }
 }
