@@ -198,6 +198,7 @@
           $isAssessmentActive = request()->routeIs([
             'academic.assessments.*',
             'academic.results.*',
+            'academic.reports.*',
           ]);
 
           $pendingModerationCount = \Illuminate\Support\Facades\Schema::hasTable('course_assessment_sheets')
@@ -247,9 +248,51 @@
                 <p>Results &amp; Transcripts</p>
               </a>
             </li>
+            <li class="nav-item">
+              <a href="{{ route('academic.reports.broad-sheet') }}" class="nav-link {{ request()->routeIs('academic.reports.broad-sheet*') ? 'active' : '' }}">
+                <i class="nav-icon bi bi-table"></i>
+                <p>Senate Broad-Sheets</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{{ route('academic.reports.analytics') }}" class="nav-link {{ request()->routeIs('academic.reports.analytics*') ? 'active' : '' }}">
+                <i class="nav-icon bi bi-graph-up-arrow"></i>
+                <p>Academic Analytics</p>
+              </a>
+            </li>
           </ul>
         </li>
         <!--end::Examinations & Grading Treeview-->
+
+        @php
+          $isGraduationActive = request()->routeIs('academic.graduation.*');
+        @endphp
+
+        <!--begin::Graduation & Clearance Treeview-->
+        <li class="nav-item {{ $isGraduationActive ? 'menu-open' : '' }}">
+          <a href="#" class="nav-link {{ $isGraduationActive ? 'active' : '' }}">
+            <i class="nav-icon bi bi-mortarboard-fill"></i>
+            <p>
+              Graduation &amp; Clearance
+              <i class="nav-arrow bi bi-chevron-right"></i>
+            </p>
+          </a>
+          <ul class="nav nav-treeview">
+            <li class="nav-item">
+              <a href="{{ route('academic.graduation.index') }}" class="nav-link {{ request()->routeIs('academic.graduation.index') || request()->routeIs('academic.graduation.audit') ? 'active' : '' }}">
+                <i class="nav-icon bi bi-shield-check"></i>
+                <p>Clearance Audit</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{{ route('academic.graduation.honors-roll') }}" class="nav-link {{ request()->routeIs('academic.graduation.honors-roll') ? 'active' : '' }}">
+                <i class="nav-icon bi bi-journal-bookmark-fill"></i>
+                <p>Honors Roll Gazette</p>
+              </a>
+            </li>
+          </ul>
+        </li>
+        <!--end::Graduation & Clearance Treeview-->
 
         <li class="nav-header">SYSTEM</li>
         <li class="nav-item">

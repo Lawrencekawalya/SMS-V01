@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AcademicAnalyticsController;
 use App\Http\Controllers\AcademicEventController;
 use App\Http\Controllers\AcademicYearController;
 use App\Http\Controllers\AddDropController;
@@ -12,9 +13,11 @@ use App\Http\Controllers\CurriculumCourseController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\FacultyController;
 use App\Http\Controllers\GradeModerationController;
+use App\Http\Controllers\GraduationClearanceController;
 use App\Http\Controllers\ProgrammeController;
 use App\Http\Controllers\RegistrationApprovalController;
 use App\Http\Controllers\SemesterController;
+use App\Http\Controllers\SenateBroadSheetController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\StudentResultController;
 use App\Http\Controllers\UniversityController;
@@ -117,4 +120,16 @@ Route::prefix('academic')->name('academic.')->group(function () {
     Route::get('results', [StudentResultController::class, 'index'])->name('results.index');
     Route::get('results/slip/{student}/{semester}', [StudentResultController::class, 'semesterResultSlip'])->name('results.slip');
     Route::get('results/transcript/{student}', [StudentResultController::class, 'academicTranscript'])->name('results.transcript');
+
+    // Official Senate Master Broad-Sheet (Gazette / Master Ledger)
+    Route::get('reports/broad-sheet', [SenateBroadSheetController::class, 'index'])->name('reports.broad-sheet');
+    Route::get('reports/broad-sheet/export', [SenateBroadSheetController::class, 'export'])->name('reports.broad-sheet.export');
+
+    // Departmental & Faculty Academic Performance Analytics
+    Route::get('reports/analytics', [AcademicAnalyticsController::class, 'index'])->name('reports.analytics');
+
+    // Graduation Clearance, Audit & Official Honors Roll Gazette
+    Route::get('graduation', [GraduationClearanceController::class, 'index'])->name('graduation.index');
+    Route::get('graduation/audit/{student}', [GraduationClearanceController::class, 'audit'])->name('graduation.audit');
+    Route::get('graduation/honors-roll', [GraduationClearanceController::class, 'honorsRoll'])->name('graduation.honors-roll');
 });
