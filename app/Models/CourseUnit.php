@@ -75,6 +75,16 @@ class CourseUnit extends Model
     }
 
     /**
+     * Get assessment sheets for this course unit.
+     *
+     * @return HasMany<CourseAssessmentSheet, $this>
+     */
+    public function assessmentSheets(): HasMany
+    {
+        return $this->hasMany(CourseAssessmentSheet::class);
+    }
+
+    /**
      * Get curriculums that include this course unit.
      *
      * @return BelongsToMany<Curriculum, $this>

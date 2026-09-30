@@ -71,6 +71,9 @@
           </ul>
 
           <div class="d-grid gap-2">
+            <a href="{{ route('academic.results.transcript', $student) }}" class="btn btn-outline-primary">
+              <i class="bi bi-mortarboard-fill me-1"></i> Official Academic Transcript
+            </a>
             <a href="{{ route('academic.students.index') }}" class="btn btn-outline-secondary">
               <i class="bi bi-arrow-left me-1"></i> Back to Students Directory
             </a>

@@ -23,9 +23,13 @@ class CourseRegistrationFactory extends Factory
     {
         return [
             'student_id' => Student::factory(),
-            'academic_year_id' => fn (array $attributes) => isset($attributes['semester_id'])
-                ? Semester::find($attributes['semester_id'])?->academic_year_id ?? AcademicYear::factory()
-                : AcademicYear::factory(),
+            'academic_year_id' => function (array $attributes) {
+                if (isset($attributes['semester_id']) && is_numeric($attributes['semester_id'])) {
+                    return Semester::find($attributes['semester_id'])?->academic_year_id ?? AcademicYear::factory();
+                }
+
+                return AcademicYear::factory();
+            },
             'semester_id' => Semester::factory(),
             'study_year' => 1,
             'semester_number' => 1,

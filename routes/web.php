@@ -4,16 +4,19 @@ use App\Http\Controllers\AcademicEventController;
 use App\Http\Controllers\AcademicYearController;
 use App\Http\Controllers\AddDropController;
 use App\Http\Controllers\CampusController;
+use App\Http\Controllers\CourseAssessmentController;
 use App\Http\Controllers\CourseRegistrationController;
 use App\Http\Controllers\CourseUnitController;
 use App\Http\Controllers\CurriculumController;
 use App\Http\Controllers\CurriculumCourseController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\FacultyController;
+use App\Http\Controllers\GradeModerationController;
 use App\Http\Controllers\ProgrammeController;
 use App\Http\Controllers\RegistrationApprovalController;
 use App\Http\Controllers\SemesterController;
 use App\Http\Controllers\StudentController;
+use App\Http\Controllers\StudentResultController;
 use App\Http\Controllers\UniversityController;
 use Illuminate\Support\Facades\Route;
 
@@ -88,4 +91,30 @@ Route::prefix('academic')->name('academic.')->group(function () {
 
     // Course Registrations & Enrollment Slips Hub
     Route::resource('registrations', CourseRegistrationController::class);
+
+    // Examinations, Grading & Assessment Hub
+    Route::get('assessments/policy', [CourseAssessmentController::class, 'policy'])->name('assessments.policy');
+    Route::post('assessments/policy', [CourseAssessmentController::class, 'updatePolicy'])->name('assessments.policy.update');
+    Route::put('assessments/policy/grading-scale', [CourseAssessmentController::class, 'updateGradingScale'])->name('assessments.policy.scale.update');
+    Route::post('assessments/policy/grading-scale/reset', [CourseAssessmentController::class, 'resetGradingScale'])->name('assessments.policy.scale.reset');
+    Route::put('assessments/policy/awards', [CourseAssessmentController::class, 'updateAwardClassifications'])->name('assessments.policy.awards.update');
+    Route::post('assessments/policy/awards/reset', [CourseAssessmentController::class, 'resetAwardClassifications'])->name('assessments.policy.awards.reset');
+
+    // Departmental & Senate Grade Moderation Workflow
+    Route::get('assessments/moderation', [GradeModerationController::class, 'index'])->name('assessments.moderation.index');
+    Route::get('assessments/moderation/{sheet}', [GradeModerationController::class, 'show'])->name('assessments.moderation.show');
+    Route::post('assessments/moderation/{sheet}/endorse', [GradeModerationController::class, 'endorse'])->name('assessments.moderation.endorse');
+    Route::post('assessments/moderation/{sheet}/return', [GradeModerationController::class, 'returnToLecturer'])->name('assessments.moderation.return');
+    Route::post('assessments/moderation/{sheet}/publish', [GradeModerationController::class, 'publish'])->name('assessments.moderation.publish');
+
+    Route::get('assessments', [CourseAssessmentController::class, 'index'])->name('assessments.index');
+    Route::get('assessments/{sheet}', [CourseAssessmentController::class, 'show'])->name('assessments.show');
+    Route::get('assessments/{sheet}/entry', [CourseAssessmentController::class, 'edit'])->name('assessments.edit');
+    Route::put('assessments/{sheet}', [CourseAssessmentController::class, 'update'])->name('assessments.update');
+    Route::post('assessments/{sheet}/submit', [CourseAssessmentController::class, 'submitToHod'])->name('assessments.submit');
+
+    // Official Student Results, Result Slips & Cumulative Transcripts
+    Route::get('results', [StudentResultController::class, 'index'])->name('results.index');
+    Route::get('results/slip/{student}/{semester}', [StudentResultController::class, 'semesterResultSlip'])->name('results.slip');
+    Route::get('results/transcript/{student}', [StudentResultController::class, 'academicTranscript'])->name('results.transcript');
 });

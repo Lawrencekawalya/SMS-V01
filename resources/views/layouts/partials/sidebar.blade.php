@@ -194,6 +194,63 @@
         </li>
         <!--end::Course Registration Treeview-->
 
+        @php
+          $isAssessmentActive = request()->routeIs([
+            'academic.assessments.*',
+            'academic.results.*',
+          ]);
+
+          $pendingModerationCount = \Illuminate\Support\Facades\Schema::hasTable('course_assessment_sheets')
+            ? \App\Models\CourseAssessmentSheet::where('status', 'submitted_to_hod')->count()
+            : 0;
+        @endphp
+
+        <!--begin::Examinations & Grading Treeview-->
+        <li class="nav-item {{ $isAssessmentActive ? 'menu-open' : '' }}">
+          <a href="#" class="nav-link {{ $isAssessmentActive ? 'active' : '' }}">
+            <i class="nav-icon bi bi-award-fill"></i>
+            <p>
+              Examinations &amp; Grading
+              @if ($pendingModerationCount > 0)
+                <span class="badge text-bg-warning ms-1">{{ $pendingModerationCount }}</span>
+              @endif
+              <i class="nav-arrow bi bi-chevron-right"></i>
+            </p>
+          </a>
+          <ul class="nav nav-treeview">
+            <li class="nav-item">
+              <a href="{{ route('academic.assessments.policy') }}" class="nav-link {{ request()->routeIs('academic.assessments.policy') ? 'active' : '' }}">
+                <i class="nav-icon bi bi-sliders"></i>
+                <p>Grading Policy &amp; Scale</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{{ route('academic.assessments.index') }}" class="nav-link {{ request()->routeIs('academic.assessments.index') || (request()->routeIs('academic.assessments.show') && !request()->routeIs('academic.assessments.moderation.*')) ? 'active' : '' }}">
+                <i class="nav-icon bi bi-card-checklist"></i>
+                <p>Course Mark Sheets</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{{ route('academic.assessments.moderation.index') }}" class="nav-link {{ request()->routeIs('academic.assessments.moderation.*') ? 'active' : '' }}">
+                <i class="nav-icon bi bi-person-check-fill"></i>
+                <p>
+                  HoD Moderation Desk
+                  @if ($pendingModerationCount > 0)
+                    <span class="badge text-bg-warning ms-1">{{ $pendingModerationCount }}</span>
+                  @endif
+                </p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{{ route('academic.results.index') }}" class="nav-link {{ request()->routeIs('academic.results.*') ? 'active' : '' }}">
+                <i class="nav-icon bi bi-file-earmark-text-fill"></i>
+                <p>Results &amp; Transcripts</p>
+              </a>
+            </li>
+          </ul>
+        </li>
+        <!--end::Examinations & Grading Treeview-->
+
         <li class="nav-header">SYSTEM</li>
         <li class="nav-item">
           <a href="#" class="nav-link">

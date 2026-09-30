@@ -141,6 +141,26 @@ class Student extends Model
     }
 
     /**
+     * Get the student marks across all course assessments.
+     *
+     * @return HasMany<StudentMark, $this>
+     */
+    public function marks(): HasMany
+    {
+        return $this->hasMany(StudentMark::class);
+    }
+
+    /**
+     * Get the semester academic performance summaries.
+     *
+     * @return HasMany<StudentSemesterPerformance, $this>
+     */
+    public function semesterPerformances(): HasMany
+    {
+        return $this->hasMany(StudentSemesterPerformance::class);
+    }
+
+    /**
      * Scope query to only active students.
      *
      * @param  Builder<Student>  $query

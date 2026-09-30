@@ -11,6 +11,7 @@ use App\Models\CurriculumCourse;
 use App\Models\Programme;
 use App\Models\Semester;
 use App\Models\Student;
+use App\Models\StudentMark;
 use App\Models\User;
 use App\Services\CourseEligibilityService;
 use Illuminate\Http\RedirectResponse;
@@ -159,30 +160,9 @@ class CourseRegistrationController extends Controller
             ]);
             $reg->save();
 
-            // Clear old items if updating
-            $reg->items()->delete();
-
-            // Attach new items
-            $selectedCourses = CourseUnit::whereIn('id', $validated['course_unit_ids'])->get();
-            $curriculumCourses = CurriculumCourse::where('curriculum_id', $student->curriculum_id)
-                ->whereIn('course_unit_id', $selectedCourses->pluck('id'))
-                ->get()
-                ->keyBy('course_unit_id');
-
-            foreach ($selectedCourses as $course) {
-                $curriculumCourse = $curriculumCourses->get($course->id);
-                $courseType = $curriculumCourse ? $curriculumCourse->course_type : 'Elective';
-
-                CourseRegistrationItem::create([
-                    'course_registration_id' => $reg->id,
-                    'course_unit_id' => $course->id,
-                    'course_type' => $courseType,
-                    'credit_units' => $course->credit_units,
-                    'status' => $targetStatus === 'approved' ? 'approved' : 'registered',
-                ]);
-            }
-
-            $reg->recalculateTotalCredits();
+            // Sync items differentially without breaking child foreign keys
+            $itemStatus = $targetStatus === 'approved' ? 'approved' : 'registered';
+            $this->syncRegistrationItems($reg, $validated['course_unit_ids'], $itemStatus);
 
             return $reg;
         });
@@ -248,29 +228,9 @@ class CourseRegistrationController extends Controller
             }
             $registration->save();
 
-            // Re-sync items
-            $registration->items()->delete();
-
-            $selectedCourses = CourseUnit::whereIn('id', $validated['course_unit_ids'])->get();
-            $curriculumCourses = CurriculumCourse::where('curriculum_id', $registration->student->curriculum_id)
-                ->whereIn('course_unit_id', $selectedCourses->pluck('id'))
-                ->get()
-                ->keyBy('course_unit_id');
-
-            foreach ($selectedCourses as $course) {
-                $curriculumCourse = $curriculumCourses->get($course->id);
-                $courseType = $curriculumCourse ? $curriculumCourse->course_type : 'Elective';
-
-                CourseRegistrationItem::create([
-                    'course_registration_id' => $registration->id,
-                    'course_unit_id' => $course->id,
-                    'course_type' => $courseType,
-                    'credit_units' => $course->credit_units,
-                    'status' => $targetStatus === 'approved' ? 'approved' : 'registered',
-                ]);
-            }
-
-            $registration->recalculateTotalCredits();
+            // Re-sync items differentially without breaking child foreign keys
+            $itemStatus = $targetStatus === 'approved' ? 'approved' : 'registered';
+            $this->syncRegistrationItems($registration, $validated['course_unit_ids'], $itemStatus);
         });
 
         $message = match ($targetStatus) {
@@ -429,5 +389,55 @@ class CourseRegistrationController extends Controller
             'programmeId',
             'status'
         ));
+    }
+
+    /**
+     * Synchronize course registration line items differentially without blindly deleting kept items.
+     *
+     * @param  list<int>  $courseUnitIds
+     */
+    protected function syncRegistrationItems(CourseRegistration $registration, array $courseUnitIds, string $itemStatus): void
+    {
+        $student = $registration->student;
+        $selectedCourses = CourseUnit::whereIn('id', $courseUnitIds)->get()->keyBy('id');
+        $existingItems = $registration->items()->get()->keyBy('course_unit_id');
+
+        // 1. Remove items that were unselected by the student
+        $removedItems = $existingItems->filter(fn ($item, $courseUnitId) => ! $selectedCourses->has($courseUnitId));
+        foreach ($removedItems as $removedItem) {
+            // Delete associated student mark if one exists before deleting registration item
+            StudentMark::where('course_registration_item_id', $removedItem->id)->delete();
+            $removedItem->delete();
+        }
+
+        // 2. Map curriculum course types
+        $curriculumCourses = CurriculumCourse::where('curriculum_id', $student->curriculum_id)
+            ->whereIn('course_unit_id', $selectedCourses->keys())
+            ->get()
+            ->keyBy('course_unit_id');
+
+        // 3. Update existing kept items or create newly selected items
+        foreach ($selectedCourses as $courseId => $course) {
+            $curriculumCourse = $curriculumCourses->get($courseId);
+            $courseType = $curriculumCourse ? $curriculumCourse->course_type : 'Elective';
+
+            if ($existingItems->has($courseId)) {
+                $existingItems->get($courseId)->update([
+                    'course_type' => $courseType,
+                    'credit_units' => $course->credit_units,
+                    'status' => $itemStatus,
+                ]);
+            } else {
+                CourseRegistrationItem::create([
+                    'course_registration_id' => $registration->id,
+                    'course_unit_id' => $courseId,
+                    'course_type' => $courseType,
+                    'credit_units' => $course->credit_units,
+                    'status' => $itemStatus,
+                ]);
+            }
+        }
+
+        $registration->recalculateTotalCredits();
     }
 }

@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\AcademicYear;
 use App\Models\Campus;
+use App\Models\CourseAssessmentSheet;
 use App\Models\CourseRegistration;
 use App\Models\CourseRegistrationItem;
 use App\Models\CourseUnit;
@@ -14,6 +15,7 @@ use App\Models\Faculty;
 use App\Models\Programme;
 use App\Models\Semester;
 use App\Models\Student;
+use App\Models\StudentMark;
 use App\Models\University;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -462,5 +464,59 @@ class CourseRegistrationPortalTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Advisor Approvals');
         $response->assertSee('Academic Advisor Portal');
+    }
+
+    public function test_updating_registration_slip_with_linked_student_marks_succeeds_without_fk_violation(): void
+    {
+        $reg = CourseRegistration::factory()->create([
+            'student_id' => $this->student->id,
+            'semester_id' => $this->activeSemester->id,
+            'academic_year_id' => $this->activeSemester->academic_year_id,
+            'status' => 'draft',
+            'study_year' => 1,
+            'semester_number' => 1,
+        ]);
+
+        $item1 = CourseRegistrationItem::create([
+            'course_registration_id' => $reg->id,
+            'course_unit_id' => $this->core1->id,
+            'course_type' => 'Core',
+            'credit_units' => 4.0,
+            'status' => 'registered',
+        ]);
+
+        $sheet = CourseAssessmentSheet::create([
+            'course_unit_id' => $this->core1->id,
+            'semester_id' => $this->activeSemester->id,
+            'academic_year_id' => $this->activeSemester->academic_year_id,
+            'ca_weight' => 40.0,
+            'exam_weight' => 60.0,
+            'pass_mark' => 50.0,
+            'status' => 'draft',
+        ]);
+
+        $mark = StudentMark::create([
+            'course_assessment_sheet_id' => $sheet->id,
+            'course_registration_item_id' => $item1->id,
+            'student_id' => $this->student->id,
+        ]);
+
+        $response = $this->put(route('academic.registrations.update', $reg), [
+            'student_id' => $this->student->id,
+            'semester_id' => $this->activeSemester->id,
+            'course_unit_ids' => [$this->core1->id, $this->core2->id, $this->core3->id],
+            'action' => 'submit',
+        ]);
+
+        $response->assertRedirect(route('academic.registrations.show', $reg));
+        $reg->refresh();
+        $this->assertEquals(3, $reg->items()->count());
+
+        $item1->refresh();
+        $this->assertEquals('approved', $item1->status);
+        $this->assertDatabaseHas('student_marks', [
+            'id' => $mark->id,
+            'course_registration_item_id' => $item1->id,
+        ]);
     }
 }

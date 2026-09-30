@@ -177,7 +177,10 @@ class AcademicStructurePhase2Test extends TestCase
 
     public function test_can_filter_departments_by_faculty(): void
     {
-        $otherFaculty = Faculty::factory()->create(['campus_id' => $this->campus->id]);
+        $otherFaculty = Faculty::factory()->create([
+            'campus_id' => $this->campus->id,
+            'code' => 'FBUS',
+        ]);
 
         $dept1 = Department::factory()->create([
             'faculty_id' => $this->faculty->id,

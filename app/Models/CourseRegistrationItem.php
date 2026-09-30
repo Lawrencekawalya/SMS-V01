@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class CourseRegistrationItem extends Model
 {
@@ -59,6 +60,16 @@ class CourseRegistrationItem extends Model
     public function courseUnit(): BelongsTo
     {
         return $this->belongsTo(CourseUnit::class);
+    }
+
+    /**
+     * Get the student mark recorded for this registration item.
+     *
+     * @return HasOne<StudentMark, $this>
+     */
+    public function studentMark(): HasOne
+    {
+        return $this->hasOne(StudentMark::class);
     }
 
     /**

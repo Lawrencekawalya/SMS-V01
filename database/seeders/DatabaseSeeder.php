@@ -34,6 +34,8 @@ class DatabaseSeeder extends Seeder
             CurriculumSeeder::class,
             StudentSeeder::class,
             CourseRegistrationSeeder::class,
+            GradingPolicySeeder::class,
+            CourseAssessmentSeeder::class,
         ]);
     }
 }
