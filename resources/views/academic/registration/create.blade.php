@@ -57,9 +57,9 @@
     </div>
     <div class="card-body">
       <form action="{{ route('academic.registrations.create') }}" method="GET" class="row g-3 align-items-center">
-        <div class="col-12 col-md-9">
+        <div class="col-12 col-md-5">
           <label for="student_id_select" class="form-label small fw-semibold">Select Student to Register:</label>
-          <select name="student_id" id="student_id_select" class="form-select" onchange="this.form.submit()">
+          <select name="student_id" id="student_id_select" class="form-select" onchange="const semSelect = document.getElementById('semester_id_select'); if (semSelect) semSelect.value = ''; this.form.submit();">
             @foreach ($students as $s)
               <option value="{{ $s->id }}" {{ $selectedStudent && $selectedStudent->id === $s->id ? 'selected' : '' }}>
                 {{ $s->registration_number }} &mdash; {{ $s->full_name }} ({{ $s->programme->code }}, Year {{ $s->current_study_year }} Sem {{ $s->current_semester }})
@@ -67,9 +67,19 @@
             @endforeach
           </select>
         </div>
+        <div class="col-12 col-md-4">
+          <label for="semester_id_select" class="form-label small fw-semibold">Target Registration Semester:</label>
+          <select name="semester_id" id="semester_id_select" class="form-select" onchange="this.form.submit()">
+            @foreach ($allSemesters ?? [] as $sem)
+              <option value="{{ $sem->id }}" {{ $activeSemester && $activeSemester->id === $sem->id ? 'selected' : '' }}>
+                {{ $sem->name }} ({{ $sem->academicYear->name }}) {{ $sem->is_active ? '• Active' : '' }}
+              </option>
+            @endforeach
+          </select>
+        </div>
         <div class="col-12 col-md-3 d-flex align-items-end">
           <button type="submit" class="btn btn-outline-primary w-100">
-            <i class="bi bi-arrow-repeat me-1"></i> Load Student Courses
+            <i class="bi bi-arrow-repeat me-1"></i> Load Registration
           </button>
         </div>
       </form>

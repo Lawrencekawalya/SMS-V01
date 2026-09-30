@@ -95,13 +95,24 @@ class CourseRegistrationController extends Controller
             ->orderBy('registration_number')
             ->get();
 
-        $activeSemester = Semester::where('is_active', true)->with('academicYear')->first()
-            ?? Semester::with('academicYear')->first();
+        $allSemesters = Semester::with('academicYear')->orderByDesc('start_date')->get();
 
         $selectedStudentId = $request->query('student_id');
         $selectedStudent = $selectedStudentId
             ? $students->firstWhere('id', (int) $selectedStudentId)
             : $students->first();
+
+        $selectedSemesterId = $request->query('semester_id');
+        if ($selectedSemesterId) {
+            $activeSemester = $allSemesters->firstWhere('id', (int) $selectedSemesterId) ?? $allSemesters->first();
+        } elseif ($selectedStudent && $selectedStudent->current_semester === 2) {
+            $activeSemester = $allSemesters->first(fn ($s) => $s->semester_number === 2 && $s->isRegistrationOpen())
+                ?? $allSemesters->firstWhere('semester_number', 2)
+                ?? (Semester::where('is_active', true)->with('academicYear')->first() ?? Semester::with('academicYear')->first());
+        } else {
+            $activeSemester = Semester::where('is_active', true)->with('academicYear')->first()
+                ?? Semester::with('academicYear')->first();
+        }
 
         $eligibility = null;
         if ($selectedStudent && $activeSemester) {
@@ -111,6 +122,7 @@ class CourseRegistrationController extends Controller
         return view('academic.registration.create', compact(
             'students',
             'selectedStudent',
+            'allSemesters',
             'activeSemester',
             'eligibility'
         ));

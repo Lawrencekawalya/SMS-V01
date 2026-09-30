@@ -252,8 +252,8 @@
                     </a>
                   @endif
                   @if (in_array($sheet->status, ['submitted_to_hod', 'department_moderated']))
-                    <a href="{{ route('academic.assessments.moderation.show', $sheet) }}" class="btn btn-sm btn-outline-warning text-dark" title="HoD Moderation Desk">
-                      <i class="bi bi-shield-check"></i>
+                    <a href="{{ route('academic.assessments.moderation.show', $sheet) }}" class="btn btn-sm btn-warning text-dark text-nowrap" title="HoD Moderation Desk">
+                      <i class="bi bi-shield-check me-1"></i> Moderate
                     </a>
                   @endif
                   <a href="{{ route('academic.assessments.show', $sheet) }}" class="btn btn-sm btn-outline-primary" title="View Assessment Sheet">

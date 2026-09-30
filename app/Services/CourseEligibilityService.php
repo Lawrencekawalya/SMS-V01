@@ -8,6 +8,7 @@ use App\Models\CourseUnit;
 use App\Models\CurriculumCourse;
 use App\Models\Semester;
 use App\Models\Student;
+use App\Models\StudentMark;
 use Illuminate\Support\Collection;
 
 class CourseEligibilityService
@@ -48,7 +49,7 @@ class CourseEligibilityService
         $semesterNumber = $student->current_semester;
 
         // Retrieve course units previously completed or enrolled in approved registrations
-        $completedCourseUnitIds = CourseRegistrationItem::whereHas('courseRegistration', function ($q) use ($student, $semester) {
+        $completedRegistrationCourseIds = CourseRegistrationItem::whereHas('courseRegistration', function ($q) use ($student, $semester) {
             $q->where('student_id', $student->id)
                 ->where('status', 'approved');
             if ($semester) {
@@ -58,6 +59,17 @@ class CourseEligibilityService
             ->where('status', '!=', 'dropped')
             ->pluck('course_unit_id')
             ->toArray();
+
+        // Also retrieve any course units officially passed in published marks
+        $passedCourseUnitIds = StudentMark::where('student_id', $student->id)
+            ->where('is_passed', true)
+            ->whereHas('courseAssessmentSheet')
+            ->with('courseAssessmentSheet')
+            ->get()
+            ->pluck('courseAssessmentSheet.course_unit_id')
+            ->toArray();
+
+        $completedCourseUnitIds = array_unique(array_merge($completedRegistrationCourseIds, $passedCourseUnitIds));
 
         // Check if student already has a registration slip for this semester
         $existingRegistration = null;
@@ -130,8 +142,15 @@ class CourseEligibilityService
                     }
                 }
 
-                // 3. Course is eligible for current stage or allowable carry-over
-                if ($cc->course_type === 'Core') {
+                // 3. Skip already completed courses from prior approved registrations
+                if (in_array($course->id, $completedCourseUnitIds, true)) {
+                    continue;
+                }
+
+                // 4. Course is eligible for current stage or allowable carry-over
+                $isCurrentStage = ($cc->study_year === $studyYear && $cc->semester === $semesterNumber);
+
+                if ($isCurrentStage && $cc->course_type === 'Core') {
                     $mandatoryCoreCourses->push($course);
                 } else {
                     $availableElectives->push($course);

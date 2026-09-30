@@ -206,19 +206,13 @@
                             <i class="bi bi-file-earmark-check me-1"></i> Result Slip
                           </a>
                         @else
-                          <button type="button" class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="Print Semester Result Slip">
-                            <i class="bi bi-file-earmark-check me-1"></i> Result Slip
+                          <button type="button"
+                                  class="btn btn-outline-primary"
+                                  data-bs-toggle="modal"
+                                  data-bs-target="#semesterSlipModal-{{ $student->id }}"
+                                  title="Select Semester to View Result Slip">
+                            <i class="bi bi-file-earmark-check me-1"></i> Result Slip <i class="bi bi-chevron-down ms-1 small"></i>
                           </button>
-                          <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                            <li class="dropdown-header small text-muted">Select Academic Semester:</li>
-                            @foreach ($performances as $perf)
-                              <li>
-                                <a class="dropdown-item small" href="{{ route('academic.results.slip', ['student' => $student, 'semester' => $perf->semester_id]) }}">
-                                  {{ $perf->semester->name ?? 'Term' }} (GPA: {{ number_format($perf->gpa, 2) }})
-                                </a>
-                              </li>
-                            @endforeach
-                          </ul>
                         @endif
                       </div>
                     @elseif ($semesters->isNotEmpty())
@@ -260,6 +254,71 @@
       </div>
     </div>
   </div>
+
+  <!-- Per-Student Semester Result Slip Modals -->
+  @foreach ($students as $student)
+    @php
+      $studentPerfs = $student->semesterPerformances;
+    @endphp
+    @if ($studentPerfs->count() > 1)
+      <div class="modal fade" id="semesterSlipModal-{{ $student->id }}" tabindex="-1" aria-labelledby="semesterSlipModalLabel-{{ $student->id }}" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content shadow border-0">
+            <div class="modal-header bg-body-secondary border-bottom">
+              <div>
+                <h5 class="modal-title fw-bold mb-0" id="semesterSlipModalLabel-{{ $student->id }}">
+                  <i class="bi bi-file-earmark-text text-primary me-2"></i>Select Semester Result Slip
+                </h5>
+                <div class="small text-muted mt-1">
+                  <strong>{{ $student->user->name ?? $student->full_name }}</strong> &bull;
+                  <span class="font-monospace text-primary">{{ $student->registration_number }}</span> &bull;
+                  {{ $student->programme->code ?? 'N/A' }}
+                </div>
+              </div>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-3">
+              <div class="alert alert-info py-2 px-3 small d-flex align-items-center mb-3">
+                <i class="bi bi-info-circle-fill me-2 fs-5"></i>
+                <div>
+                  This candidate has evaluated results across <strong>{{ $studentPerfs->count() }} semesters</strong>. Select the semester slip you wish to inspect or print:
+                </div>
+              </div>
+              <div class="list-group gap-2 border-0">
+                @foreach ($studentPerfs as $perf)
+                  <a href="{{ route('academic.results.slip', ['student' => $student, 'semester' => $perf->semester_id]) }}" 
+                     class="list-group-item list-group-item-action border rounded p-3 d-flex justify-content-between align-items-center shadow-sm">
+                    <div>
+                      <div class="fw-bold fs-6 text-primary">
+                        {{ $perf->semester->name ?? 'Term' }} 
+                        <span class="text-body-secondary fw-normal">({{ $perf->semester->academicYear->name ?? '' }})</span>
+                      </div>
+                      <small class="text-body-secondary">
+                        Registered: <strong>{{ number_format($perf->credit_units_registered, 1) }} CU</strong> &bull; 
+                        Earned: <strong>{{ number_format($perf->credit_units_earned, 1) }} CU</strong>
+                      </small>
+                      <div class="small mt-1">
+                        Standing: <span class="badge {{ $perf->academic_standing === 'Normal Progress' ? 'text-bg-success' : 'text-bg-danger' }}">{{ $perf->academic_standing }}</span>
+                      </div>
+                    </div>
+                    <div class="text-end ps-3">
+                      <div class="fs-5 fw-bold font-monospace text-dark-emphasis">{{ number_format($perf->gpa, 2) }} <span class="fs-7 text-muted fw-normal">GPA</span></div>
+                      <span class="btn btn-sm btn-outline-primary mt-1">
+                        <i class="bi bi-printer me-1"></i> View Slip
+                      </span>
+                    </div>
+                  </a>
+                @endforeach
+              </div>
+            </div>
+            <div class="modal-footer bg-body-secondary border-top py-2">
+              <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    @endif
+  @endforeach
 @endsection
 
 @push('scripts')
