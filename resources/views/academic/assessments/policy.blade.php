@@ -40,7 +40,7 @@
           <h4 class="mb-0 mt-2 fw-bold">Academic Assessment, Examination &amp; Grading Policy</h4>
         </div>
         <div class="d-flex gap-2">
-          <a href="{{ route('academic.assessments.index') }}" class="btn btn-primary btn-sm">
+          <a href="{{ route('assessment.list') }}" class="btn btn-primary btn-sm">
             <i class="bi bi-card-checklist me-1"></i> Course Mark Sheets Directory
             <i class="bi bi-arrow-right ms-1"></i>
           </a>
@@ -121,7 +121,7 @@
           </h3>
         </div>
         <div class="card-body">
-          <form action="{{ route('academic.assessments.policy.update') }}" method="POST" id="policy-form">
+          <form action="{{ route('assessment.policy.update') }}" method="POST" id="policy-form">
             @csrf
 
             <div class="mb-3">
@@ -227,7 +227,7 @@
               <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editAwardsModal">
                 <i class="bi bi-pencil-square me-1"></i> Edit
               </button>
-              <form action="{{ route('academic.assessments.policy.awards.reset') }}" method="POST" class="d-inline" onsubmit="return confirm('Reset all award classifications to standard NCHE collegiate defaults?');">
+              <form action="{{ route('assessment.policy.awards.reset') }}" method="POST" class="d-inline" onsubmit="return confirm('Reset all award classifications to standard NCHE collegiate defaults?');">
                 @csrf
                 <button type="submit" class="btn btn-sm btn-outline-secondary" title="Reset to Defaults">
                   <i class="bi bi-arrow-counterclockwise"></i>
@@ -388,7 +388,7 @@
               <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editGradingScaleModal">
                 <i class="bi bi-pencil-square me-1"></i> Edit Scale Tiers
               </button>
-              <form action="{{ route('academic.assessments.policy.scale.reset') }}" method="POST" class="d-inline" onsubmit="return confirm('Reset all grading scale tiers to standard NCHE 5.0 defaults?');">
+              <form action="{{ route('assessment.policy.scale.reset') }}" method="POST" class="d-inline" onsubmit="return confirm('Reset all grading scale tiers to standard NCHE 5.0 defaults?');">
                 @csrf
                 <button type="submit" class="btn btn-sm btn-outline-secondary" title="Reset to Defaults">
                   <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
@@ -521,7 +521,7 @@
   <div class="modal fade" id="editGradingScaleModal" tabindex="-1" aria-labelledby="editGradingScaleModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-scrollable">
       <div class="modal-content">
-        <form action="{{ route('academic.assessments.policy.scale.update') }}" method="POST">
+        <form action="{{ route('assessment.policy.scale.update') }}" method="POST">
           @csrf
           @method('PUT')
 
@@ -635,7 +635,7 @@
   <div class="modal fade" id="editAwardsModal" tabindex="-1" aria-labelledby="editAwardsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-scrollable">
       <div class="modal-content">
-        <form action="{{ route('academic.assessments.policy.awards.update') }}" method="POST">
+        <form action="{{ route('assessment.policy.awards.update') }}" method="POST">
           @csrf
           @method('PUT')
 

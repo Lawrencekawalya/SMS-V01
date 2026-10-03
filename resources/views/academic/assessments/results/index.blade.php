@@ -6,7 +6,7 @@
 @section('breadcrumb')
   <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
   <li class="breadcrumb-item">Academic Core</li>
-  <li class="breadcrumb-item"><a href="{{ route('academic.assessments.index') }}">Examinations &amp; Grading</a></li>
+  <li class="breadcrumb-item"><a href="{{ route('assessment.list') }}">Examinations &amp; Grading</a></li>
   <li class="breadcrumb-item active" aria-current="page">Results &amp; Transcripts</li>
 @endsection
 
@@ -70,7 +70,7 @@
       </h3>
     </div>
     <div class="card-body">
-      <form action="{{ route('academic.results.index') }}" method="GET" class="row g-3">
+      <form action="{{ route('result.list') }}" method="GET" class="row g-3">
         <div class="col-12 col-md-4">
           <label for="search" class="form-label small fw-semibold">Search Student</label>
           <div class="input-group input-group-sm">
@@ -101,7 +101,7 @@
         </div>
 
         <div class="col-12 d-flex justify-content-end gap-2">
-          <a href="{{ route('academic.results.index') }}" class="btn btn-sm btn-outline-secondary">
+          <a href="{{ route('result.list') }}" class="btn btn-sm btn-outline-secondary">
             <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
           </a>
           <button type="submit" class="btn btn-sm btn-primary">
@@ -200,7 +200,7 @@
                     @if ($performances->isNotEmpty())
                       <div class="btn-group btn-group-sm">
                         @if ($performances->count() === 1)
-                          <a href="{{ route('academic.results.slip', ['student' => $student, 'semester' => $performances->first()->semester_id]) }}"
+                          <a href="{{ route('result.slip', ['student' => $student, 'semester' => $performances->first()->semester_id]) }}"
                              class="btn btn-outline-primary"
                              title="Print Semester Result Slip">
                             <i class="bi bi-file-earmark-check me-1"></i> Result Slip
@@ -216,7 +216,7 @@
                         @endif
                       </div>
                     @elseif ($semesters->isNotEmpty())
-                      <a href="{{ route('academic.results.slip', ['student' => $student, 'semester' => $semesters->first()->id]) }}"
+                      <a href="{{ route('result.slip', ['student' => $student, 'semester' => $semesters->first()->id]) }}"
                          class="btn btn-sm btn-outline-secondary"
                          title="View Active Semester Results">
                         <i class="bi bi-file-earmark-check me-1"></i> Result Slip
@@ -224,7 +224,7 @@
                     @endif
 
                     {{-- Cumulative Academic Transcript Link --}}
-                    <a href="{{ route('academic.results.transcript', $student) }}"
+                    <a href="{{ route('result.transcript', $student) }}"
                        class="btn btn-sm btn-primary"
                        title="View Official Cumulative Academic Transcript">
                       <i class="bi bi-mortarboard-fill me-1"></i> Transcript
@@ -286,7 +286,7 @@
               </div>
               <div class="list-group gap-2 border-0">
                 @foreach ($studentPerfs as $perf)
-                  <a href="{{ route('academic.results.slip', ['student' => $student, 'semester' => $perf->semester_id]) }}" 
+                  <a href="{{ route('result.slip', ['student' => $student, 'semester' => $perf->semester_id]) }}" 
                      class="list-group-item list-group-item-action border rounded p-3 d-flex justify-content-between align-items-center shadow-sm">
                     <div>
                       <div class="fw-bold fs-6 text-primary">

@@ -6,7 +6,7 @@
 @section('breadcrumb')
   <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
   <li class="breadcrumb-item">Academic Structure</li>
-  <li class="breadcrumb-item"><a href="{{ route('academic.departments.index') }}">Departments</a></li>
+  <li class="breadcrumb-item"><a href="{{ route('department.list') }}">Departments</a></li>
   <li class="breadcrumb-item active" aria-current="page">{{ $department->code }}</li>
 @endsection
 
@@ -67,10 +67,10 @@
           </div>
 
           <div class="d-grid gap-2">
-            <a href="{{ route('academic.departments.edit', $department) }}" class="btn btn-warning">
+            <a href="{{ route('department.edit', $department) }}" class="btn btn-warning">
               <i class="bi bi-pencil me-1"></i> Edit Department
             </a>
-            <a href="{{ route('academic.departments.index') }}" class="btn btn-outline-secondary">
+            <a href="{{ route('department.list') }}" class="btn btn-outline-secondary">
               <i class="bi bi-arrow-left me-1"></i> Back to Departments
             </a>
           </div>
@@ -84,7 +84,7 @@
         <div class="card-header">
           <h3 class="card-title">Academic Programmes ({{ $department->programmes->count() }})</h3>
           <div class="card-tools me-0">
-            <a href="{{ route('academic.programmes.create', ['department_id' => $department->id]) }}" class="btn btn-sm btn-primary">
+            <a href="{{ route('programme.create', ['department_id' => $department->id]) }}" class="btn btn-sm btn-primary">
               <i class="bi bi-plus-circle me-1"></i> Add Programme
             </a>
           </div>
@@ -108,7 +108,7 @@
                   <tr>
                     <td><span class="badge text-bg-secondary">{{ $programme->code }}</span></td>
                     <td class="fw-bold">
-                      <a href="{{ route('academic.programmes.show', $programme) }}" class="text-decoration-none">
+                      <a href="{{ route('programme.show', $programme) }}" class="text-decoration-none">
                         {{ $programme->name }}
                       </a>
                     </td>
@@ -133,10 +133,10 @@
                       @endif
                     </td>
                     <td class="text-end">
-                      <a href="{{ route('academic.programmes.show', $programme) }}" class="btn btn-sm btn-outline-info" title="View Details">
+                      <a href="{{ route('programme.show', $programme) }}" class="btn btn-sm btn-outline-info" title="View Details">
                         <i class="bi bi-eye"></i>
                       </a>
-                      <a href="{{ route('academic.programmes.edit', $programme) }}" class="btn btn-sm btn-outline-warning" title="Edit Programme">
+                      <a href="{{ route('programme.edit', $programme) }}" class="btn btn-sm btn-outline-warning" title="Edit Programme">
                         <i class="bi bi-pencil"></i>
                       </a>
                     </td>

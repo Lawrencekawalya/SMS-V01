@@ -6,7 +6,7 @@
 @section('breadcrumb')
   <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
   <li class="breadcrumb-item">Academic Structure</li>
-  <li class="breadcrumb-item"><a href="{{ route('academic.campuses.index') }}">Campuses</a></li>
+  <li class="breadcrumb-item"><a href="{{ route('campus.list') }}">Campuses</a></li>
   <li class="breadcrumb-item active" aria-current="page">Add New</li>
 @endsection
 
@@ -17,7 +17,7 @@
         <div class="card-header">
           <h3 class="card-title">Campus Information</h3>
         </div>
-        <form action="{{ route('academic.campuses.store') }}" method="POST">
+        <form action="{{ route('campus.store') }}" method="POST">
           @csrf
           <div class="card-body">
             @if ($universities->count() > 1)
@@ -124,7 +124,7 @@
             </div>
           </div>
           <div class="card-footer">
-            <a href="{{ route('academic.campuses.index') }}" class="btn btn-outline-secondary">
+            <a href="{{ route('campus.list') }}" class="btn btn-outline-secondary">
               <i class="bi bi-arrow-left me-1"></i> Cancel
             </a>
             <button type="submit" class="btn btn-primary float-end">

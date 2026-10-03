@@ -196,7 +196,7 @@ class RegistrationApprovalController extends Controller
         });
 
         return redirect()
-            ->route('academic.approvals.index')
+            ->route('approval.list')
             ->with('success', "Successfully batch approved {$count} course registration slip(s).");
     }
 }

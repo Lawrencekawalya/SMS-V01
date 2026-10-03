@@ -17,7 +17,7 @@ class CurriculumCourseController extends Controller
         $curriculumCourse = $curriculum->curriculumCourses()->create($request->validated());
         $curriculumCourse->load('courseUnit');
 
-        return redirect()->route('academic.curriculums.show', $curriculum)
+        return redirect()->route('curriculum.show', $curriculum)
             ->with('success', "Course '{$curriculumCourse->courseUnit->code}' allocated to Year {$curriculumCourse->study_year}, Semester {$curriculumCourse->semester} ({$curriculumCourse->course_type}).");
     }
 
@@ -33,7 +33,7 @@ class CurriculumCourseController extends Controller
         $code = $curriculumCourse->courseUnit?->code ?? 'Course';
         $curriculumCourse->delete();
 
-        return redirect()->route('academic.curriculums.show', $curriculum)
+        return redirect()->route('curriculum.show', $curriculum)
             ->with('success', "Course '{$code}' removed from curriculum.");
     }
 }

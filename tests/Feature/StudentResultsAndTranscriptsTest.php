@@ -133,7 +133,7 @@ class StudentResultsAndTranscriptsTest extends TestCase
 
     public function test_results_directory_page_renders_with_metrics_and_student_roster(): void
     {
-        $response = $this->get(route('academic.results.index'));
+        $response = $this->get(route('result.list'));
 
         $response->assertOk();
         $response->assertViewIs('academic.assessments.results.index');
@@ -153,7 +153,7 @@ class StudentResultsAndTranscriptsTest extends TestCase
             'registration_number' => '24/BSU/BSCS/099',
         ]);
 
-        $response = $this->get(route('academic.results.index', ['search' => 'Kemigisha']));
+        $response = $this->get(route('result.list', ['search' => 'Kemigisha']));
 
         $response->assertOk();
         $response->assertSee('Alice Kemigisha');
@@ -248,7 +248,7 @@ class StudentResultsAndTranscriptsTest extends TestCase
             'academic_standing' => 'Normal Progress',
         ]);
 
-        $response = $this->get(route('academic.results.slip', [
+        $response = $this->get(route('result.slip', [
             'student' => $this->student,
             'semester' => $this->semester1,
         ]));
@@ -309,7 +309,7 @@ class StudentResultsAndTranscriptsTest extends TestCase
             'semester_id' => $this->semester1->id,
         ]);
 
-        $response = $this->get(route('academic.results.slip', [
+        $response = $this->get(route('result.slip', [
             'student' => $this->student,
             'semester' => $this->semester1,
         ]));
@@ -360,7 +360,7 @@ class StudentResultsAndTranscriptsTest extends TestCase
 
         $this->student->update(['cumulative_gpa' => 4.70]);
 
-        $response = $this->get(route('academic.results.transcript', $this->student));
+        $response = $this->get(route('result.transcript', $this->student));
 
         $response->assertOk();
         $response->assertViewIs('academic.assessments.results.transcript');

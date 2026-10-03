@@ -15,7 +15,7 @@
       <!-- Filter Bar -->
       <div class="card mb-3">
         <div class="card-body py-2">
-          <form action="{{ route('academic.departments.index') }}" method="GET" class="row g-2 align-items-center">
+          <form action="{{ route('department.list') }}" method="GET" class="row g-2 align-items-center">
             <div class="col-auto">
               <label for="faculty_filter" class="col-form-label fw-bold">
                 <i class="bi bi-funnel me-1"></i> Filter by Faculty:
@@ -33,7 +33,7 @@
             </div>
             @if ($facultyId)
               <div class="col-auto">
-                <a href="{{ route('academic.departments.index') }}" class="btn btn-sm btn-outline-secondary">
+                <a href="{{ route('department.list') }}" class="btn btn-sm btn-outline-secondary">
                   <i class="bi bi-x-circle me-1"></i> Clear Filter
                 </a>
               </div>
@@ -51,7 +51,7 @@
               <span class="input-group-text"><i class="bi bi-search"></i></span>
               <input type="search" id="departments-filter" class="form-control" placeholder="Filter rows..." autocomplete="off">
             </div>
-            <a href="{{ route('academic.departments.create', $facultyId ? ['faculty_id' => $facultyId] : []) }}" class="btn btn-primary btn-sm">
+            <a href="{{ route('department.create', $facultyId ? ['faculty_id' => $facultyId] : []) }}" class="btn btn-primary btn-sm">
               <i class="bi bi-plus-circle me-1"></i> Add Department
             </a>
           </div>
@@ -88,7 +88,7 @@
                   <td>{{ $loop->iteration }}</td>
                   <td><span class="badge text-bg-secondary">{{ $department->code }}</span></td>
                   <td class="fw-bold">
-                    <a href="{{ route('academic.departments.show', $department) }}" class="text-decoration-none">
+                    <a href="{{ route('department.show', $department) }}" class="text-decoration-none">
                       {{ $department->name }}
                     </a>
                   </td>
@@ -117,13 +117,13 @@
                     @endif
                   </td>
                   <td class="text-end">
-                    <a href="{{ route('academic.departments.show', $department) }}" class="btn btn-sm btn-outline-info" title="View Details">
+                    <a href="{{ route('department.show', $department) }}" class="btn btn-sm btn-outline-info" title="View Details">
                       <i class="bi bi-eye"></i>
                     </a>
-                    <a href="{{ route('academic.departments.edit', $department) }}" class="btn btn-sm btn-outline-warning" title="Edit Department">
+                    <a href="{{ route('department.edit', $department) }}" class="btn btn-sm btn-outline-warning" title="Edit Department">
                       <i class="bi bi-pencil"></i>
                     </a>
-                    <form action="{{ route('academic.departments.destroy', $department) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this department?');">
+                    <form action="{{ route('department.delete', $department) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this department?');">
                       @csrf
                       @method('DELETE')
                       <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Department" {{ $department->programmes_count > 0 ? 'disabled' : '' }}>

@@ -52,7 +52,7 @@ class DepartmentController extends Controller
         Department::create($request->validated());
 
         return redirect()
-            ->route('academic.departments.index')
+            ->route('department.list')
             ->with('success', 'Department created successfully.');
     }
 
@@ -85,7 +85,7 @@ class DepartmentController extends Controller
         $department->update($request->validated());
 
         return redirect()
-            ->route('academic.departments.index')
+            ->route('department.list')
             ->with('success', 'Department updated successfully.');
     }
 
@@ -96,14 +96,14 @@ class DepartmentController extends Controller
     {
         if ($department->programmes()->exists()) {
             return redirect()
-                ->route('academic.departments.index')
+                ->route('department.list')
                 ->with('error', 'Cannot delete department because it contains active degree programmes.');
         }
 
         $department->delete();
 
         return redirect()
-            ->route('academic.departments.index')
+            ->route('department.list')
             ->with('success', 'Department deleted successfully.');
     }
 }

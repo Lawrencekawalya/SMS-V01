@@ -6,7 +6,7 @@
 @section('breadcrumb')
   <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
   <li class="breadcrumb-item">Academic Core</li>
-  <li class="breadcrumb-item"><a href="{{ route('academic.assessments.index') }}">Examinations &amp; Grading</a></li>
+  <li class="breadcrumb-item"><a href="{{ route('assessment.list') }}">Examinations &amp; Grading</a></li>
   <li class="breadcrumb-item active" aria-current="page">Senate Master Broad-Sheet</li>
 @endsection
 
@@ -19,7 +19,7 @@
       </h3>
       <div class="d-flex gap-2">
         @if ($selectedProgramme && $selectedSemester)
-          <a href="{{ route('academic.reports.broad-sheet.export', request()->query()) }}" class="btn btn-sm btn-outline-success">
+          <a href="{{ route('broad-sheet.export', request()->query()) }}" class="btn btn-sm btn-outline-success">
             <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export CSV
           </a>
           <button type="button" onclick="window.print()" class="btn btn-sm btn-outline-secondary">
@@ -29,7 +29,7 @@
       </div>
     </div>
     <div class="card-body">
-      <form action="{{ route('academic.reports.broad-sheet') }}" method="GET" class="row g-3">
+      <form action="{{ route('broad-sheet.list') }}" method="GET" class="row g-3">
         <div class="col-12 col-md-4">
           <label for="programme_id" class="form-label small fw-semibold">Academic Programme <span class="text-danger">*</span></label>
           <select name="programme_id" id="programme_id" class="form-select form-select-sm" required>

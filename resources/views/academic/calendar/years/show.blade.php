@@ -6,7 +6,7 @@
 @section('breadcrumb')
   <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
   <li class="breadcrumb-item">Academic Core</li>
-  <li class="breadcrumb-item"><a href="{{ route('academic.academic-years.index') }}">Academic Calendar</a></li>
+  <li class="breadcrumb-item"><a href="{{ route('academic-year.list') }}">Academic Calendar</a></li>
   <li class="breadcrumb-item active" aria-current="page">{{ $academicYear->name }}</li>
 @endsection
 
@@ -51,17 +51,17 @@
 
           <div class="d-grid gap-2">
             @if (! $academicYear->is_current)
-              <form action="{{ route('academic.academic-years.make-current', $academicYear) }}" method="POST">
+              <form action="{{ route('academic-year.make-current', $academicYear) }}" method="POST">
                 @csrf
                 <button type="submit" class="btn btn-outline-success w-100" onclick="return confirm('Set {{ $academicYear->name }} as current year?');">
                   <i class="bi bi-check-lg me-1"></i> Set as Current Year
                 </button>
               </form>
             @endif
-            <a href="{{ route('academic.academic-years.edit', $academicYear) }}" class="btn btn-warning">
+            <a href="{{ route('academic-year.edit', $academicYear) }}" class="btn btn-warning">
               <i class="bi bi-pencil me-1"></i> Edit Year Details
             </a>
-            <a href="{{ route('academic.academic-years.index') }}" class="btn btn-outline-secondary">
+            <a href="{{ route('academic-year.list') }}" class="btn btn-outline-secondary">
               <i class="bi bi-arrow-left me-1"></i> Back to Calendar
             </a>
           </div>
@@ -79,7 +79,7 @@
               <span class="input-group-text"><i class="bi bi-search"></i></span>
               <input type="search" id="sem-filter" class="form-control" placeholder="Filter rows..." autocomplete="off">
             </div>
-            <a href="{{ route('academic.semesters.create', ['academic_year_id' => $academicYear->id]) }}" class="btn btn-primary btn-sm">
+            <a href="{{ route('semester.create', ['academic_year_id' => $academicYear->id]) }}" class="btn btn-primary btn-sm">
               <i class="bi bi-plus-circle me-1"></i> Add Semester
             </a>
           </div>
@@ -148,17 +148,17 @@
                   </td>
                   <td class="text-end">
                     @if (! $semester->is_active)
-                      <form action="{{ route('academic.semesters.activate', $semester) }}" method="POST" class="d-inline" onsubmit="return confirm('Activate {{ $semester->name }}?');">
+                      <form action="{{ route('semester.activate', $semester) }}" method="POST" class="d-inline" onsubmit="return confirm('Activate {{ $semester->name }}?');">
                         @csrf
                         <button type="submit" class="btn btn-sm btn-outline-success" title="Activate Semester">
                           <i class="bi bi-play-circle"></i>
                         </button>
                       </form>
                     @endif
-                    <a href="{{ route('academic.semesters.edit', $semester) }}" class="btn btn-sm btn-outline-warning" title="Edit Semester">
+                    <a href="{{ route('semester.edit', $semester) }}" class="btn btn-sm btn-outline-warning" title="Edit Semester">
                       <i class="bi bi-pencil"></i>
                     </a>
-                    <form action="{{ route('academic.semesters.destroy', $semester) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete {{ $semester->name }}?');">
+                    <form action="{{ route('semester.delete', $semester) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete {{ $semester->name }}?');">
                       @csrf
                       @method('DELETE')
                       <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Semester" {{ $semester->is_active ? 'disabled' : '' }}>

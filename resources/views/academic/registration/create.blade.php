@@ -5,7 +5,7 @@
 
 @section('breadcrumb')
   <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
-  <li class="breadcrumb-item"><a href="{{ route('academic.registrations.index') }}">Course Registrations</a></li>
+  <li class="breadcrumb-item"><a href="{{ route('registration.list') }}">Course Registrations</a></li>
   <li class="breadcrumb-item active" aria-current="page">New Registration</li>
 @endsection
 
@@ -56,7 +56,7 @@
       </h3>
     </div>
     <div class="card-body">
-      <form action="{{ route('academic.registrations.create') }}" method="GET" class="row g-3 align-items-center">
+      <form action="{{ route('registration.create') }}" method="GET" class="row g-3 align-items-center">
         <div class="col-12 col-md-5">
           <label for="student_id_select" class="form-label small fw-semibold">Select Student to Register:</label>
           <select name="student_id" id="student_id_select" class="form-select" onchange="const semSelect = document.getElementById('semester_id_select'); if (semSelect) semSelect.value = ''; this.form.submit();">
@@ -87,7 +87,7 @@
   </div>
 
   @if ($selectedStudent && $eligibility)
-    <form action="{{ route('academic.registrations.store') }}" method="POST" id="course-registration-form">
+    <form action="{{ route('registration.store') }}" method="POST" id="course-registration-form">
       @csrf
       <input type="hidden" name="student_id" value="{{ $selectedStudent->id }}">
       <input type="hidden" name="semester_id" value="{{ $activeSemester->id }}">

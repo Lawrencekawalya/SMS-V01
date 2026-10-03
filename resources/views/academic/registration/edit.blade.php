@@ -5,8 +5,8 @@
 
 @section('breadcrumb')
   <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
-  <li class="breadcrumb-item"><a href="{{ route('academic.registrations.index') }}">Course Registrations</a></li>
-  <li class="breadcrumb-item"><a href="{{ route('academic.registrations.show', $registration) }}">#REG-{{ str_pad($registration->id, 5, '0', STR_PAD_LEFT) }}</a></li>
+  <li class="breadcrumb-item"><a href="{{ route('registration.list') }}">Course Registrations</a></li>
+  <li class="breadcrumb-item"><a href="{{ route('registration.show', $registration) }}">#REG-{{ str_pad($registration->id, 5, '0', STR_PAD_LEFT) }}</a></li>
   <li class="breadcrumb-item active" aria-current="page">Edit</li>
 @endsection
 
@@ -24,7 +24,7 @@
     $selectedItemIds = $registration->items->pluck('course_unit_id')->toArray();
   @endphp
 
-  <form action="{{ route('academic.registrations.update', $registration) }}" method="POST" id="course-registration-edit-form">
+  <form action="{{ route('registration.update', $registration) }}" method="POST" id="course-registration-edit-form">
     @csrf
     @method('PUT')
     <input type="hidden" name="student_id" value="{{ $selectedStudent->id }}">
@@ -252,7 +252,7 @@
                 <i class="bi bi-save me-1"></i> Update Draft
               </button>
 
-              <a href="{{ route('academic.registrations.show', $registration) }}" class="btn btn-link btn-sm text-secondary">
+              <a href="{{ route('registration.show', $registration) }}" class="btn btn-link btn-sm text-secondary">
                 Cancel and return to slip
               </a>
             </div>

@@ -54,7 +54,7 @@ class AcademicYearController extends Controller
             $academicYear->makeCurrent();
         }
 
-        return redirect()->route('academic.academic-years.index')
+        return redirect()->route('academic-year.list')
             ->with('success', "Academic Year '{$academicYear->name}' created successfully.");
     }
 
@@ -91,7 +91,7 @@ class AcademicYearController extends Controller
             $academicYear->makeCurrent();
         }
 
-        return redirect()->route('academic.academic-years.index')
+        return redirect()->route('academic-year.list')
             ->with('success', "Academic Year '{$academicYear->name}' updated successfully.");
     }
 
@@ -111,7 +111,7 @@ class AcademicYearController extends Controller
         $name = $academicYear->name;
         $academicYear->delete();
 
-        return redirect()->route('academic.academic-years.index')
+        return redirect()->route('academic-year.list')
             ->with('success', "Academic Year '{$name}' deleted successfully.");
     }
 

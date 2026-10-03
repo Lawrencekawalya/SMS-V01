@@ -69,7 +69,7 @@
         <span>Official Printable Slip Preview (#REG-{{ str_pad($registration->id, 5, '0', STR_PAD_LEFT) }})</span>
       </div>
       <div class="d-flex gap-2">
-        <a href="{{ route('academic.registrations.show', $registration) }}" class="btn btn-outline-light btn-sm">
+        <a href="{{ route('registration.show', $registration) }}" class="btn btn-outline-light btn-sm">
           <i class="bi bi-arrow-left me-1"></i> Return to Portal
         </a>
         <button type="button" class="btn btn-primary btn-sm fw-semibold" onclick="window.print()">

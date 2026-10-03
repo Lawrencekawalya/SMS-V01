@@ -21,7 +21,7 @@
         <strong>Active Academic Session:</strong> {{ $currentYear->name }} &mdash; {{ $activeSemester->name }}
         <span class="badge text-bg-light ms-2 border">{{ $activeSemester->start_date->format('M d, Y') }} &ndash; {{ $activeSemester->end_date->format('M d, Y') }}</span>
       </div>
-      <a href="{{ route('academic.academic-years.index') }}" class="btn btn-sm btn-success border">
+      <a href="{{ route('academic-year.list') }}" class="btn btn-sm btn-success border">
         <i class="bi bi-calendar3 me-1"></i> Academic Calendar
       </a>
     </div>
@@ -132,11 +132,11 @@
           <i class="bi bi-journal-check text-primary me-2"></i>Course Registration & Semester Enrollment Hub
         </h3>
         <div class="card-tools d-flex gap-2 me-0 ms-auto">
-          <a href="{{ route('academic.registrations.create') }}" class="btn btn-primary btn-sm">
+          <a href="{{ route('registration.create') }}" class="btn btn-primary btn-sm">
             <i class="bi bi-plus-circle me-1"></i> Register Student
           </a>
           @if (config('academic.require_registration_approval', false))
-            <a href="{{ route('academic.approvals.index') }}" class="btn btn-warning btn-sm">
+            <a href="{{ route('approval.list') }}" class="btn btn-warning btn-sm">
               <i class="bi bi-clipboard-check me-1"></i> Approvals Portal
             </a>
           @endif
@@ -196,31 +196,31 @@
         @endphp
         <div class="row g-2">
           <div class="{{ $linkColClass }}">
-            <a href="{{ route('academic.registrations.create', ['student_id' => 1]) }}" class="btn btn-outline-primary btn-sm w-100 text-start text-truncate">
+            <a href="{{ route('registration.create', ['student_id' => 1]) }}" class="btn btn-outline-primary btn-sm w-100 text-start text-truncate">
               <i class="bi bi-person-fill me-1"></i> Ronald (BSCS Fresher)
             </a>
           </div>
           <div class="{{ $linkColClass }}">
-            <a href="{{ route('academic.registrations.index') }}" class="btn btn-outline-success btn-sm w-100 text-start text-truncate">
+            <a href="{{ route('registration.list') }}" class="btn btn-outline-success btn-sm w-100 text-start text-truncate">
               <i class="bi bi-arrow-left-right me-1"></i> Sarah (BSSE Add/Drop)
             </a>
           </div>
           @if (config('academic.enforce_prerequisites', false))
             <div class="{{ $linkColClass }}">
-              <a href="{{ route('academic.registrations.eligibility', ['student_id' => 5]) }}" class="btn btn-outline-info btn-sm w-100 text-start text-truncate">
+              <a href="{{ route('registration.eligibility', ['student_id' => 5]) }}" class="btn btn-outline-info btn-sm w-100 text-start text-truncate">
                 <i class="bi bi-shield-check me-1"></i> Emmanuel (DCA Rules)
               </a>
             </div>
           @else
             <div class="{{ $linkColClass }}">
-              <a href="{{ route('academic.registrations.active-session') }}" class="btn btn-outline-success btn-sm w-100 text-start text-truncate">
+              <a href="{{ route('registration.active-session') }}" class="btn btn-outline-success btn-sm w-100 text-start text-truncate">
                 <i class="bi bi-people-fill me-1"></i> Active Session Cohorts
               </a>
             </div>
           @endif
           @if (config('academic.require_registration_approval', false))
             <div class="{{ $linkColClass }}">
-              <a href="{{ route('academic.approvals.index') }}" class="btn btn-outline-warning btn-sm w-100 text-start text-truncate">
+              <a href="{{ route('approval.list') }}" class="btn btn-outline-warning btn-sm w-100 text-start text-truncate">
                 <i class="bi bi-clipboard-check me-1"></i> Advisor Approvals Hub
               </a>
             </div>
@@ -255,10 +255,10 @@
             fullscreen support, and standard Bootstrap 5 components.
           </p>
 
-          <a href="{{ route('academic.registrations.index') }}" class="btn btn-primary">
+          <a href="{{ route('registration.list') }}" class="btn btn-primary">
             <i class="bi bi-journal-text me-1"></i> Course Registrations
           </a>
-          <a href="{{ route('academic.approvals.index') }}" class="btn btn-outline-secondary ms-2">
+          <a href="{{ route('approval.list') }}" class="btn btn-outline-secondary ms-2">
             <i class="bi bi-clipboard-check me-1"></i> Review Approvals
           </a>
         </div>

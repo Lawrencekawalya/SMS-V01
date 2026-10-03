@@ -71,7 +71,7 @@ class CurriculumPhase5Test extends TestCase
             'version_name' => '2024-2028 Structure',
         ]);
 
-        $response = $this->get(route('academic.curriculums.index'));
+        $response = $this->get(route('curriculum.list'));
 
         $response->assertStatus(200);
         $response->assertSee('Curriculum Framework &amp; Progression', false);
@@ -91,11 +91,11 @@ class CurriculumPhase5Test extends TestCase
             'is_active' => '1',
         ];
 
-        $response = $this->post(route('academic.curriculums.store'), $payload);
+        $response = $this->post(route('curriculum.store'), $payload);
 
         $curriculum = Curriculum::where('version_name', '2026-2030 New Curriculum')->first();
         $this->assertNotNull($curriculum);
-        $response->assertRedirect(route('academic.curriculums.show', $curriculum));
+        $response->assertRedirect(route('curriculum.show', $curriculum));
 
         $this->assertDatabaseHas('curriculums', [
             'id' => $curriculum->id,
@@ -114,7 +114,7 @@ class CurriculumPhase5Test extends TestCase
         ]);
 
         // Same programme, duplicate version name
-        $response = $this->post(route('academic.curriculums.store'), [
+        $response = $this->post(route('curriculum.store'), [
             'programme_id' => $this->programme->id,
             'version_name' => '2024 Structure',
             'start_academic_year' => 2024,
@@ -125,7 +125,7 @@ class CurriculumPhase5Test extends TestCase
 
         // Different programme, same version name is allowed
         $otherProg = Programme::factory()->create();
-        $response2 = $this->post(route('academic.curriculums.store'), [
+        $response2 = $this->post(route('curriculum.store'), [
             'programme_id' => $otherProg->id,
             'version_name' => '2024 Structure',
             'start_academic_year' => 2024,
@@ -152,7 +152,7 @@ class CurriculumPhase5Test extends TestCase
             'course_type' => 'Core',
         ]);
 
-        $response = $this->get(route('academic.curriculums.show', $curriculum));
+        $response = $this->get(route('curriculum.show', $curriculum));
 
         $response->assertStatus(200);
         $response->assertSee('Curriculum Progression Matrix');
@@ -177,9 +177,9 @@ class CurriculumPhase5Test extends TestCase
             'course_type' => 'Core',
         ];
 
-        $response = $this->post(route('academic.curriculums.courses.store', $curriculum), $payload);
+        $response = $this->post(route('curriculum.courses.store', $curriculum), $payload);
 
-        $response->assertRedirect(route('academic.curriculums.show', $curriculum));
+        $response->assertRedirect(route('curriculum.show', $curriculum));
         $this->assertDatabaseHas('curriculum_courses', [
             'curriculum_id' => $curriculum->id,
             'course_unit_id' => $this->course1->id,
@@ -203,7 +203,7 @@ class CurriculumPhase5Test extends TestCase
         ]);
 
         // Attempt to assign course1 again (even in different semester/year)
-        $response = $this->post(route('academic.curriculums.courses.store', $curriculum), [
+        $response = $this->post(route('curriculum.courses.store', $curriculum), [
             'course_unit_id' => $this->course1->id,
             'study_year' => 2,
             'semester' => 1,
@@ -298,9 +298,9 @@ class CurriculumPhase5Test extends TestCase
             'semester' => 1,
         ]);
 
-        $response = $this->delete(route('academic.curriculums.courses.destroy', [$curriculum, $mapping]));
+        $response = $this->delete(route('curriculum.courses.destroy', [$curriculum, $mapping]));
 
-        $response->assertRedirect(route('academic.curriculums.show', $curriculum));
+        $response->assertRedirect(route('curriculum.show', $curriculum));
         $this->assertDatabaseMissing('curriculum_courses', [
             'id' => $mapping->id,
         ]);
@@ -315,9 +315,9 @@ class CurriculumPhase5Test extends TestCase
             'course_unit_id' => $this->course1->id,
         ]);
 
-        $response = $this->delete(route('academic.curriculums.destroy', $curriculum));
+        $response = $this->delete(route('curriculum.delete', $curriculum));
 
-        $response->assertRedirect(route('academic.curriculums.index'));
+        $response->assertRedirect(route('curriculum.list'));
         $this->assertDatabaseMissing('curriculums', [
             'id' => $curriculum->id,
         ]);
@@ -342,7 +342,7 @@ class CurriculumPhase5Test extends TestCase
             'course_type' => 'Core',
         ]);
 
-        $response = $this->get(route('academic.programmes.show', $this->programme));
+        $response = $this->get(route('programme.show', $this->programme));
 
         $response->assertStatus(200);
         $response->assertSee('Curriculum & Course Map', false);
@@ -354,7 +354,7 @@ class CurriculumPhase5Test extends TestCase
 
     public function test_programme_show_page_displays_empty_state_when_no_curriculum(): void
     {
-        $response = $this->get(route('academic.programmes.show', $this->programme));
+        $response = $this->get(route('programme.show', $this->programme));
 
         $response->assertStatus(200);
         $response->assertSee('Curriculum & Course Map', false);
@@ -376,7 +376,7 @@ class CurriculumPhase5Test extends TestCase
             'max_credits' => 28.0,
         ];
 
-        $response = $this->postJson(route('academic.curriculums.stage-credit-limits.update', $curriculum), $payload);
+        $response = $this->postJson(route('curriculum.stage-credit-limits.update', $curriculum), $payload);
 
         $response->assertStatus(200);
         $response->assertJson([
@@ -404,7 +404,7 @@ class CurriculumPhase5Test extends TestCase
             'max_credits' => 15.0,
         ];
 
-        $response = $this->postJson(route('academic.curriculums.stage-credit-limits.update', $curriculum), $payload);
+        $response = $this->postJson(route('curriculum.stage-credit-limits.update', $curriculum), $payload);
 
         $response->assertStatus(422);
         $response->assertJsonValidationErrors(['max_credits']);

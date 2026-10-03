@@ -6,7 +6,7 @@
 @section('breadcrumb')
   <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
   <li class="breadcrumb-item">Academic Core</li>
-  <li class="breadcrumb-item"><a href="{{ route('academic.graduation.index') }}">Graduation Clearance</a></li>
+  <li class="breadcrumb-item"><a href="{{ route('graduation.list') }}">Graduation Clearance</a></li>
   <li class="breadcrumb-item active" aria-current="page">Honors Roll Gazette</li>
 @endsection
 
@@ -18,7 +18,7 @@
         <i class="bi bi-funnel me-1"></i> Programme Filter
       </h3>
       <div class="d-flex gap-2">
-        <a href="{{ route('academic.graduation.index') }}" class="btn btn-sm btn-outline-secondary">
+        <a href="{{ route('graduation.list') }}" class="btn btn-sm btn-outline-secondary">
           <i class="bi bi-arrow-left me-1"></i> Candidates Directory
         </a>
         <button type="button" onclick="window.print()" class="btn btn-sm btn-outline-dark">
@@ -27,7 +27,7 @@
       </div>
     </div>
     <div class="card-body">
-      <form action="{{ route('academic.graduation.honors-roll') }}" method="GET" class="row g-3 align-items-end">
+      <form action="{{ route('graduation.honors-roll') }}" method="GET" class="row g-3 align-items-end">
         <div class="col-12 col-md-8">
           <label for="programme_id" class="form-label small fw-semibold">Academic Programme</label>
           <select name="programme_id" id="programme_id" class="form-select form-select-sm">

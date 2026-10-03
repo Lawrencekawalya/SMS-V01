@@ -57,7 +57,7 @@ class CurriculumController extends Controller
     {
         $curriculum = Curriculum::create($request->validated());
 
-        return redirect()->route('academic.curriculums.show', $curriculum)
+        return redirect()->route('curriculum.show', $curriculum)
             ->with('success', "Curriculum version '{$curriculum->version_name}' created successfully. You can now allocate course units to study stages.");
     }
 
@@ -142,7 +142,7 @@ class CurriculumController extends Controller
     {
         $curriculum->update($request->validated());
 
-        return redirect()->route('academic.curriculums.show', $curriculum)
+        return redirect()->route('curriculum.show', $curriculum)
             ->with('success', "Curriculum '{$curriculum->version_name}' updated successfully.");
     }
 
@@ -154,7 +154,7 @@ class CurriculumController extends Controller
         $name = $curriculum->version_name;
         $curriculum->delete();
 
-        return redirect()->route('academic.curriculums.index')
+        return redirect()->route('curriculum.list')
             ->with('success', "Curriculum '{$name}' deleted successfully.");
     }
 
@@ -188,7 +188,7 @@ class CurriculumController extends Controller
             ]);
         }
 
-        return redirect()->route('academic.curriculums.show', $curriculum)
+        return redirect()->route('curriculum.show', $curriculum)
             ->with('success', "Credit bounds for Year {$validated['study_year']}, Semester {$validated['semester']} updated.");
     }
 }

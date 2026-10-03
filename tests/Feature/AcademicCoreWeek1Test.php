@@ -85,13 +85,13 @@ class AcademicCoreWeek1Test extends TestCase
         ]);
 
         // Toggling year 2 to current deactivates year 1
-        $this->post(route('academic.academic-years.make-current', $year2));
+        $this->post(route('academic-year.make-current', $year2));
         $this->assertFalse($year1->fresh()->is_current);
         $this->assertTrue($year2->fresh()->is_current);
         $this->assertEquals(1, AcademicYear::where('is_current', true)->count());
 
         // Activating sem2 deactivates sem1 and sets parent year2 as current
-        $this->post(route('academic.semesters.activate', $sem2));
+        $this->post(route('semester.activate', $sem2));
         $this->assertFalse($sem1->fresh()->is_active);
         $this->assertTrue($sem2->fresh()->is_active);
         $this->assertEquals(1, Semester::where('is_active', true)->count());

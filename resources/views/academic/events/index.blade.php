@@ -5,7 +5,7 @@
 
 @section('breadcrumb')
   <li class="breadcrumb-item"><a href="{{ url('/') }}">Home</a></li>
-  <li class="breadcrumb-item"><a href="{{ route('academic.academic-years.index') }}">Academic Calendar</a></li>
+  <li class="breadcrumb-item"><a href="{{ route('academic-year.list') }}">Academic Calendar</a></li>
   <li class="breadcrumb-item active" aria-current="page">Events & Almanac</li>
 @endsection
 
@@ -130,7 +130,7 @@
                   >
                     <i class="bi bi-pencil"></i>
                   </button>
-                  <form action="{{ route('academic.events.destroy', $event) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete scheduled event {{ $event->title }}?');">
+                  <form action="{{ route('event.delete', $event) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete scheduled event {{ $event->title }}?');">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Event">
@@ -173,7 +173,7 @@
   <div class="modal fade" id="createEventModal" tabindex="-1" aria-labelledby="createEventModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
-        <form action="{{ route('academic.events.store') }}" method="POST">
+        <form action="{{ route('event.store') }}" method="POST">
           @csrf
           <div class="modal-header">
             <h5 class="modal-title" id="createEventModalLabel">
@@ -493,7 +493,7 @@
             center: 'title',
             right: 'dayGridMonth,timeGridWeek,listMonth'
           },
-          events: '{{ route('academic.events.feed') }}',
+          events: '{{ route('event.feed') }}',
           eventClick: function(info) {
             info.jsEvent.preventDefault();
             const event = info.event;

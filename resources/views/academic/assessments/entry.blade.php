@@ -6,8 +6,8 @@
 @section('breadcrumb')
   <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
   <li class="breadcrumb-item">Academic Core</li>
-  <li class="breadcrumb-item"><a href="{{ route('academic.assessments.index') }}">Examinations &amp; Grading</a></li>
-  <li class="breadcrumb-item"><a href="{{ route('academic.assessments.show', $sheet) }}">{{ $sheet->courseUnit->code }}</a></li>
+  <li class="breadcrumb-item"><a href="{{ route('assessment.list') }}">Examinations &amp; Grading</a></li>
+  <li class="breadcrumb-item"><a href="{{ route('assessment.show', $sheet) }}">{{ $sheet->courseUnit->code }}</a></li>
   <li class="breadcrumb-item active" aria-current="page">Mark Entry</li>
 @endsection
 
@@ -69,7 +69,7 @@
           <button type="button" class="btn btn-outline-info btn-sm" data-bs-toggle="modal" data-bs-target="#gradingScaleReferenceModal">
             <i class="bi bi-award me-1"></i> Grading Scale Reference
           </button>
-          <a href="{{ route('academic.assessments.show', $sheet) }}" class="btn btn-outline-secondary btn-sm">
+          <a href="{{ route('assessment.show', $sheet) }}" class="btn btn-outline-secondary btn-sm">
             <i class="bi bi-arrow-left me-1"></i> Mark Sheet Overview
           </a>
         </div>
@@ -142,7 +142,7 @@
   </div>
 
   <!-- Interactive Spreadsheet Mark Entry Form -->
-  <form id="mark-entry-form" action="{{ route('academic.assessments.update', $sheet) }}" method="POST">
+  <form id="mark-entry-form" action="{{ route('assessment.update', $sheet) }}" method="POST">
     @csrf
     @method('PUT')
 
@@ -298,7 +298,7 @@
       <!-- Action Footer -->
       <div class="card-footer bg-body-tertiary d-flex align-items-center justify-content-between flex-wrap gap-2 py-3">
         <div class="d-flex align-items-center gap-2">
-          <a href="{{ route('academic.assessments.show', $sheet) }}" class="btn btn-outline-secondary">
+          <a href="{{ route('assessment.show', $sheet) }}" class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left me-1"></i> Return to Overview
           </a>
           <span class="text-muted small d-none d-md-inline">

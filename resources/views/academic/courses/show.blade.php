@@ -6,7 +6,7 @@
 @section('breadcrumb')
   <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
   <li class="breadcrumb-item">Academic Core</li>
-  <li class="breadcrumb-item"><a href="{{ route('academic.courses.index') }}">Course Catalog</a></li>
+  <li class="breadcrumb-item"><a href="{{ route('course.list') }}">Course Catalog</a></li>
   <li class="breadcrumb-item active" aria-current="page">{{ $courseUnit->code }}</li>
 @endsection
 
@@ -35,7 +35,7 @@
             </li>
             <li class="list-group-item d-flex justify-content-between align-items-center px-0">
               <span class="text-muted"><i class="bi bi-diagram-3 me-2"></i> Department</span>
-              <a href="{{ route('academic.departments.show', $courseUnit->department) }}" class="fw-bold text-decoration-none">
+              <a href="{{ route('department.show', $courseUnit->department) }}" class="fw-bold text-decoration-none">
                 {{ $courseUnit->department->name }}
               </a>
             </li>
@@ -50,17 +50,17 @@
           </ul>
 
           <div class="d-grid gap-2">
-            <a href="{{ route('academic.courses.edit', $courseUnit) }}" class="btn btn-warning">
+            <a href="{{ route('course.edit', $courseUnit) }}" class="btn btn-warning">
               <i class="bi bi-pencil me-1"></i> Edit Course Specification
             </a>
-            <form action="{{ route('academic.courses.destroy', $courseUnit) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete course {{ $courseUnit->code }}?');">
+            <form action="{{ route('course.delete', $courseUnit) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete course {{ $courseUnit->code }}?');">
               @csrf
               @method('DELETE')
               <button type="submit" class="btn btn-outline-danger w-100">
                 <i class="bi bi-trash me-1"></i> Delete Course Unit
               </button>
             </form>
-            <a href="{{ route('academic.courses.index') }}" class="btn btn-outline-secondary">
+            <a href="{{ route('course.list') }}" class="btn btn-outline-secondary">
               <i class="bi bi-arrow-left me-1"></i> Back to Catalog
             </a>
           </div>

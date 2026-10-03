@@ -6,7 +6,7 @@
 @section('breadcrumb')
   <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
   <li class="breadcrumb-item">Academic Structure</li>
-  <li class="breadcrumb-item"><a href="{{ route('academic.programmes.index') }}">Programmes</a></li>
+  <li class="breadcrumb-item"><a href="{{ route('programme.list') }}">Programmes</a></li>
   <li class="breadcrumb-item active" aria-current="page">Edit {{ $programme->code }}</li>
 @endsection
 
@@ -17,7 +17,7 @@
         <div class="card-header">
           <h3 class="card-title">Edit Programme: {{ $programme->name }}</h3>
         </div>
-        <form action="{{ route('academic.programmes.update', $programme) }}" method="POST">
+        <form action="{{ route('programme.update', $programme) }}" method="POST">
           @csrf
           @method('PUT')
           <div class="card-body">
@@ -159,7 +159,7 @@
             </div>
           </div>
           <div class="card-footer">
-            <a href="{{ route('academic.programmes.index') }}" class="btn btn-outline-secondary">
+            <a href="{{ route('programme.list') }}" class="btn btn-outline-secondary">
               <i class="bi bi-arrow-left me-1"></i> Cancel
             </a>
             <button type="submit" class="btn btn-warning float-end">

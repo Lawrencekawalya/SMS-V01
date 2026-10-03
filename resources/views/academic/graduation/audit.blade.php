@@ -6,18 +6,18 @@
 @section('breadcrumb')
   <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
   <li class="breadcrumb-item">Academic Core</li>
-  <li class="breadcrumb-item"><a href="{{ route('academic.graduation.index') }}">Graduation Clearance</a></li>
+  <li class="breadcrumb-item"><a href="{{ route('graduation.list') }}">Graduation Clearance</a></li>
   <li class="breadcrumb-item active" aria-current="page">Clearance Audit</li>
 @endsection
 
 @section('content')
   <!-- Action Buttons (No Print) -->
   <div class="d-flex justify-content-between align-items-center mb-4 no-print">
-    <a href="{{ route('academic.graduation.index') }}" class="btn btn-sm btn-outline-secondary">
+    <a href="{{ route('graduation.list') }}" class="btn btn-sm btn-outline-secondary">
       <i class="bi bi-arrow-left me-1"></i> Back to Candidates Directory
     </a>
     <div class="d-flex gap-2">
-      <a href="{{ route('academic.results.transcript', $student->id) }}" class="btn btn-sm btn-outline-primary">
+      <a href="{{ route('result.transcript', $student->id) }}" class="btn btn-sm btn-outline-primary">
         <i class="bi bi-file-earmark-text me-1"></i> Official Academic Transcript
       </a>
       <button type="button" onclick="window.print()" class="btn btn-sm btn-outline-dark">

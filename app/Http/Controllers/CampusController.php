@@ -55,7 +55,7 @@ class CampusController extends Controller
         });
 
         return redirect()
-            ->route('academic.campuses.index')
+            ->route('campus.list')
             ->with('success', 'Campus created successfully.');
     }
 
@@ -99,7 +99,7 @@ class CampusController extends Controller
         });
 
         return redirect()
-            ->route('academic.campuses.index')
+            ->route('campus.list')
             ->with('success', 'Campus updated successfully.');
     }
 
@@ -110,14 +110,14 @@ class CampusController extends Controller
     {
         if ($campus->faculties()->exists()) {
             return redirect()
-                ->route('academic.campuses.index')
+                ->route('campus.list')
                 ->with('error', 'Cannot delete campus because it contains active faculties.');
         }
 
         $campus->delete();
 
         return redirect()
-            ->route('academic.campuses.index')
+            ->route('campus.list')
             ->with('success', 'Campus deleted successfully.');
     }
 }

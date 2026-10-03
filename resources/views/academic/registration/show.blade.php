@@ -5,7 +5,7 @@
 
 @section('breadcrumb')
   <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
-  <li class="breadcrumb-item"><a href="{{ route('academic.registrations.index') }}">Course Registrations</a></li>
+  <li class="breadcrumb-item"><a href="{{ route('registration.list') }}">Course Registrations</a></li>
   <li class="breadcrumb-item active" aria-current="page">#REG-{{ str_pad($registration->id, 5, '0', STR_PAD_LEFT) }}</li>
 @endsection
 
@@ -23,20 +23,20 @@
               </span>
             </div>
             <div class="card-tools d-flex flex-wrap align-items-center gap-2 me-0 ms-auto">
-              <a href="{{ route('academic.registrations.index') }}" class="btn btn-outline-secondary btn-sm">
+              <a href="{{ route('registration.list') }}" class="btn btn-outline-secondary btn-sm">
                 <i class="bi bi-arrow-left me-1"></i> Back to Registrations
               </a>
               @if ($registration->canBeEdited())
-                <a href="{{ route('academic.registrations.edit', $registration) }}" class="btn btn-warning btn-sm">
+                <a href="{{ route('registration.edit', $registration) }}" class="btn btn-warning btn-sm">
                   <i class="bi bi-pencil-square me-1"></i> Edit Registration
                 </a>
               @endif
               @if ($registration->canAddDrop())
-                <a href="{{ route('academic.registrations.add-drop.edit', $registration) }}" class="btn btn-outline-warning btn-sm">
+                <a href="{{ route('registration.add-drop.edit', $registration) }}" class="btn btn-outline-warning btn-sm">
                   <i class="bi bi-arrow-left-right me-1"></i> Add / Drop Courses
                 </a>
               @endif
-              <a href="{{ route('academic.registrations.print', $registration) }}" target="_blank" class="btn btn-primary btn-sm">
+              <a href="{{ route('registration.print', $registration) }}" target="_blank" class="btn btn-primary btn-sm">
                 <i class="bi bi-printer me-1"></i> Official Print Slip
               </a>
             </div>

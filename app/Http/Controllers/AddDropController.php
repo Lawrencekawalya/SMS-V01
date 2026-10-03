@@ -36,7 +36,7 @@ class AddDropController extends Controller
 
         if (! in_array($registration->status, ['approved', 'submitted', 'add_drop_pending'], true)) {
             return redirect()
-                ->route('academic.registrations.show', $registration)
+                ->route('registration.show', $registration)
                 ->with('warning', 'Add/Drop course adjustments are only available on approved or submitted registration slips.');
         }
 
@@ -94,25 +94,25 @@ class AddDropController extends Controller
 
         if (! $registration->semester?->isAddDropOpen()) {
             return redirect()
-                ->route('academic.registrations.add-drop.edit', $registration)
+                ->route('registration.add-drop.edit', $registration)
                 ->with('error', 'The Add/Drop deadline for this semester has passed. Course adjustments are no longer allowed.');
         }
 
         if (! $registration->canAddDrop()) {
             return redirect()
-                ->route('academic.registrations.add-drop.edit', $registration)
+                ->route('registration.add-drop.edit', $registration)
                 ->with('error', 'This registration slip cannot undergo Add/Drop adjustments in its current status.');
         }
 
         if ($item->isDropped()) {
             return redirect()
-                ->route('academic.registrations.add-drop.edit', $registration)
+                ->route('registration.add-drop.edit', $registration)
                 ->with('warning', 'This course unit has already been dropped.');
         }
 
         if ($item->isCore()) {
             return redirect()
-                ->route('academic.registrations.add-drop.edit', $registration)
+                ->route('registration.add-drop.edit', $registration)
                 ->with('error', 'Mandatory Core course units cannot be dropped under standard Add/Drop procedures.');
         }
 
@@ -124,7 +124,7 @@ class AddDropController extends Controller
 
         if ($remainingCredits < CourseEligibilityService::MIN_SEMESTER_CREDITS) {
             return redirect()
-                ->route('academic.registrations.add-drop.edit', $registration)
+                ->route('registration.add-drop.edit', $registration)
                 ->with('error', 'Cannot drop course unit '.($item->courseUnit->code ?? '').'. Dropping this course would leave '.$remainingCredits.' CU, falling below the mandatory minimum of '.CourseEligibilityService::MIN_SEMESTER_CREDITS.' CU.');
         }
 
@@ -149,7 +149,7 @@ class AddDropController extends Controller
             : 'Course unit '.($item->courseUnit->code ?? '').' dropped successfully. Slip updated and confirmed.';
 
         return redirect()
-            ->route('academic.registrations.add-drop.edit', $registration)
+            ->route('registration.add-drop.edit', $registration)
             ->with('success', $message);
     }
 
@@ -160,13 +160,13 @@ class AddDropController extends Controller
     {
         if (! $registration->semester?->isAddDropOpen()) {
             return redirect()
-                ->route('academic.registrations.add-drop.edit', $registration)
+                ->route('registration.add-drop.edit', $registration)
                 ->with('error', 'The Add/Drop deadline for this semester has passed. Course adjustments are no longer allowed.');
         }
 
         if (! $registration->canAddDrop()) {
             return redirect()
-                ->route('academic.registrations.add-drop.edit', $registration)
+                ->route('registration.add-drop.edit', $registration)
                 ->with('error', 'This registration slip cannot undergo Add/Drop adjustments in its current status.');
         }
 
@@ -174,7 +174,7 @@ class AddDropController extends Controller
 
         if ($courseUnit->status !== 'active') {
             return redirect()
-                ->route('academic.registrations.add-drop.edit', $registration)
+                ->route('registration.add-drop.edit', $registration)
                 ->with('error', 'The selected course unit is inactive and cannot be enrolled.');
         }
 
@@ -184,7 +184,7 @@ class AddDropController extends Controller
 
         if ($existingItem && ! $existingItem->isDropped()) {
             return redirect()
-                ->route('academic.registrations.add-drop.edit', $registration)
+                ->route('registration.add-drop.edit', $registration)
                 ->with('error', "Course unit {$courseUnit->code} is already actively enrolled in this registration slip.");
         }
 
@@ -197,7 +197,7 @@ class AddDropController extends Controller
             $projectedCredits = $currentCredits + (float) $courseUnit->credit_units;
 
             return redirect()
-                ->route('academic.registrations.add-drop.edit', $registration)
+                ->route('registration.add-drop.edit', $registration)
                 ->with('error', "Cannot add course unit {$courseUnit->code}. Total semester load ({$projectedCredits} CU) would exceed the maximum institutional ceiling of ".CourseEligibilityService::MAX_SEMESTER_CREDITS.' CU.');
         }
 
@@ -221,7 +221,7 @@ class AddDropController extends Controller
 
             if (! empty($unmetPrerequisites)) {
                 return redirect()
-                    ->route('academic.registrations.add-drop.edit', $registration)
+                    ->route('registration.add-drop.edit', $registration)
                     ->with('error', "Cannot add course unit {$courseUnit->code}. Unmet prerequisite requirement(s): ".implode(', ', $unmetPrerequisites).'.');
             }
         }
@@ -259,7 +259,7 @@ class AddDropController extends Controller
             : "Course unit {$courseUnit->code} ({$courseUnit->name}) added successfully. Slip updated and confirmed.";
 
         return redirect()
-            ->route('academic.registrations.add-drop.edit', $registration)
+            ->route('registration.add-drop.edit', $registration)
             ->with('success', $message);
     }
 }

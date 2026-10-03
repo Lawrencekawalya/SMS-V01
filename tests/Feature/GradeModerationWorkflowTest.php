@@ -184,7 +184,7 @@ class GradeModerationWorkflowTest extends TestCase
 
     public function test_hod_moderation_desk_displays_submitted_sheets_and_metrics(): void
     {
-        $response = $this->get(route('academic.assessments.moderation.index'));
+        $response = $this->get(route('moderation.list'));
 
         $response->assertOk();
         $response->assertViewIs('academic.assessments.moderation.index');
@@ -209,7 +209,7 @@ class GradeModerationWorkflowTest extends TestCase
             'status' => 'draft',
         ]);
 
-        $response = $this->get(route('academic.assessments.moderation.index', ['status' => 'submitted_to_hod']));
+        $response = $this->get(route('moderation.list', ['status' => 'submitted_to_hod']));
         $response->assertOk();
         $response->assertSee('CSC3105');
         $response->assertDontSee('CSC3109');
@@ -217,7 +217,7 @@ class GradeModerationWorkflowTest extends TestCase
 
     public function test_hod_can_view_detailed_inspection_workspace_with_statistics(): void
     {
-        $response = $this->get(route('academic.assessments.moderation.show', $this->sheet));
+        $response = $this->get(route('moderation.show', $this->sheet));
 
         $response->assertOk();
         $response->assertViewIs('academic.assessments.moderation.show');
@@ -279,11 +279,11 @@ class GradeModerationWorkflowTest extends TestCase
 
     public function test_hod_can_endorse_mark_sheet_advancing_to_department_moderated(): void
     {
-        $response = $this->post(route('academic.assessments.moderation.endorse', $this->sheet), [
+        $response = $this->post(route('moderation.endorse', $this->sheet), [
             'remarks' => 'Moderation committee reviewed and approved scores.',
         ]);
 
-        $response->assertRedirect(route('academic.assessments.moderation.show', $this->sheet));
+        $response->assertRedirect(route('moderation.show', $this->sheet));
         $response->assertSessionHas('success');
 
         $this->sheet->refresh();
@@ -295,11 +295,11 @@ class GradeModerationWorkflowTest extends TestCase
 
     public function test_hod_can_return_mark_sheet_with_mandatory_remarks(): void
     {
-        $response = $this->post(route('academic.assessments.moderation.return', $this->sheet), [
+        $response = $this->post(route('moderation.return', $this->sheet), [
             'remarks' => 'Please recheck coursework scores for candidate Bob.',
         ]);
 
-        $response->assertRedirect(route('academic.assessments.moderation.show', $this->sheet));
+        $response->assertRedirect(route('moderation.show', $this->sheet));
         $response->assertSessionHas('warning');
 
         $this->sheet->refresh();
@@ -309,7 +309,7 @@ class GradeModerationWorkflowTest extends TestCase
 
     public function test_hod_return_requires_at_least_ten_character_remarks(): void
     {
-        $response = $this->post(route('academic.assessments.moderation.return', $this->sheet), [
+        $response = $this->post(route('moderation.return', $this->sheet), [
             'remarks' => 'Too short',
         ]);
 
@@ -330,7 +330,7 @@ class GradeModerationWorkflowTest extends TestCase
         $this->actingAs($this->lecturer);
 
         // Edit workspace should be accessible (200 OK, not redirected)
-        $response = $this->get(route('academic.assessments.edit', $this->sheet));
+        $response = $this->get(route('assessment.edit', $this->sheet));
         $response->assertOk();
         $response->assertViewIs('academic.assessments.entry');
     }
@@ -344,9 +344,9 @@ class GradeModerationWorkflowTest extends TestCase
             'moderated_by_id' => $this->hodUser->id,
         ]);
 
-        $response = $this->post(route('academic.assessments.moderation.publish', $this->sheet));
+        $response = $this->post(route('moderation.publish', $this->sheet));
 
-        $response->assertRedirect(route('academic.assessments.moderation.show', $this->sheet));
+        $response->assertRedirect(route('moderation.show', $this->sheet));
         $response->assertSessionHas('success');
 
         $this->sheet->refresh();
@@ -392,8 +392,8 @@ class GradeModerationWorkflowTest extends TestCase
         $this->actingAs($this->lecturer);
 
         // Edit workspace should redirect with warning
-        $response = $this->get(route('academic.assessments.edit', $this->sheet));
-        $response->assertRedirect(route('academic.assessments.show', $this->sheet));
+        $response = $this->get(route('assessment.edit', $this->sheet));
+        $response->assertRedirect(route('assessment.show', $this->sheet));
         $response->assertSessionHas('warning');
     }
 }

@@ -175,7 +175,7 @@ class CourseRegistrationApprovalTest extends TestCase
 
     public function test_advisor_dashboard_accurately_lists_slips_and_kpi_boxes(): void
     {
-        $response = $this->get(route('academic.approvals.index'));
+        $response = $this->get(route('approval.list'));
 
         $response->assertStatus(200);
         $response->assertSee('Course Registration Approvals');
@@ -190,7 +190,7 @@ class CourseRegistrationApprovalTest extends TestCase
 
     public function test_advisor_inspection_view_renders_student_standing_and_course_breakdown(): void
     {
-        $response = $this->get(route('academic.approvals.show', $this->submittedRegistration));
+        $response = $this->get(route('approval.show', $this->submittedRegistration));
 
         $response->assertStatus(200);
         $response->assertSee('Student Academic Standing');
@@ -207,7 +207,7 @@ class CourseRegistrationApprovalTest extends TestCase
     {
         $this->actingAs($this->advisor);
 
-        $response = $this->post(route('academic.approvals.approve', $this->submittedRegistration), [
+        $response = $this->post(route('approval.approve', $this->submittedRegistration), [
             'advisor_remarks' => 'Curriculum checks complete. All requirements satisfied.',
         ]);
 
@@ -232,13 +232,13 @@ class CourseRegistrationApprovalTest extends TestCase
         $this->actingAs($this->advisor);
 
         // 1. Missing remarks fails validation
-        $responseEmpty = $this->post(route('academic.approvals.reject', $this->submittedRegistration), [
+        $responseEmpty = $this->post(route('approval.reject', $this->submittedRegistration), [
             'advisor_remarks' => '',
         ]);
         $responseEmpty->assertSessionHasErrors(['advisor_remarks']);
 
         // 2. Too short remarks (< 10 chars) fails validation
-        $responseShort = $this->post(route('academic.approvals.reject', $this->submittedRegistration), [
+        $responseShort = $this->post(route('approval.reject', $this->submittedRegistration), [
             'advisor_remarks' => 'Short',
         ]);
         $responseShort->assertSessionHasErrors(['advisor_remarks']);
@@ -247,7 +247,7 @@ class CourseRegistrationApprovalTest extends TestCase
         $this->assertEquals('submitted', $this->submittedRegistration->fresh()->status);
 
         // 3. Valid feedback marks slip as rejected
-        $responseValid = $this->post(route('academic.approvals.reject', $this->submittedRegistration), [
+        $responseValid = $this->post(route('approval.reject', $this->submittedRegistration), [
             'advisor_remarks' => 'Credit underload: Missing second elective course required for Semester 1.',
         ]);
         $responseValid->assertRedirect();
@@ -264,14 +264,14 @@ class CourseRegistrationApprovalTest extends TestCase
     {
         $this->actingAs($this->advisor);
 
-        $response = $this->post(route('academic.approvals.batch-approve'), [
+        $response = $this->post(route('approval.batch-approve'), [
             'registration_ids' => [
                 $this->submittedRegistration->id,
                 $this->addDropRegistration->id,
             ],
         ]);
 
-        $response->assertRedirect(route('academic.approvals.index'));
+        $response->assertRedirect(route('approval.list'));
         $response->assertSessionHas('success');
 
         $this->assertEquals('approved', $this->submittedRegistration->fresh()->status);
@@ -283,13 +283,13 @@ class CourseRegistrationApprovalTest extends TestCase
     public function test_filtering_by_status_and_study_year(): void
     {
         // 1. Filter by status: add_drop_pending
-        $responseAddDrop = $this->get(route('academic.approvals.index', ['status' => 'add_drop_pending']));
+        $responseAddDrop = $this->get(route('approval.list', ['status' => 'add_drop_pending']));
         $responseAddDrop->assertStatus(200);
         $responseAddDrop->assertSee('#REG-'.str_pad($this->addDropRegistration->id, 5, '0', STR_PAD_LEFT));
         $responseAddDrop->assertDontSee('#REG-'.str_pad($this->submittedRegistration->id, 5, '0', STR_PAD_LEFT));
 
         // 2. Filter by status: submitted
-        $responseSubmitted = $this->get(route('academic.approvals.index', ['status' => 'submitted']));
+        $responseSubmitted = $this->get(route('approval.list', ['status' => 'submitted']));
         $responseSubmitted->assertStatus(200);
         $responseSubmitted->assertSee('#REG-'.str_pad($this->submittedRegistration->id, 5, '0', STR_PAD_LEFT));
         $responseSubmitted->assertDontSee('#REG-'.str_pad($this->addDropRegistration->id, 5, '0', STR_PAD_LEFT));

@@ -46,7 +46,7 @@ class AcademicEventTest extends TestCase
             'end_date' => '2026-09-16',
         ]);
 
-        $response = $this->get(route('academic.academic-years.index'));
+        $response = $this->get(route('academic-year.list'));
 
         $response->assertStatus(200);
         $response->assertSee('Scheduled Academic Events & University Almanac', false);
@@ -67,7 +67,7 @@ class AcademicEventTest extends TestCase
             'end_date' => '2026-11-21',
         ]);
 
-        $response = $this->get(route('academic.events.index'));
+        $response = $this->get(route('event.list'));
 
         $response->assertStatus(200);
         $response->assertSee('Scheduled Academic Events & University Almanac', false);
@@ -85,12 +85,12 @@ class AcademicEventTest extends TestCase
             'start_date' => '2026-11-30',
         ]);
 
-        $response = $this->get(route('academic.events.index'));
+        $response = $this->get(route('event.list'));
 
         $response->assertStatus(200);
         $response->assertSee('navbar-badge');
         $response->assertSee('See All Events &amp; Almanac', false);
-        $response->assertSee(route('academic.events.index'));
+        $response->assertSee(route('event.list'));
     }
 
     public function test_can_fetch_fullcalendar_json_feed(): void
@@ -104,7 +104,7 @@ class AcademicEventTest extends TestCase
             'end_date' => '2026-12-18',
         ]);
 
-        $response = $this->getJson(route('academic.events.feed'));
+        $response = $this->getJson(route('event.feed'));
 
         $response->assertStatus(200);
         $response->assertJsonFragment([
@@ -129,9 +129,9 @@ class AcademicEventTest extends TestCase
             'description' => 'Senate board meets to approve semester grades.',
         ];
 
-        $response = $this->post(route('academic.events.store'), $payload);
+        $response = $this->post(route('event.store'), $payload);
 
-        $response->assertRedirect(route('academic.academic-years.index'));
+        $response->assertRedirect(route('academic-year.list'));
         $this->assertDatabaseHas('academic_events', [
             'title' => 'Senate Approval of Results',
             'event_type' => 'governance',
@@ -161,9 +161,9 @@ class AcademicEventTest extends TestCase
             'is_holiday' => '0',
         ];
 
-        $response = $this->put(route('academic.events.update', $event), $payload);
+        $response = $this->put(route('event.update', $event), $payload);
 
-        $response->assertRedirect(route('academic.academic-years.index'));
+        $response->assertRedirect(route('academic-year.list'));
         $updatedEvent = $event->fresh();
         $this->assertEquals('Extended Course Registration Deadline', $updatedEvent->title);
         $this->assertEquals('2026-10-10', $updatedEvent->start_date->format('Y-m-d'));
@@ -176,9 +176,9 @@ class AcademicEventTest extends TestCase
             'academic_year_id' => $this->year->id,
         ]);
 
-        $response = $this->delete(route('academic.events.destroy', $event));
+        $response = $this->delete(route('event.delete', $event));
 
-        $response->assertRedirect(route('academic.academic-years.index'));
+        $response->assertRedirect(route('academic-year.list'));
         $this->assertDatabaseMissing('academic_events', [
             'id' => $event->id,
         ]);
@@ -186,7 +186,7 @@ class AcademicEventTest extends TestCase
 
     public function test_event_end_date_must_be_greater_than_or_equal_to_start_date(): void
     {
-        $response = $this->post(route('academic.events.store'), [
+        $response = $this->post(route('event.store'), [
             'academic_year_id' => $this->year->id,
             'title' => 'Invalid Event Dates',
             'event_type' => 'examination',

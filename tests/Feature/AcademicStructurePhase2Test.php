@@ -48,12 +48,12 @@ class AcademicStructurePhase2Test extends TestCase
         $department = Department::factory()->create(['faculty_id' => $this->faculty->id]);
         Programme::factory()->create(['department_id' => $department->id]);
 
-        $this->get(route('academic.departments.index'))
+        $this->get(route('department.list'))
             ->assertStatus(200)
             ->assertSee('Academic Departments')
             ->assertSee($department->name);
 
-        $this->get(route('academic.programmes.index'))
+        $this->get(route('programme.list'))
             ->assertStatus(200)
             ->assertSee('Degree & Diploma Programmes')
             ->assertSee($department->name);
@@ -72,9 +72,9 @@ class AcademicStructurePhase2Test extends TestCase
             'status' => 'active',
         ];
 
-        $response = $this->post(route('academic.departments.store'), $payload);
+        $response = $this->post(route('department.store'), $payload);
 
-        $response->assertRedirect(route('academic.departments.index'));
+        $response->assertRedirect(route('department.list'));
         $response->assertSessionHas('success');
 
         $this->assertDatabaseHas('departments', [
@@ -98,7 +98,7 @@ class AcademicStructurePhase2Test extends TestCase
             'status' => 'active',
         ];
 
-        $response = $this->post(route('academic.departments.store'), $payload);
+        $response = $this->post(route('department.store'), $payload);
 
         $response->assertSessionHasErrors('code');
     }
@@ -118,9 +118,9 @@ class AcademicStructurePhase2Test extends TestCase
             'status' => 'active',
         ];
 
-        $response = $this->post(route('academic.programmes.store'), $payload);
+        $response = $this->post(route('programme.store'), $payload);
 
-        $response->assertRedirect(route('academic.programmes.index'));
+        $response->assertRedirect(route('programme.list'));
         $response->assertSessionHas('success');
 
         $this->assertDatabaseHas('programmes', [
@@ -151,7 +151,7 @@ class AcademicStructurePhase2Test extends TestCase
             'status' => 'active',
         ];
 
-        $response = $this->post(route('academic.programmes.store'), $payload);
+        $response = $this->post(route('programme.store'), $payload);
 
         $response->assertSessionHasErrors('code');
     }
@@ -170,7 +170,7 @@ class AcademicStructurePhase2Test extends TestCase
             'status' => 'active',
         ];
 
-        $response = $this->post(route('academic.programmes.store'), $payload);
+        $response = $this->post(route('programme.store'), $payload);
 
         $response->assertSessionHasErrors(['duration_years', 'required_credits_to_graduate']);
     }
@@ -192,7 +192,7 @@ class AcademicStructurePhase2Test extends TestCase
             'name' => 'Business Dept Beta',
         ]);
 
-        $response = $this->get(route('academic.departments.index', ['faculty_id' => $this->faculty->id]));
+        $response = $this->get(route('department.list', ['faculty_id' => $this->faculty->id]));
 
         $response->assertStatus(200);
         $response->assertSee('CS Dept Alpha');
@@ -203,9 +203,9 @@ class AcademicStructurePhase2Test extends TestCase
     {
         Department::factory()->create(['faculty_id' => $this->faculty->id]);
 
-        $response = $this->delete(route('academic.faculties.destroy', $this->faculty));
+        $response = $this->delete(route('faculty.delete', $this->faculty));
 
-        $response->assertRedirect(route('academic.faculties.index'));
+        $response->assertRedirect(route('faculty.list'));
         $response->assertSessionHas('error');
 
         $this->assertDatabaseHas('faculties', ['id' => $this->faculty->id]);
@@ -216,9 +216,9 @@ class AcademicStructurePhase2Test extends TestCase
         $department = Department::factory()->create(['faculty_id' => $this->faculty->id]);
         Programme::factory()->create(['department_id' => $department->id]);
 
-        $response = $this->delete(route('academic.departments.destroy', $department));
+        $response = $this->delete(route('department.delete', $department));
 
-        $response->assertRedirect(route('academic.departments.index'));
+        $response->assertRedirect(route('department.list'));
         $response->assertSessionHas('error');
 
         $this->assertDatabaseHas('departments', ['id' => $department->id]);
@@ -230,13 +230,13 @@ class AcademicStructurePhase2Test extends TestCase
         $programme = Programme::factory()->create(['department_id' => $department->id]);
 
         // Delete programme first
-        $response = $this->delete(route('academic.programmes.destroy', $programme));
-        $response->assertRedirect(route('academic.programmes.index'));
+        $response = $this->delete(route('programme.delete', $programme));
+        $response->assertRedirect(route('programme.list'));
         $this->assertDatabaseMissing('programmes', ['id' => $programme->id]);
 
         // Now department is empty and can be deleted
-        $deptResponse = $this->delete(route('academic.departments.destroy', $department));
-        $deptResponse->assertRedirect(route('academic.departments.index'));
+        $deptResponse = $this->delete(route('department.delete', $department));
+        $deptResponse->assertRedirect(route('department.list'));
         $this->assertDatabaseMissing('departments', ['id' => $department->id]);
     }
 }

@@ -20,7 +20,7 @@
               <span class="input-group-text"><i class="bi bi-search"></i></span>
               <input type="search" id="campuses-filter" class="form-control" placeholder="Filter rows..." autocomplete="off">
             </div>
-            <a href="{{ route('academic.campuses.create') }}" class="btn btn-primary btn-sm">
+            <a href="{{ route('campus.create') }}" class="btn btn-primary btn-sm">
               <i class="bi bi-plus-circle me-1"></i> Add Campus
             </a>
           </div>
@@ -56,7 +56,7 @@
                 <tr>
                   <td>{{ $loop->iteration }}</td>
                   <td class="fw-bold">
-                    <a href="{{ route('academic.campuses.show', $campus) }}" class="text-decoration-none">
+                    <a href="{{ route('campus.show', $campus) }}" class="text-decoration-none">
                       {{ $campus->name }}
                     </a>
                   </td>
@@ -82,13 +82,13 @@
                     @endif
                   </td>
                   <td class="text-end">
-                    <a href="{{ route('academic.campuses.show', $campus) }}" class="btn btn-sm btn-outline-info" title="View Details">
+                    <a href="{{ route('campus.show', $campus) }}" class="btn btn-sm btn-outline-info" title="View Details">
                       <i class="bi bi-eye"></i>
                     </a>
-                    <a href="{{ route('academic.campuses.edit', $campus) }}" class="btn btn-sm btn-outline-warning" title="Edit Campus">
+                    <a href="{{ route('campus.edit', $campus) }}" class="btn btn-sm btn-outline-warning" title="Edit Campus">
                       <i class="bi bi-pencil"></i>
                     </a>
-                    <form action="{{ route('academic.campuses.destroy', $campus) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this campus?');">
+                    <form action="{{ route('campus.delete', $campus) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this campus?');">
                       @csrf
                       @method('DELETE')
                       <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Campus" {{ $campus->faculties_count > 0 ? 'disabled' : '' }}>

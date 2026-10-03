@@ -154,7 +154,7 @@ class StudentFoundationTest extends TestCase
             'last_name' => 'Mukasa',
         ]);
 
-        $response = $this->get(route('academic.students.index'));
+        $response = $this->get(route('student.list'));
 
         $response->assertStatus(200);
         $response->assertSee('Students Directory');
@@ -175,7 +175,7 @@ class StudentFoundationTest extends TestCase
             'last_name' => 'Mukasa',
         ]);
 
-        $response = $this->get(route('academic.students.show', $student));
+        $response = $this->get(route('student.show', $student));
 
         $response->assertStatus(200);
         $response->assertSee('Ronald Mukasa');

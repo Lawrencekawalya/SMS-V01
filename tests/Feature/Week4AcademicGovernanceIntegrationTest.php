@@ -255,7 +255,7 @@ class Week4AcademicGovernanceIntegrationTest extends TestCase
     {
         // 1. Senate Master Broad-Sheet Workspace
         $broadSheetResponse = $this->actingAs($this->adminUser)
-            ->get(route('academic.reports.broad-sheet', [
+            ->get(route('broad-sheet.list', [
                 'programme_id' => $this->programme->id,
                 'academic_year_id' => $this->academicYear->id,
                 'semester_id' => $this->semester->id,
@@ -273,7 +273,7 @@ class Week4AcademicGovernanceIntegrationTest extends TestCase
 
         // 2. Senate Broad-Sheet CSV Export
         $exportResponse = $this->actingAs($this->adminUser)
-            ->get(route('academic.reports.broad-sheet.export', [
+            ->get(route('broad-sheet.export', [
                 'programme_id' => $this->programme->id,
                 'academic_year_id' => $this->academicYear->id,
                 'semester_id' => $this->semester->id,
@@ -289,7 +289,7 @@ class Week4AcademicGovernanceIntegrationTest extends TestCase
 
         // 3. Departmental & Faculty Academic Performance Analytics
         $analyticsResponse = $this->actingAs($this->adminUser)
-            ->get(route('academic.reports.analytics', [
+            ->get(route('analytics.list', [
                 'academic_year_id' => $this->academicYear->id,
                 'semester_id' => $this->semester->id,
             ]));
@@ -303,7 +303,7 @@ class Week4AcademicGovernanceIntegrationTest extends TestCase
 
         // 4. Graduation Candidates Directory & Automated Audit
         $graduationDirResponse = $this->actingAs($this->adminUser)
-            ->get(route('academic.graduation.index'));
+            ->get(route('graduation.list'));
 
         $graduationDirResponse->assertOk();
         $graduationDirResponse->assertSee('Graduation Candidates Directory');
@@ -323,20 +323,20 @@ class Week4AcademicGovernanceIntegrationTest extends TestCase
         $this->assertNotEmpty($strugglingAudit['deficiencies']);
 
         $achieverAuditView = $this->actingAs($this->adminUser)
-            ->get(route('academic.graduation.audit', $this->studentAchiever->id));
+            ->get(route('graduation.audit', $this->studentAchiever->id));
         $achieverAuditView->assertOk();
         $achieverAuditView->assertSee('Cleared for Graduation');
         $achieverAuditView->assertSee('First Class Honours');
 
         $strugglingAuditView = $this->actingAs($this->adminUser)
-            ->get(route('academic.graduation.audit', $this->studentStruggling->id));
+            ->get(route('graduation.audit', $this->studentStruggling->id));
         $strugglingAuditView->assertOk();
         $strugglingAuditView->assertSee('Academic Deficiencies / Pending');
         $strugglingAuditView->assertSee('Unresolved Retake');
 
         // 6. Official Graduation Gazette & Honors Roll Booklet
         $gazetteResponse = $this->actingAs($this->adminUser)
-            ->get(route('academic.graduation.honors-roll'));
+            ->get(route('graduation.honors-roll'));
 
         $gazetteResponse->assertOk();
         $gazetteResponse->assertSee('OFFICIAL GRADUATION GAZETTE &bull; HONORS ROLL', false);

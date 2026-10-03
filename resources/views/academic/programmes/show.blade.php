@@ -6,7 +6,7 @@
 @section('breadcrumb')
   <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
   <li class="breadcrumb-item">Academic Structure</li>
-  <li class="breadcrumb-item"><a href="{{ route('academic.programmes.index') }}">Programmes</a></li>
+  <li class="breadcrumb-item"><a href="{{ route('programme.list') }}">Programmes</a></li>
   <li class="breadcrumb-item active" aria-current="page">{{ $programme->code }}</li>
 @endsection
 
@@ -83,10 +83,10 @@
           </div>
 
           <div class="d-grid gap-2">
-            <a href="{{ route('academic.programmes.edit', $programme) }}" class="btn btn-warning">
+            <a href="{{ route('programme.edit', $programme) }}" class="btn btn-warning">
               <i class="bi bi-pencil me-1"></i> Edit Programme
             </a>
-            <a href="{{ route('academic.programmes.index') }}" class="btn btn-outline-secondary">
+            <a href="{{ route('programme.list') }}" class="btn btn-outline-secondary">
               <i class="bi bi-arrow-left me-1"></i> Back to Programmes
             </a>
           </div>
@@ -107,11 +107,11 @@
                 <span class="badge text-bg-secondary">
                   {{ $programme->curriculums->count() }} {{ Str::plural('Version', $programme->curriculums->count()) }}
                 </span>
-                <a href="{{ route('academic.curriculums.create', ['programme_id' => $programme->id]) }}" class="btn btn-sm btn-outline-primary">
+                <a href="{{ route('curriculum.create', ['programme_id' => $programme->id]) }}" class="btn btn-sm btn-outline-primary">
                   <i class="bi bi-plus-circle me-1"></i> New Version
                 </a>
               @else
-                <a href="{{ route('academic.curriculums.create', ['programme_id' => $programme->id]) }}" class="btn btn-sm btn-primary">
+                <a href="{{ route('curriculum.create', ['programme_id' => $programme->id]) }}" class="btn btn-sm btn-primary">
                   <i class="bi bi-plus-circle me-1"></i> Add Curriculum
                 </a>
               @endif
@@ -138,7 +138,7 @@
                   @else
                     <span class="badge text-bg-secondary">Draft / Inactive</span>
                   @endif
-                  <a href="{{ route('academic.curriculums.show', $activeCurriculum) }}" class="btn btn-sm btn-primary" title="Open Full Matrix">
+                  <a href="{{ route('curriculum.show', $activeCurriculum) }}" class="btn btn-sm btn-primary" title="Open Full Matrix">
                     <i class="bi bi-diagram-3-fill me-1"></i> Full Matrix
                   </a>
                 </div>
@@ -164,7 +164,7 @@
                 <small class="fw-bold text-muted d-block mb-1">Available Curriculum Versions:</small>
                 <div class="d-flex flex-wrap gap-1">
                   @foreach ($programme->curriculums as $c)
-                    <a href="{{ route('academic.curriculums.show', $c) }}" class="badge {{ $c->id === $activeCurriculum->id ? 'text-bg-primary' : 'bg-body-secondary text-body border' }} text-decoration-none py-1 px-2">
+                    <a href="{{ route('curriculum.show', $c) }}" class="badge {{ $c->id === $activeCurriculum->id ? 'text-bg-primary' : 'bg-body-secondary text-body border' }} text-decoration-none py-1 px-2">
                       {{ $c->version_name }} ({{ $c->curriculumCourses->count() }} courses)
                     </a>
                   @endforeach
@@ -183,7 +183,7 @@
                 <div class="flex-grow-1">
                   No course units mapped to this curriculum yet.
                 </div>
-                <a href="{{ route('academic.curriculums.show', $activeCurriculum) }}" class="btn btn-sm btn-info text-white">
+                <a href="{{ route('curriculum.show', $activeCurriculum) }}" class="btn btn-sm btn-info text-white">
                   <i class="bi bi-plus-circle me-1"></i> Allocate Courses
                 </a>
               </div>
@@ -276,7 +276,7 @@
               </div>
 
               <div class="mt-3 text-end">
-                <a href="{{ route('academic.curriculums.show', $activeCurriculum) }}" class="btn btn-outline-primary btn-sm">
+                <a href="{{ route('curriculum.show', $activeCurriculum) }}" class="btn btn-outline-primary btn-sm">
                   <i class="bi bi-pencil-square me-1"></i> Edit Progression &amp; Courses in Matrix &rarr;
                 </a>
               </div>
@@ -301,7 +301,7 @@
                   <i class="bi bi-check2-circle me-1"></i> {{ $programme->required_credits_to_graduate }} Target CU
                 </span>
               </div>
-              <a href="{{ route('academic.curriculums.create', ['programme_id' => $programme->id]) }}" class="btn btn-primary">
+              <a href="{{ route('curriculum.create', ['programme_id' => $programme->id]) }}" class="btn btn-primary">
                 <i class="bi bi-plus-circle me-1"></i> Create Curriculum Version
               </a>
             </div>

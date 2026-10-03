@@ -6,7 +6,7 @@
 @section('breadcrumb')
   <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
   <li class="breadcrumb-item">Academic Core</li>
-  <li class="breadcrumb-item"><a href="{{ route('academic.assessments.index') }}">Examinations &amp; Grading</a></li>
+  <li class="breadcrumb-item"><a href="{{ route('assessment.list') }}">Examinations &amp; Grading</a></li>
   <li class="breadcrumb-item active" aria-current="page">{{ $sheet->courseUnit->code }}</li>
 @endsection
 
@@ -22,10 +22,10 @@
         </div>
         <div class="d-flex gap-2 align-items-center flex-wrap">
           @if (in_array($sheet->status, ['draft', 'returned_for_revision']))
-            <a href="{{ route('academic.assessments.edit', $sheet) }}" class="btn btn-primary btn-sm">
+            <a href="{{ route('assessment.edit', $sheet) }}" class="btn btn-primary btn-sm">
               <i class="bi bi-pencil-square me-1"></i> Enter / Edit Marks
             </a>
-            <form action="{{ route('academic.assessments.submit', $sheet) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to submit this mark sheet to the Head of Department for moderation?');">
+            <form action="{{ route('assessment.submit', $sheet) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to submit this mark sheet to the Head of Department for moderation?');">
               @csrf
               <button type="submit" class="btn btn-success btn-sm">
                 <i class="bi bi-send-check me-1"></i> Submit to HoD
@@ -36,11 +36,11 @@
             <i class="bi bi-award me-1"></i> Grading Scale Reference
           </button>
           @if ($sheet->status !== 'draft')
-            <a href="{{ route('academic.assessments.moderation.show', $sheet) }}" class="btn btn-warning btn-sm text-dark">
+            <a href="{{ route('moderation.show', $sheet) }}" class="btn btn-warning btn-sm text-dark">
               <i class="bi bi-shield-shaded me-1"></i> Moderation Desk
             </a>
           @endif
-          <a href="{{ route('academic.assessments.index') }}" class="btn btn-outline-secondary btn-sm">
+          <a href="{{ route('assessment.list') }}" class="btn btn-outline-secondary btn-sm">
             <i class="bi bi-arrow-left me-1"></i> Back to Directory
           </a>
         </div>

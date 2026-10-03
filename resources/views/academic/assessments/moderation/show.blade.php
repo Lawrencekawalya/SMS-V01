@@ -6,8 +6,8 @@
 @section('breadcrumb')
   <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
   <li class="breadcrumb-item">Academic Core</li>
-  <li class="breadcrumb-item"><a href="{{ route('academic.assessments.index') }}">Examinations &amp; Grading</a></li>
-  <li class="breadcrumb-item"><a href="{{ route('academic.assessments.moderation.index') }}">HoD Moderation Desk</a></li>
+  <li class="breadcrumb-item"><a href="{{ route('assessment.list') }}">Examinations &amp; Grading</a></li>
+  <li class="breadcrumb-item"><a href="{{ route('moderation.list') }}">HoD Moderation Desk</a></li>
   <li class="breadcrumb-item active" aria-current="page">{{ $sheet->courseUnit->code }}</li>
 @endsection
 
@@ -73,7 +73,7 @@
               <i class="bi bi-patch-check-fill me-1"></i> Senate Approve &amp; Publish
             </button>
           @elseif ($sheet->status === 'returned_for_revision')
-            <a href="{{ route('academic.assessments.edit', $sheet) }}" class="btn btn-outline-primary btn-sm">
+            <a href="{{ route('assessment.edit', $sheet) }}" class="btn btn-outline-primary btn-sm">
               <i class="bi bi-pencil-square me-1"></i> Enter / Edit Marks
             </a>
             <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#endorseModal">
@@ -85,7 +85,7 @@
             </span>
           @endif
 
-          <a href="{{ route('academic.assessments.moderation.index') }}" class="btn btn-outline-secondary btn-sm">
+          <a href="{{ route('moderation.list') }}" class="btn btn-outline-secondary btn-sm">
             <i class="bi bi-arrow-left me-1"></i> Back to Moderation Desk
           </a>
         </div>
@@ -478,7 +478,7 @@
   <div class="modal fade" id="endorseModal" tabindex="-1" aria-labelledby="endorseModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
-        <form action="{{ route('academic.assessments.moderation.endorse', $sheet) }}" method="POST">
+        <form action="{{ route('moderation.endorse', $sheet) }}" method="POST">
           @csrf
           <div class="modal-header bg-success text-white">
             <h5 class="modal-title" id="endorseModalLabel">
@@ -513,7 +513,7 @@
   <div class="modal fade" id="returnModal" tabindex="-1" aria-labelledby="returnModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
-        <form action="{{ route('academic.assessments.moderation.return', $sheet) }}" method="POST">
+        <form action="{{ route('moderation.return', $sheet) }}" method="POST">
           @csrf
           <div class="modal-header bg-danger text-white">
             <h5 class="modal-title" id="returnModalLabel">
@@ -552,7 +552,7 @@
   <div class="modal fade" id="publishModal" tabindex="-1" aria-labelledby="publishModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
-        <form action="{{ route('academic.assessments.moderation.publish', $sheet) }}" method="POST">
+        <form action="{{ route('moderation.publish', $sheet) }}" method="POST">
           @csrf
           <div class="modal-header bg-primary text-white">
             <h5 class="modal-title" id="publishModalLabel">

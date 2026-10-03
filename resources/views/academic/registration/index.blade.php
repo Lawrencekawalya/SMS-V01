@@ -66,7 +66,7 @@
       </h3>
     </div>
     <div class="card-body">
-      <form action="{{ route('academic.registrations.index') }}" method="GET" class="row g-3">
+      <form action="{{ route('registration.list') }}" method="GET" class="row g-3">
         <div class="col-12 col-md-3">
           <label for="academic_year_id" class="form-label small fw-semibold">Academic Year</label>
           <select name="academic_year_id" id="academic_year_id" class="form-select form-select-sm">
@@ -123,7 +123,7 @@
           <button type="submit" class="btn btn-primary btn-sm flex-grow-1" title="Apply Filters">
             <i class="bi bi-search"></i>
           </button>
-          <a href="{{ route('academic.registrations.index') }}" class="btn btn-outline-secondary btn-sm" title="Reset Filters">
+          <a href="{{ route('registration.list') }}" class="btn btn-outline-secondary btn-sm" title="Reset Filters">
             <i class="bi bi-arrow-counterclockwise"></i>
           </a>
         </div>
@@ -139,15 +139,15 @@
           <i class="bi bi-journal-text me-1 text-primary"></i> Course Registration Slips ({{ $registrations->count() }})
         </h3>
         <div class="card-tools d-flex flex-wrap align-items-center gap-2 me-0">
-          <a href="{{ route('academic.registrations.create') }}" class="btn btn-primary btn-sm">
+          <a href="{{ route('registration.create') }}" class="btn btn-primary btn-sm">
             <i class="bi bi-plus-circle me-1"></i> Register Student
           </a>
           @if (config('academic.enforce_prerequisites', false))
-            <a href="{{ route('academic.registrations.eligibility') }}" class="btn btn-outline-primary btn-sm">
+            <a href="{{ route('registration.eligibility') }}" class="btn btn-outline-primary btn-sm">
               <i class="bi bi-shield-check me-1"></i> Eligibility Inspector
             </a>
           @endif
-          <a href="{{ route('academic.registrations.active-session') }}" class="btn btn-outline-success btn-sm">
+          <a href="{{ route('registration.active-session') }}" class="btn btn-outline-success btn-sm">
             <i class="bi bi-people-fill me-1"></i> Active Session Cohorts
           </a>
           <div class="input-group input-group-sm" style="width: 15rem;">
@@ -230,20 +230,20 @@
                 </small>
               </td>
               <td class="text-end text-nowrap">
-                <a href="{{ route('academic.registrations.show', $reg) }}" class="btn btn-sm btn-outline-primary" title="View Registration Slip">
+                <a href="{{ route('registration.show', $reg) }}" class="btn btn-sm btn-outline-primary" title="View Registration Slip">
                   <i class="bi bi-eye"></i>
                 </a>
                 @if ($reg->canBeEdited())
-                  <a href="{{ route('academic.registrations.edit', $reg) }}" class="btn btn-sm btn-outline-warning" title="Edit Draft Slip">
+                  <a href="{{ route('registration.edit', $reg) }}" class="btn btn-sm btn-outline-warning" title="Edit Draft Slip">
                     <i class="bi bi-pencil"></i>
                   </a>
                 @endif
                 @if ($reg->canAddDrop())
-                  <a href="{{ route('academic.registrations.add-drop.edit', $reg) }}" class="btn btn-sm btn-outline-warning" title="Add / Drop Courses">
+                  <a href="{{ route('registration.add-drop.edit', $reg) }}" class="btn btn-sm btn-outline-warning" title="Add / Drop Courses">
                     <i class="bi bi-arrow-left-right"></i>
                   </a>
                 @endif
-                <a href="{{ route('academic.registrations.print', $reg) }}" target="_blank" class="btn btn-sm btn-outline-secondary" title="Print Official Slip">
+                <a href="{{ route('registration.print', $reg) }}" target="_blank" class="btn btn-sm btn-outline-secondary" title="Print Official Slip">
                   <i class="bi bi-printer"></i>
                 </a>
               </td>

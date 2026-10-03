@@ -6,7 +6,7 @@
 @section('breadcrumb')
   <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
   <li class="breadcrumb-item">Academic Core</li>
-  <li class="breadcrumb-item"><a href="{{ route('academic.assessments.index') }}">Examinations &amp; Grading</a></li>
+  <li class="breadcrumb-item"><a href="{{ route('assessment.list') }}">Examinations &amp; Grading</a></li>
   <li class="breadcrumb-item active" aria-current="page">Performance Analytics</li>
 @endsection
 
@@ -24,7 +24,7 @@
       </div>
     </div>
     <div class="card-body">
-      <form action="{{ route('academic.reports.analytics') }}" method="GET" class="row g-3 align-items-end">
+      <form action="{{ route('analytics.list') }}" method="GET" class="row g-3 align-items-end">
         <div class="col-12 col-md-5">
           <label for="academic_year_id" class="form-label small fw-semibold">Academic Year</label>
           <select name="academic_year_id" id="academic_year_id" class="form-select form-select-sm">

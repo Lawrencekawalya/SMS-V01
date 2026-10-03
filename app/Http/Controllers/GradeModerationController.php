@@ -126,7 +126,7 @@ class GradeModerationController extends Controller
     {
         if (! in_array($sheet->status, ['submitted_to_hod', 'returned_for_revision'], true)) {
             return redirect()
-                ->route('academic.assessments.moderation.show', $sheet)
+                ->route('moderation.show', $sheet)
                 ->with('warning', "Mark sheet cannot be endorsed because its current status is '{$sheet->status_label}'.");
         }
 
@@ -141,7 +141,7 @@ class GradeModerationController extends Controller
         ]);
 
         return redirect()
-            ->route('academic.assessments.moderation.show', $sheet)
+            ->route('moderation.show', $sheet)
             ->with('success', "Mark sheet for {$sheet->courseUnit->code} has been endorsed by the Department and recommended for Senate publication.");
     }
 
@@ -152,7 +152,7 @@ class GradeModerationController extends Controller
     {
         if (! in_array($sheet->status, ['submitted_to_hod', 'department_moderated'], true)) {
             return redirect()
-                ->route('academic.assessments.moderation.show', $sheet)
+                ->route('moderation.show', $sheet)
                 ->with('warning', "Mark sheet cannot be returned because its current status is '{$sheet->status_label}'.");
         }
 
@@ -168,7 +168,7 @@ class GradeModerationController extends Controller
         $instructorName = $sheet->instructor?->name ?? 'the instructor';
 
         return redirect()
-            ->route('academic.assessments.moderation.show', $sheet)
+            ->route('moderation.show', $sheet)
             ->with('warning', "Mark sheet for {$sheet->courseUnit->code} has been returned to {$instructorName} for revision.");
     }
 
@@ -180,13 +180,13 @@ class GradeModerationController extends Controller
     {
         if ($sheet->status === 'published') {
             return redirect()
-                ->route('academic.assessments.moderation.show', $sheet)
+                ->route('moderation.show', $sheet)
                 ->with('info', "Mark sheet for {$sheet->courseUnit->code} is already officially published.");
         }
 
         if (! in_array($sheet->status, ['department_moderated', 'submitted_to_hod'], true)) {
             return redirect()
-                ->route('academic.assessments.moderation.show', $sheet)
+                ->route('moderation.show', $sheet)
                 ->with('error', "Mark sheet cannot be published directly from status '{$sheet->status_label}'.");
         }
 
@@ -216,7 +216,7 @@ class GradeModerationController extends Controller
         $count = $sheet->studentMarks()->count();
 
         return redirect()
-            ->route('academic.assessments.moderation.show', $sheet)
+            ->route('moderation.show', $sheet)
             ->with('success', "Mark sheet for {$sheet->courseUnit->code} has been officially approved and published by Senate. Semester GPAs and cumulative CGPAs recalculated for {$count} students.");
     }
 }

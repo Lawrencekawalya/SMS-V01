@@ -6,7 +6,7 @@
 @section('breadcrumb')
   <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
   <li class="breadcrumb-item">Academic Core</li>
-  <li class="breadcrumb-item"><a href="{{ route('academic.curriculums.index') }}">Curriculums</a></li>
+  <li class="breadcrumb-item"><a href="{{ route('curriculum.list') }}">Curriculums</a></li>
   <li class="breadcrumb-item active" aria-current="page">Add Curriculum</li>
 @endsection
 
@@ -17,13 +17,13 @@
         <div class="card-header">
           <h3 class="card-title">New Programme Curriculum Specification</h3>
           <div class="card-tools me-0">
-            <a href="{{ route('academic.curriculums.index') }}" class="btn btn-outline-secondary btn-sm">
+            <a href="{{ route('curriculum.list') }}" class="btn btn-outline-secondary btn-sm">
               <i class="bi bi-arrow-left me-1"></i> Back to Curriculums
             </a>
           </div>
         </div>
 
-        <form action="{{ route('academic.curriculums.store') }}" method="POST">
+        <form action="{{ route('curriculum.store') }}" method="POST">
           @csrf
           <div class="card-body">
             <div class="row g-3">
@@ -135,7 +135,7 @@
 
           <div class="card-footer clearfix">
             <div class="float-end">
-              <a href="{{ route('academic.curriculums.index') }}" class="btn btn-secondary me-2">Cancel</a>
+              <a href="{{ route('curriculum.list') }}" class="btn btn-secondary me-2">Cancel</a>
               <button type="submit" class="btn btn-primary">
                 <i class="bi bi-check-circle me-1"></i> Save & Continue to Course Mapping
               </button>

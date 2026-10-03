@@ -6,7 +6,7 @@
 @section('breadcrumb')
   <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
   <li class="breadcrumb-item">Academic Core</li>
-  <li class="breadcrumb-item"><a href="{{ route('academic.assessments.index') }}">Examinations &amp; Grading</a></li>
+  <li class="breadcrumb-item"><a href="{{ route('assessment.list') }}">Examinations &amp; Grading</a></li>
   <li class="breadcrumb-item active" aria-current="page">HoD Moderation Desk</li>
 @endsection
 
@@ -83,30 +83,30 @@
         <i class="bi bi-funnel me-1"></i> Filter Moderation Mark Sheets
       </h3>
       <div class="btn-group btn-group-sm" role="group">
-        <a href="{{ route('academic.assessments.moderation.index', array_merge(request()->except('status'), [])) }}"
+        <a href="{{ route('moderation.list', array_merge(request()->except('status'), [])) }}"
            class="btn {{ empty($status) ? 'btn-secondary' : 'btn-outline-secondary' }}">
           All ({{ $stats['total'] }})
         </a>
-        <a href="{{ route('academic.assessments.moderation.index', array_merge(request()->except('status'), ['status' => 'submitted_to_hod'])) }}"
+        <a href="{{ route('moderation.list', array_merge(request()->except('status'), ['status' => 'submitted_to_hod'])) }}"
            class="btn {{ $status === 'submitted_to_hod' ? 'btn-warning text-dark fw-bold' : 'btn-outline-warning' }}">
           Pending Review ({{ $stats['pending_hod'] }})
         </a>
-        <a href="{{ route('academic.assessments.moderation.index', array_merge(request()->except('status'), ['status' => 'department_moderated'])) }}"
+        <a href="{{ route('moderation.list', array_merge(request()->except('status'), ['status' => 'department_moderated'])) }}"
            class="btn {{ $status === 'department_moderated' ? 'btn-info text-white fw-bold' : 'btn-outline-info' }}">
           Moderated ({{ $stats['moderated'] }})
         </a>
-        <a href="{{ route('academic.assessments.moderation.index', array_merge(request()->except('status'), ['status' => 'published'])) }}"
+        <a href="{{ route('moderation.list', array_merge(request()->except('status'), ['status' => 'published'])) }}"
            class="btn {{ $status === 'published' ? 'btn-success fw-bold' : 'btn-outline-success' }}">
           Published ({{ $stats['published'] }})
         </a>
-        <a href="{{ route('academic.assessments.moderation.index', array_merge(request()->except('status'), ['status' => 'returned_for_revision'])) }}"
+        <a href="{{ route('moderation.list', array_merge(request()->except('status'), ['status' => 'returned_for_revision'])) }}"
            class="btn {{ $status === 'returned_for_revision' ? 'btn-danger fw-bold' : 'btn-outline-danger' }}">
           Returned ({{ $stats['returned'] }})
         </a>
       </div>
     </div>
     <div class="card-body">
-      <form action="{{ route('academic.assessments.moderation.index') }}" method="GET" class="row g-3">
+      <form action="{{ route('moderation.list') }}" method="GET" class="row g-3">
         @if ($status)
           <input type="hidden" name="status" value="{{ $status }}">
         @endif
@@ -148,7 +148,7 @@
         </div>
 
         <div class="col-12 d-flex justify-content-end gap-2">
-          <a href="{{ route('academic.assessments.moderation.index') }}" class="btn btn-sm btn-outline-secondary">
+          <a href="{{ route('moderation.list') }}" class="btn btn-sm btn-outline-secondary">
             <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
           </a>
           <button type="submit" class="btn btn-sm btn-primary">
@@ -260,7 +260,7 @@
                   @endif
                 </td>
                 <td class="text-end text-nowrap">
-                  <a href="{{ route('academic.assessments.moderation.show', $sheet) }}" class="btn btn-sm btn-primary" title="Inspect &amp; Moderate Mark Sheet">
+                  <a href="{{ route('moderation.show', $sheet) }}" class="btn btn-sm btn-primary" title="Inspect &amp; Moderate Mark Sheet">
                     <i class="bi bi-shield-shaded me-1"></i> Moderate
                   </a>
                 </td>

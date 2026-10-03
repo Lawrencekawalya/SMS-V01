@@ -24,7 +24,7 @@ class AcademicCalendarPhase3Test extends TestCase
             'is_active' => true,
         ]);
 
-        $response = $this->get(route('academic.academic-years.index'));
+        $response = $this->get(route('academic-year.list'));
 
         $response->assertStatus(200);
         $response->assertSee('Academic Calendar & Sessions');
@@ -45,9 +45,9 @@ class AcademicCalendarPhase3Test extends TestCase
             'description' => 'Upcoming academic year session.',
         ];
 
-        $response = $this->post(route('academic.academic-years.store'), $payload);
+        $response = $this->post(route('academic-year.store'), $payload);
 
-        $response->assertRedirect(route('academic.academic-years.index'));
+        $response->assertRedirect(route('academic-year.list'));
         $this->assertDatabaseHas('academic_years', [
             'name' => '2027/2028',
             'is_current' => true,
@@ -63,7 +63,7 @@ class AcademicCalendarPhase3Test extends TestCase
             'end_date' => '2027-01-01',
         ];
 
-        $response = $this->post(route('academic.academic-years.store'), $payload);
+        $response = $this->post(route('academic-year.store'), $payload);
 
         $response->assertSessionHasErrors(['end_date']);
         $this->assertDatabaseMissing('academic_years', ['name' => '2027/2028']);
@@ -81,7 +81,7 @@ class AcademicCalendarPhase3Test extends TestCase
             'is_current' => false,
         ]);
 
-        $response = $this->post(route('academic.academic-years.make-current', $secondYear));
+        $response = $this->post(route('academic-year.make-current', $secondYear));
 
         $response->assertSessionHas('success');
         $this->assertTrue($secondYear->fresh()->is_current);
@@ -104,9 +104,9 @@ class AcademicCalendarPhase3Test extends TestCase
             'is_active' => 1,
         ];
 
-        $response = $this->post(route('academic.semesters.store'), $payload);
+        $response = $this->post(route('semester.store'), $payload);
 
-        $response->assertRedirect(route('academic.academic-years.index'));
+        $response->assertRedirect(route('academic-year.list'));
         $this->assertDatabaseHas('semesters', [
             'academic_year_id' => $year->id,
             'semester_number' => 1,
@@ -129,7 +129,7 @@ class AcademicCalendarPhase3Test extends TestCase
             'end_date' => '2026-05-01',
         ];
 
-        $response = $this->post(route('academic.semesters.store'), $payloadInvalidDates);
+        $response = $this->post(route('semester.store'), $payloadInvalidDates);
         $response->assertSessionHasErrors(['end_date']);
 
         // Registration end date after semester end date
@@ -143,7 +143,7 @@ class AcademicCalendarPhase3Test extends TestCase
             'registration_end_date' => '2027-01-15', // Beyond end_date
         ];
 
-        $response2 = $this->post(route('academic.semesters.store'), $payloadInvalidRegistration);
+        $response2 = $this->post(route('semester.store'), $payloadInvalidRegistration);
         $response2->assertSessionHasErrors(['registration_end_date']);
     }
 
@@ -163,7 +163,7 @@ class AcademicCalendarPhase3Test extends TestCase
             'is_active' => false,
         ]);
 
-        $response = $this->post(route('academic.semesters.activate', $sem2));
+        $response = $this->post(route('semester.activate', $sem2));
 
         $response->assertSessionHas('success');
         $this->assertTrue($sem2->fresh()->is_active);
@@ -174,7 +174,7 @@ class AcademicCalendarPhase3Test extends TestCase
     {
         $currentYear = AcademicYear::factory()->create(['is_current' => true]);
 
-        $response = $this->delete(route('academic.academic-years.destroy', $currentYear));
+        $response = $this->delete(route('academic-year.delete', $currentYear));
 
         $response->assertSessionHas('error');
         $this->assertDatabaseHas('academic_years', ['id' => $currentYear->id]);
@@ -188,7 +188,7 @@ class AcademicCalendarPhase3Test extends TestCase
             'is_active' => true,
         ]);
 
-        $response = $this->delete(route('academic.semesters.destroy', $activeSemester));
+        $response = $this->delete(route('semester.delete', $activeSemester));
 
         $response->assertSessionHas('error');
         $this->assertDatabaseHas('semesters', ['id' => $activeSemester->id]);
@@ -202,21 +202,21 @@ class AcademicCalendarPhase3Test extends TestCase
             'name' => 'Old Semester 1',
         ]);
 
-        $this->put(route('academic.academic-years.update', $year), [
+        $this->put(route('academic-year.update', $year), [
             'name' => '2026/2027 Updated',
             'start_date' => $year->start_date->format('Y-m-d'),
             'end_date' => $year->end_date->format('Y-m-d'),
-        ])->assertRedirect(route('academic.academic-years.index'));
+        ])->assertRedirect(route('academic-year.list'));
 
         $this->assertDatabaseHas('academic_years', ['name' => '2026/2027 Updated']);
 
-        $this->put(route('academic.semesters.update', $semester), [
+        $this->put(route('semester.update', $semester), [
             'academic_year_id' => $year->id,
             'semester_number' => $semester->semester_number,
             'name' => 'New Semester 1 Name',
             'start_date' => $semester->start_date->format('Y-m-d'),
             'end_date' => $semester->end_date->format('Y-m-d'),
-        ])->assertRedirect(route('academic.academic-years.index'));
+        ])->assertRedirect(route('academic-year.list'));
 
         $this->assertDatabaseHas('semesters', ['name' => 'New Semester 1 Name']);
     }

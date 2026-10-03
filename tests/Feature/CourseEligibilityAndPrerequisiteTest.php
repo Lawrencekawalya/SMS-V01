@@ -393,7 +393,7 @@ class CourseEligibilityAndPrerequisiteTest extends TestCase
     {
         config(['academic.enforce_prerequisites' => false]);
 
-        $response = $this->get(route('academic.registrations.eligibility', [
+        $response = $this->get(route('registration.eligibility', [
             'student_id' => $this->fresherStudent->id,
         ]));
 
@@ -408,7 +408,7 @@ class CourseEligibilityAndPrerequisiteTest extends TestCase
 
         // When enabled, Prerequisite Status column and Restricted Courses card appear
         config(['academic.enforce_prerequisites' => true]);
-        $responseEnabled = $this->get(route('academic.registrations.eligibility', [
+        $responseEnabled = $this->get(route('registration.eligibility', [
             'student_id' => $this->fresherStudent->id,
         ]));
         $responseEnabled->assertSee('Prerequisite Status');

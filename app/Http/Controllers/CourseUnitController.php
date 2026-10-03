@@ -54,7 +54,7 @@ class CourseUnitController extends Controller
     {
         $courseUnit = CourseUnit::create($request->validated());
 
-        return redirect()->route('academic.courses.index')
+        return redirect()->route('course.list')
             ->with('success', "Course Unit '{$courseUnit->code} - {$courseUnit->name}' created successfully.");
     }
 
@@ -85,7 +85,7 @@ class CourseUnitController extends Controller
     {
         $courseUnit->update($request->validated());
 
-        return redirect()->route('academic.courses.index')
+        return redirect()->route('course.list')
             ->with('success', "Course Unit '{$courseUnit->code}' updated successfully.");
     }
 
@@ -97,7 +97,7 @@ class CourseUnitController extends Controller
         $code = $courseUnit->code;
         $courseUnit->delete();
 
-        return redirect()->route('academic.courses.index')
+        return redirect()->route('course.list')
             ->with('success', "Course Unit '{$code}' deleted successfully.");
     }
 }

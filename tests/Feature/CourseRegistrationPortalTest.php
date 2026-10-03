@@ -118,7 +118,7 @@ class CourseRegistrationPortalTest extends TestCase
 
     public function test_registration_workspace_create_page_loads_with_active_session_and_student_courses(): void
     {
-        $response = $this->get(route('academic.registrations.create', ['student_id' => $this->student->id]));
+        $response = $this->get(route('registration.create', ['student_id' => $this->student->id]));
 
         $response->assertStatus(200);
         $response->assertSee('Course Registration Workspace');
@@ -134,7 +134,7 @@ class CourseRegistrationPortalTest extends TestCase
     {
         config(['academic.require_registration_approval' => true]);
 
-        $response = $this->get(route('academic.registrations.create', ['student_id' => $this->student->id]));
+        $response = $this->get(route('registration.create', ['student_id' => $this->student->id]));
 
         $response->assertStatus(200);
         $response->assertSee('Submit for Advisor Approval');
@@ -147,7 +147,7 @@ class CourseRegistrationPortalTest extends TestCase
             'registration_end_date' => now()->subDays(5),
         ]);
 
-        $response = $this->get(route('academic.registrations.create', ['student_id' => $this->student->id]));
+        $response = $this->get(route('registration.create', ['student_id' => $this->student->id]));
 
         $response->assertStatus(200);
         $response->assertSee('Course Registration Window Closed');
@@ -156,7 +156,7 @@ class CourseRegistrationPortalTest extends TestCase
 
     public function test_student_can_save_registration_as_draft(): void
     {
-        $response = $this->post(route('academic.registrations.store'), [
+        $response = $this->post(route('registration.store'), [
             'student_id' => $this->student->id,
             'semester_id' => $this->activeSemester->id,
             'action_status' => 'draft',
@@ -178,7 +178,7 @@ class CourseRegistrationPortalTest extends TestCase
         config(['academic.require_registration_approval' => true]);
 
         // 3 core (12 CU) + 1 elective (3 CU) = 15.0 CU
-        $response = $this->post(route('academic.registrations.store'), [
+        $response = $this->post(route('registration.store'), [
             'student_id' => $this->student->id,
             'semester_id' => $this->activeSemester->id,
             'action_status' => 'submitted',
@@ -199,7 +199,7 @@ class CourseRegistrationPortalTest extends TestCase
         $this->assertEquals(15.0, $registration->total_credits);
         $this->assertCount(4, $registration->items);
 
-        $response->assertRedirect(route('academic.registrations.show', $registration));
+        $response->assertRedirect(route('registration.show', $registration));
         $response->assertSessionHas('success', "Course registration slip #REG-{$registration->id} has been submitted for Academic Advisor review.");
     }
 
@@ -211,7 +211,7 @@ class CourseRegistrationPortalTest extends TestCase
         $this->actingAs($user);
 
         // 3 core (12 CU) + 1 elective (3 CU) = 15.0 CU
-        $response = $this->post(route('academic.registrations.store'), [
+        $response = $this->post(route('registration.store'), [
             'student_id' => $this->student->id,
             'semester_id' => $this->activeSemester->id,
             'action_status' => 'submitted',
@@ -234,7 +234,7 @@ class CourseRegistrationPortalTest extends TestCase
         $this->assertCount(4, $registration->items);
         $this->assertEquals('approved', $registration->items->first()->status);
 
-        $response->assertRedirect(route('academic.registrations.show', $registration));
+        $response->assertRedirect(route('registration.show', $registration));
         $response->assertSessionHas('success', "Course registration slip #REG-{$registration->id} has been registered and confirmed successfully.");
     }
 
@@ -268,12 +268,12 @@ class CourseRegistrationPortalTest extends TestCase
             'status' => 'registered',
         ]);
 
-        $response = $this->get(route('academic.registrations.edit', $registration));
+        $response = $this->get(route('registration.edit', $registration));
         $response->assertStatus(200);
         $response->assertSee('Edit Registration Slip');
 
         // Update to submitted with complete course basket
-        $updateResponse = $this->put(route('academic.registrations.update', $registration), [
+        $updateResponse = $this->put(route('registration.update', $registration), [
             'student_id' => $this->student->id,
             'semester_id' => $this->activeSemester->id,
             'action_status' => 'submitted',
@@ -286,7 +286,7 @@ class CourseRegistrationPortalTest extends TestCase
             ],
         ]);
 
-        $updateResponse->assertRedirect(route('academic.registrations.show', $registration));
+        $updateResponse->assertRedirect(route('registration.show', $registration));
         $this->assertEquals('submitted', $registration->fresh()->status);
         $this->assertEquals(15.0, $registration->fresh()->total_credits);
     }
@@ -298,8 +298,8 @@ class CourseRegistrationPortalTest extends TestCase
             'semester_id' => $this->activeSemester->id,
         ]);
 
-        $response = $this->get(route('academic.registrations.edit', $registration));
-        $response->assertRedirect(route('academic.registrations.show', $registration));
+        $response = $this->get(route('registration.edit', $registration));
+        $response->assertRedirect(route('registration.show', $registration));
         $response->assertSessionHas('warning');
     }
 
@@ -319,7 +319,7 @@ class CourseRegistrationPortalTest extends TestCase
             'status' => 'approved',
         ]);
 
-        $response = $this->get(route('academic.registrations.print', $registration));
+        $response = $this->get(route('registration.print', $registration));
 
         $response->assertStatus(200);
         $response->assertSee('Bishop Stuart University', false);
@@ -334,7 +334,7 @@ class CourseRegistrationPortalTest extends TestCase
 
     public function test_submitting_registration_without_explicit_total_credits_computes_it_automatically(): void
     {
-        $response = $this->post(route('academic.registrations.store'), [
+        $response = $this->post(route('registration.store'), [
             'student_id' => $this->student->id,
             'semester_id' => $this->activeSemester->id,
             'action_status' => 'submitted',
@@ -351,7 +351,7 @@ class CourseRegistrationPortalTest extends TestCase
         $this->assertNotNull($registration);
         $this->assertEquals('approved', $registration->status);
         $this->assertEquals(15.0, $registration->total_credits);
-        $response->assertRedirect(route('academic.registrations.show', $registration));
+        $response->assertRedirect(route('registration.show', $registration));
     }
 
     public function test_active_session_cohort_view_renders_multi_stage_students_under_single_calendar_session(): void
@@ -394,7 +394,7 @@ class CourseRegistrationPortalTest extends TestCase
             'total_credits' => 12.0,
         ]);
 
-        $response = $this->get(route('academic.registrations.active-session'));
+        $response = $this->get(route('registration.active-session'));
 
         $response->assertStatus(200);
         $response->assertSee('Active University Calendar Session', false);
@@ -436,7 +436,7 @@ class CourseRegistrationPortalTest extends TestCase
             'total_credits' => 12.0,
         ]);
 
-        $response = $this->get(route('academic.registrations.active-session', ['study_year' => 1]));
+        $response = $this->get(route('registration.active-session', ['study_year' => 1]));
 
         $response->assertStatus(200);
         $response->assertSee($this->student->full_name);
@@ -447,7 +447,7 @@ class CourseRegistrationPortalTest extends TestCase
     {
         config(['academic.require_registration_approval' => false]);
 
-        $response = $this->get(route('academic.registrations.index'));
+        $response = $this->get(route('registration.list'));
 
         $response->assertStatus(200);
         // Advisor Approvals link in sidebar should not be visible
@@ -459,7 +459,7 @@ class CourseRegistrationPortalTest extends TestCase
     {
         config(['academic.require_registration_approval' => true]);
 
-        $response = $this->get(route('academic.registrations.index'));
+        $response = $this->get(route('registration.list'));
 
         $response->assertStatus(200);
         $response->assertSee('Advisor Approvals');
@@ -501,14 +501,14 @@ class CourseRegistrationPortalTest extends TestCase
             'student_id' => $this->student->id,
         ]);
 
-        $response = $this->put(route('academic.registrations.update', $reg), [
+        $response = $this->put(route('registration.update', $reg), [
             'student_id' => $this->student->id,
             'semester_id' => $this->activeSemester->id,
             'course_unit_ids' => [$this->core1->id, $this->core2->id, $this->core3->id],
             'action' => 'submit',
         ]);
 
-        $response->assertRedirect(route('academic.registrations.show', $reg));
+        $response->assertRedirect(route('registration.show', $reg));
         $reg->refresh();
         $this->assertEquals(3, $reg->items()->count());
 

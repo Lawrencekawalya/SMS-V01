@@ -110,7 +110,7 @@ class CourseAssessmentController extends Controller
         ]);
 
         return redirect()
-            ->route('academic.assessments.policy')
+            ->route('assessment.policy')
             ->with('success', 'Institutional assessment weighting and minimum pass threshold updated successfully.');
     }
 
@@ -153,7 +153,7 @@ class CourseAssessmentController extends Controller
         }
 
         return redirect()
-            ->route('academic.assessments.policy')
+            ->route('assessment.policy')
             ->with('success', 'Grading scale tiers updated successfully.');
     }
 
@@ -165,7 +165,7 @@ class CourseAssessmentController extends Controller
         GradingScaleTier::seedDefaults();
 
         return redirect()
-            ->route('academic.assessments.policy')
+            ->route('assessment.policy')
             ->with('success', 'Grading scale reset to official NCHE 5.0 statutory standards.');
     }
 
@@ -201,7 +201,7 @@ class CourseAssessmentController extends Controller
         }
 
         return redirect()
-            ->route('academic.assessments.policy')
+            ->route('assessment.policy')
             ->with('success', 'Academic award classifications updated successfully.');
     }
 
@@ -213,7 +213,7 @@ class CourseAssessmentController extends Controller
         AwardClassification::seedDefaults();
 
         return redirect()
-            ->route('academic.assessments.policy')
+            ->route('assessment.policy')
             ->with('success', 'Award classifications reset to standard collegiate defaults.');
     }
 
@@ -318,7 +318,7 @@ class CourseAssessmentController extends Controller
     {
         if (! in_array($sheet->status, ['draft', 'returned_for_revision'], true)) {
             return redirect()
-                ->route('academic.assessments.show', $sheet)
+                ->route('assessment.show', $sheet)
                 ->with('warning', "Mark sheet for {$sheet->courseUnit->code} is currently '{$sheet->status_label}' and is locked against modifications.");
         }
 
@@ -371,7 +371,7 @@ class CourseAssessmentController extends Controller
     {
         if (! in_array($sheet->status, ['draft', 'returned_for_revision'], true)) {
             return redirect()
-                ->route('academic.assessments.show', $sheet)
+                ->route('assessment.show', $sheet)
                 ->with('error', "Mark sheet cannot be updated because it is currently '{$sheet->status_label}'.");
         }
 
@@ -443,12 +443,12 @@ class CourseAssessmentController extends Controller
 
         if ($request->input('action') === 'submit_hod') {
             return redirect()
-                ->route('academic.assessments.show', $sheet)
+                ->route('assessment.show', $sheet)
                 ->with('success', "Marks successfully saved and mark sheet for {$sheet->courseUnit->code} submitted to Head of Department for moderation.");
         }
 
         return redirect()
-            ->route('academic.assessments.edit', $sheet)
+            ->route('assessment.edit', $sheet)
             ->with('success', "Student marks for {$sheet->courseUnit->code} saved as draft successfully.");
     }
 
@@ -459,7 +459,7 @@ class CourseAssessmentController extends Controller
     {
         if (! in_array($sheet->status, ['draft', 'returned_for_revision'], true)) {
             return redirect()
-                ->route('academic.assessments.show', $sheet)
+                ->route('assessment.show', $sheet)
                 ->with('warning', "Only draft or returned mark sheets can be submitted to the HoD. Current status: {$sheet->status_label}.");
         }
 
@@ -469,7 +469,7 @@ class CourseAssessmentController extends Controller
         ]);
 
         return redirect()
-            ->route('academic.assessments.show', $sheet)
+            ->route('assessment.show', $sheet)
             ->with('success', "Mark sheet for {$sheet->courseUnit->code} has been submitted to the Head of Department for departmental moderation.");
     }
 

@@ -57,7 +57,7 @@ class ProgrammeController extends Controller
         Programme::create($request->validated());
 
         return redirect()
-            ->route('academic.programmes.index')
+            ->route('programme.list')
             ->with('success', 'Academic programme created successfully.');
     }
 
@@ -134,7 +134,7 @@ class ProgrammeController extends Controller
         $programme->update($request->validated());
 
         return redirect()
-            ->route('academic.programmes.index')
+            ->route('programme.list')
             ->with('success', 'Academic programme updated successfully.');
     }
 
@@ -146,7 +146,7 @@ class ProgrammeController extends Controller
         $programme->delete();
 
         return redirect()
-            ->route('academic.programmes.index')
+            ->route('programme.list')
             ->with('success', 'Academic programme deleted successfully.');
     }
 }

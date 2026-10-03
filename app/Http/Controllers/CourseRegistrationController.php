@@ -144,7 +144,7 @@ class CourseRegistrationController extends Controller
             ->first();
 
         if ($existingRegistration && ! $existingRegistration->canBeEdited()) {
-            return redirect()->route('academic.registrations.show', $existingRegistration)
+            return redirect()->route('registration.show', $existingRegistration)
                 ->with('error', "A registration slip (#REG-{$existingRegistration->id}) is already active in {$existingRegistration->status} state.");
         }
 
@@ -185,7 +185,7 @@ class CourseRegistrationController extends Controller
             default => "Course registration slip #REG-{$registration->id} saved as draft.",
         };
 
-        return redirect()->route('academic.registrations.show', $registration)->with('success', $message);
+        return redirect()->route('registration.show', $registration)->with('success', $message);
     }
 
     /**
@@ -194,7 +194,7 @@ class CourseRegistrationController extends Controller
     public function edit(CourseRegistration $registration, CourseEligibilityService $eligibilityService): View|RedirectResponse
     {
         if (! $registration->canBeEdited()) {
-            return redirect()->route('academic.registrations.show', $registration)
+            return redirect()->route('registration.show', $registration)
                 ->with('warning', 'Only draft or rejected course registration slips can be edited.');
         }
 
@@ -218,7 +218,7 @@ class CourseRegistrationController extends Controller
     public function update(SubmitCourseRegistrationRequest $request, CourseRegistration $registration): RedirectResponse
     {
         if (! $registration->canBeEdited()) {
-            return redirect()->route('academic.registrations.show', $registration)
+            return redirect()->route('registration.show', $registration)
                 ->with('error', 'This registration slip can no longer be edited directly.');
         }
 
@@ -251,7 +251,7 @@ class CourseRegistrationController extends Controller
             default => "Course registration slip #REG-{$registration->id} draft updated successfully.",
         };
 
-        return redirect()->route('academic.registrations.show', $registration)->with('success', $message);
+        return redirect()->route('registration.show', $registration)->with('success', $message);
     }
 
     /**

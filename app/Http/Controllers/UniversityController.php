@@ -30,7 +30,7 @@ class UniversityController extends Controller
         $university->update($request->validated());
 
         return redirect()
-            ->route('academic.university.edit')
+            ->route('university.edit')
             ->with('success', 'University settings updated successfully.');
     }
 }

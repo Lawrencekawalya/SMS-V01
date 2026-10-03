@@ -51,7 +51,7 @@ class FacultyController extends Controller
         Faculty::create($request->validated());
 
         return redirect()
-            ->route('academic.faculties.index')
+            ->route('faculty.list')
             ->with('success', 'Faculty created successfully.');
     }
 
@@ -84,7 +84,7 @@ class FacultyController extends Controller
         $faculty->update($request->validated());
 
         return redirect()
-            ->route('academic.faculties.index')
+            ->route('faculty.list')
             ->with('success', 'Faculty updated successfully.');
     }
 
@@ -95,14 +95,14 @@ class FacultyController extends Controller
     {
         if ($faculty->departments()->exists()) {
             return redirect()
-                ->route('academic.faculties.index')
+                ->route('faculty.list')
                 ->with('error', 'Cannot delete faculty because it contains active departments.');
         }
 
         $faculty->delete();
 
         return redirect()
-            ->route('academic.faculties.index')
+            ->route('faculty.list')
             ->with('success', 'Faculty deleted successfully.');
     }
 }

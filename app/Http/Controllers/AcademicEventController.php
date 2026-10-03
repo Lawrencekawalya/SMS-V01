@@ -40,7 +40,7 @@ class AcademicEventController extends Controller
     {
         $event = AcademicEvent::create($request->validated());
 
-        return redirect()->back(fallback: route('academic.academic-years.index'))
+        return redirect()->back(fallback: route('academic-year.list'))
             ->with('success', "Academic event '{$event->title}' scheduled successfully.");
     }
 
@@ -51,7 +51,7 @@ class AcademicEventController extends Controller
     {
         $academicEvent->update($request->validated());
 
-        return redirect()->back(fallback: route('academic.academic-years.index'))
+        return redirect()->back(fallback: route('academic-year.list'))
             ->with('success', "Academic event '{$academicEvent->title}' updated successfully.");
     }
 
@@ -63,7 +63,7 @@ class AcademicEventController extends Controller
         $title = $academicEvent->title;
         $academicEvent->delete();
 
-        return redirect()->back(fallback: route('academic.academic-years.index'))
+        return redirect()->back(fallback: route('academic-year.list'))
             ->with('success', "Academic event '{$title}' deleted successfully.");
     }
 

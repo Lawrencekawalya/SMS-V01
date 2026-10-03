@@ -287,7 +287,7 @@ class AcademicPerformanceAnalyticsTest extends TestCase
     public function test_academic_analytics_dashboard_loads_successfully(): void
     {
         $response = $this->actingAs($this->adminUser)
-            ->get(route('academic.reports.analytics', [
+            ->get(route('analytics.list', [
                 'academic_year_id' => $this->academicYear->id,
                 'semester_id' => $this->semester->id,
             ]));
@@ -303,7 +303,7 @@ class AcademicPerformanceAnalyticsTest extends TestCase
     public function test_academic_analytics_computes_department_metrics(): void
     {
         $response = $this->actingAs($this->adminUser)
-            ->get(route('academic.reports.analytics', [
+            ->get(route('analytics.list', [
                 'academic_year_id' => $this->academicYear->id,
                 'semester_id' => $this->semester->id,
             ]));
@@ -320,7 +320,7 @@ class AcademicPerformanceAnalyticsTest extends TestCase
     public function test_academic_analytics_detects_course_failure_anomalies(): void
     {
         $response = $this->actingAs($this->adminUser)
-            ->get(route('academic.reports.analytics', [
+            ->get(route('analytics.list', [
                 'academic_year_id' => $this->academicYear->id,
                 'semester_id' => $this->semester->id,
             ]));
@@ -337,7 +337,7 @@ class AcademicPerformanceAnalyticsTest extends TestCase
     public function test_academic_analytics_aggregates_institutional_grade_distribution(): void
     {
         $response = $this->actingAs($this->adminUser)
-            ->get(route('academic.reports.analytics', [
+            ->get(route('analytics.list', [
                 'academic_year_id' => $this->academicYear->id,
                 'semester_id' => $this->semester->id,
             ]));

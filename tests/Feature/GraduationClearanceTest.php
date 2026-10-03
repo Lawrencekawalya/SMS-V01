@@ -275,7 +275,7 @@ class GraduationClearanceTest extends TestCase
     public function test_graduation_candidates_directory_loads_successfully(): void
     {
         $response = $this->actingAs($this->adminUser)
-            ->get(route('academic.graduation.index'));
+            ->get(route('graduation.list'));
 
         $response->assertOk();
         $response->assertViewIs('academic.graduation.index');
@@ -289,7 +289,7 @@ class GraduationClearanceTest extends TestCase
     public function test_student_clearance_audit_page_renders_checklist_and_metrics(): void
     {
         $response = $this->actingAs($this->adminUser)
-            ->get(route('academic.graduation.audit', $this->studentCleared->id));
+            ->get(route('graduation.audit', $this->studentCleared->id));
 
         $response->assertOk();
         $response->assertViewIs('academic.graduation.audit');
@@ -304,7 +304,7 @@ class GraduationClearanceTest extends TestCase
     public function test_honors_roll_gazette_groups_cleared_graduands(): void
     {
         $response = $this->actingAs($this->adminUser)
-            ->get(route('academic.graduation.honors-roll'));
+            ->get(route('graduation.honors-roll'));
 
         $response->assertOk();
         $response->assertViewIs('academic.graduation.honors-roll');

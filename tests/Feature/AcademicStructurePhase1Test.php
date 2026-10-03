@@ -29,15 +29,15 @@ class AcademicStructurePhase1Test extends TestCase
     {
         Campus::factory()->create(['university_id' => $this->university->id]);
 
-        $this->get(route('academic.campuses.index'))
+        $this->get(route('campus.list'))
             ->assertStatus(200)
             ->assertSee('University Campuses');
 
-        $this->get(route('academic.faculties.index'))
+        $this->get(route('faculty.list'))
             ->assertStatus(200)
             ->assertSee('Academic Faculties');
 
-        $this->get(route('academic.university.edit'))
+        $this->get(route('university.edit'))
             ->assertStatus(200)
             ->assertSee('Root Institution Governance Profile');
     }
@@ -53,9 +53,9 @@ class AcademicStructurePhase1Test extends TestCase
             'status' => 'active',
         ];
 
-        $response = $this->post(route('academic.campuses.store'), $payload);
+        $response = $this->post(route('campus.store'), $payload);
 
-        $response->assertRedirect(route('academic.campuses.index'));
+        $response->assertRedirect(route('campus.list'));
         $response->assertSessionHas('success');
 
         $this->assertDatabaseHas('campuses', [
@@ -82,7 +82,7 @@ class AcademicStructurePhase1Test extends TestCase
             'status' => 'active',
         ];
 
-        $this->post(route('academic.campuses.store'), $payload);
+        $this->post(route('campus.store'), $payload);
 
         $this->assertFalse($firstCampus->fresh()->is_main_campus);
         $this->assertDatabaseHas('campuses', [
@@ -105,7 +105,7 @@ class AcademicStructurePhase1Test extends TestCase
             'status' => 'active',
         ];
 
-        $response = $this->post(route('academic.campuses.store'), $payload);
+        $response = $this->post(route('campus.store'), $payload);
         $response->assertSessionHasErrors('code');
     }
 
@@ -123,9 +123,9 @@ class AcademicStructurePhase1Test extends TestCase
             'status' => 'active',
         ];
 
-        $response = $this->post(route('academic.faculties.store'), $payload);
+        $response = $this->post(route('faculty.store'), $payload);
 
-        $response->assertRedirect(route('academic.faculties.index'));
+        $response->assertRedirect(route('faculty.list'));
         $response->assertSessionHas('success');
 
         $this->assertDatabaseHas('faculties', [
@@ -151,7 +151,7 @@ class AcademicStructurePhase1Test extends TestCase
             'status' => 'active',
         ];
 
-        $response = $this->post(route('academic.faculties.store'), $payload);
+        $response = $this->post(route('faculty.store'), $payload);
         $response->assertSessionHasErrors('code');
     }
 
@@ -160,9 +160,9 @@ class AcademicStructurePhase1Test extends TestCase
         $campus = Campus::factory()->create(['university_id' => $this->university->id]);
         Faculty::factory()->create(['campus_id' => $campus->id]);
 
-        $response = $this->delete(route('academic.campuses.destroy', $campus));
+        $response = $this->delete(route('campus.delete', $campus));
 
-        $response->assertRedirect(route('academic.campuses.index'));
+        $response->assertRedirect(route('campus.list'));
         $response->assertSessionHas('error');
         $this->assertDatabaseHas('campuses', ['id' => $campus->id]);
     }
@@ -176,9 +176,9 @@ class AcademicStructurePhase1Test extends TestCase
             'website' => 'https://apex-premier.ac.ug',
         ];
 
-        $response = $this->put(route('academic.university.update', $this->university), $payload);
+        $response = $this->put(route('university.update', $this->university), $payload);
 
-        $response->assertRedirect(route('academic.university.edit'));
+        $response->assertRedirect(route('university.edit'));
         $response->assertSessionHas('success');
 
         $this->assertDatabaseHas('universities', [
@@ -188,7 +188,7 @@ class AcademicStructurePhase1Test extends TestCase
         ]);
 
         // Verify the edit page loads the updated university without creating duplicate records
-        $editResponse = $this->get(route('academic.university.edit'));
+        $editResponse = $this->get(route('university.edit'));
         $editResponse->assertStatus(200);
         $editResponse->assertSee('Apex Premier University of Uganda');
         $editResponse->assertSee('APEX-PREMIER');

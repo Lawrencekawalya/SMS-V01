@@ -239,7 +239,7 @@ class CourseAddDropAdjustmentTest extends TestCase
 
     public function test_add_drop_workspace_renders_successfully(): void
     {
-        $response = $this->get(route('academic.registrations.add-drop.edit', $this->registration));
+        $response = $this->get(route('registration.add-drop.edit', $this->registration));
 
         $response->assertStatus(200);
         $response->assertSee('Course Add / Drop Adjustment');
@@ -262,14 +262,14 @@ class CourseAddDropAdjustmentTest extends TestCase
         $electiveItem = $this->registration->items()->where('course_unit_id', $this->elective2->id)->first();
 
         // Attempt to drop course
-        $dropResponse = $this->post(route('academic.registrations.add-drop.drop', [
+        $dropResponse = $this->post(route('registration.add-drop.drop', [
             'registration' => $this->registration,
             'item' => $electiveItem,
         ]), [
             'drop_reason' => 'Want to adjust my timetable load.',
         ]);
 
-        $dropResponse->assertRedirect(route('academic.registrations.add-drop.edit', $this->registration));
+        $dropResponse->assertRedirect(route('registration.add-drop.edit', $this->registration));
         $dropResponse->assertSessionHas('error');
 
         $this->assertDatabaseHas('course_registration_items', [
@@ -279,11 +279,11 @@ class CourseAddDropAdjustmentTest extends TestCase
         ]);
 
         // Attempt to add course
-        $addResponse = $this->post(route('academic.registrations.add-drop.add', $this->registration), [
+        $addResponse = $this->post(route('registration.add-drop.add', $this->registration), [
             'course_unit_id' => $this->elective2->id,
         ]);
 
-        $addResponse->assertRedirect(route('academic.registrations.add-drop.edit', $this->registration));
+        $addResponse->assertRedirect(route('registration.add-drop.edit', $this->registration));
         $addResponse->assertSessionHas('error');
     }
 
@@ -291,14 +291,14 @@ class CourseAddDropAdjustmentTest extends TestCase
     {
         $coreItem = $this->registration->items()->where('course_unit_id', $this->core1->id)->first();
 
-        $response = $this->post(route('academic.registrations.add-drop.drop', [
+        $response = $this->post(route('registration.add-drop.drop', [
             'registration' => $this->registration,
             'item' => $coreItem,
         ]), [
             'drop_reason' => 'I would prefer to drop this core course.',
         ]);
 
-        $response->assertRedirect(route('academic.registrations.add-drop.edit', $this->registration));
+        $response->assertRedirect(route('registration.add-drop.edit', $this->registration));
         $response->assertSessionHas('error');
 
         $this->assertDatabaseHas('course_registration_items', [
@@ -314,14 +314,14 @@ class CourseAddDropAdjustmentTest extends TestCase
     {
         $electiveItem = $this->registration->items()->where('course_unit_id', $this->elective2->id)->first();
 
-        $response = $this->post(route('academic.registrations.add-drop.drop', [
+        $response = $this->post(route('registration.add-drop.drop', [
             'registration' => $this->registration,
             'item' => $electiveItem,
         ]), [
             'drop_reason' => 'Schedule collision with mandatory project work.',
         ]);
 
-        $response->assertRedirect(route('academic.registrations.add-drop.edit', $this->registration));
+        $response->assertRedirect(route('registration.add-drop.edit', $this->registration));
         $response->assertSessionHas('success');
 
         $this->assertDatabaseHas('course_registration_items', [
@@ -346,14 +346,14 @@ class CourseAddDropAdjustmentTest extends TestCase
 
         $electiveItem = $this->registration->items()->where('course_unit_id', $this->elective1->id)->first();
 
-        $response = $this->post(route('academic.registrations.add-drop.drop', [
+        $response = $this->post(route('registration.add-drop.drop', [
             'registration' => $this->registration,
             'item' => $electiveItem,
         ]), [
             'drop_reason' => 'Dropping to lessen semester work pressure.',
         ]);
 
-        $response->assertRedirect(route('academic.registrations.add-drop.edit', $this->registration));
+        $response->assertRedirect(route('registration.add-drop.edit', $this->registration));
         $response->assertSessionHas('error');
 
         // Item remains approved and total credits remain 12.0
@@ -372,11 +372,11 @@ class CourseAddDropAdjustmentTest extends TestCase
         $this->registration->recalculateTotalCredits();
         $this->assertEquals(16.0, (float) $this->registration->fresh()->total_credits);
 
-        $response = $this->post(route('academic.registrations.add-drop.add', $this->registration), [
+        $response = $this->post(route('registration.add-drop.add', $this->registration), [
             'course_unit_id' => $this->elective2->id,
         ]);
 
-        $response->assertRedirect(route('academic.registrations.add-drop.edit', $this->registration));
+        $response->assertRedirect(route('registration.add-drop.edit', $this->registration));
         $response->assertSessionHas('success');
 
         $this->assertDatabaseHas('course_registration_items', [
@@ -409,11 +409,11 @@ class CourseAddDropAdjustmentTest extends TestCase
             'course_type' => 'Elective',
         ]);
 
-        $response = $this->post(route('academic.registrations.add-drop.add', $this->registration), [
+        $response = $this->post(route('registration.add-drop.add', $this->registration), [
             'course_unit_id' => $largeCourse->id,
         ]);
 
-        $response->assertRedirect(route('academic.registrations.add-drop.edit', $this->registration));
+        $response->assertRedirect(route('registration.add-drop.edit', $this->registration));
         $response->assertSessionHas('error');
 
         $this->assertDatabaseMissing('course_registration_items', [
@@ -429,11 +429,11 @@ class CourseAddDropAdjustmentTest extends TestCase
 
         // $this->advancedElective requires $this->elective1 to be completed in a prior approved semester.
         // It is currently enrolled in the SAME active semester, not completed in a prior semester.
-        $response = $this->post(route('academic.registrations.add-drop.add', $this->registration), [
+        $response = $this->post(route('registration.add-drop.add', $this->registration), [
             'course_unit_id' => $this->advancedElective->id,
         ]);
 
-        $response->assertRedirect(route('academic.registrations.add-drop.edit', $this->registration));
+        $response->assertRedirect(route('registration.add-drop.edit', $this->registration));
         $response->assertSessionHas('error');
 
         $this->assertDatabaseMissing('course_registration_items', [
@@ -446,11 +446,11 @@ class CourseAddDropAdjustmentTest extends TestCase
     {
         config(['academic.enforce_prerequisites' => false]);
 
-        $response = $this->post(route('academic.registrations.add-drop.add', $this->registration), [
+        $response = $this->post(route('registration.add-drop.add', $this->registration), [
             'course_unit_id' => $this->advancedElective->id,
         ]);
 
-        $response->assertRedirect(route('academic.registrations.add-drop.edit', $this->registration));
+        $response->assertRedirect(route('registration.add-drop.edit', $this->registration));
         $response->assertSessionHas('success');
 
         $this->assertDatabaseHas('course_registration_items', [
@@ -473,11 +473,11 @@ class CourseAddDropAdjustmentTest extends TestCase
         $this->assertEquals(16.0, (float) $this->registration->fresh()->total_credits);
 
         // Now re-add elective2
-        $response = $this->post(route('academic.registrations.add-drop.add', $this->registration), [
+        $response = $this->post(route('registration.add-drop.add', $this->registration), [
             'course_unit_id' => $this->elective2->id,
         ]);
 
-        $response->assertRedirect(route('academic.registrations.add-drop.edit', $this->registration));
+        $response->assertRedirect(route('registration.add-drop.edit', $this->registration));
         $response->assertSessionHas('success');
 
         $this->assertDatabaseHas('course_registration_items', [
@@ -501,7 +501,7 @@ class CourseAddDropAdjustmentTest extends TestCase
         ]);
         $this->registration->recalculateTotalCredits();
 
-        $response = $this->get(route('academic.registrations.add-drop.edit', $this->registration));
+        $response = $this->get(route('registration.add-drop.edit', $this->registration));
 
         $response->assertStatus(200);
         $response->assertSee('Dropped Courses Audit Trail');
@@ -516,14 +516,14 @@ class CourseAddDropAdjustmentTest extends TestCase
 
         $electiveItem = $this->registration->items()->where('course_unit_id', $this->elective2->id)->first();
 
-        $response = $this->post(route('academic.registrations.add-drop.drop', [
+        $response = $this->post(route('registration.add-drop.drop', [
             'registration' => $this->registration,
             'item' => $electiveItem,
         ]), [
             'drop_reason' => 'Direct drop without requiring advisor sign-off.',
         ]);
 
-        $response->assertRedirect(route('academic.registrations.add-drop.edit', $this->registration));
+        $response->assertRedirect(route('registration.add-drop.edit', $this->registration));
         $response->assertSessionHas('success');
 
         $freshRegistration = $this->registration->fresh();

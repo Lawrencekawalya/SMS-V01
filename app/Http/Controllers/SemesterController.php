@@ -38,7 +38,7 @@ class SemesterController extends Controller
             $semester->activate();
         }
 
-        return redirect()->route('academic.academic-years.index')
+        return redirect()->route('academic-year.list')
             ->with('success', "Semester '{$semester->name}' created successfully.");
     }
 
@@ -67,7 +67,7 @@ class SemesterController extends Controller
             $semester->activate();
         }
 
-        return redirect()->route('academic.academic-years.index')
+        return redirect()->route('academic-year.list')
             ->with('success', "Semester '{$semester->name}' updated successfully.");
     }
 
@@ -83,7 +83,7 @@ class SemesterController extends Controller
         $name = $semester->name;
         $semester->delete();
 
-        return redirect()->route('academic.academic-years.index')
+        return redirect()->route('academic-year.list')
             ->with('success', "Semester '{$name}' deleted successfully.");
     }
 

@@ -45,10 +45,10 @@
           </div>
         </div>
         <div class="d-flex gap-2">
-          <a href="{{ route('academic.academic-years.show', $currentYear) }}" class="btn btn-outline-success btn-sm">
+          <a href="{{ route('academic-year.show', $currentYear) }}" class="btn btn-outline-success btn-sm">
             <i class="bi bi-eye me-1"></i> View Year Details
           </a>
-          <a href="{{ route('academic.semesters.create', ['academic_year_id' => $currentYear->id]) }}" class="btn btn-success btn-sm">
+          <a href="{{ route('semester.create', ['academic_year_id' => $currentYear->id]) }}" class="btn btn-success btn-sm">
             <i class="bi bi-plus-circle me-1"></i> Add Semester
           </a>
         </div>
@@ -63,7 +63,7 @@
           </h5>
           <p class="mb-0 text-muted small">Please activate an Academic Year and Semester to start the university session engine.</p>
         </div>
-        <a href="{{ route('academic.academic-years.create') }}" class="btn btn-warning btn-sm">
+        <a href="{{ route('academic-year.create') }}" class="btn btn-warning btn-sm">
           <i class="bi bi-plus-circle me-1"></i> Setup Academic Year
         </a>
       </div>
@@ -79,7 +79,7 @@
           <span class="input-group-text"><i class="bi bi-search"></i></span>
           <input type="search" id="years-filter" class="form-control" placeholder="Filter rows..." autocomplete="off">
         </div>
-        <a href="{{ route('academic.academic-years.create') }}" class="btn btn-primary btn-sm">
+        <a href="{{ route('academic-year.create') }}" class="btn btn-primary btn-sm">
           <i class="bi bi-plus-circle me-1"></i> Add Academic Year
         </a>
       </div>
@@ -115,7 +115,7 @@
             <tr>
               <td>{{ $loop->iteration }}</td>
               <td class="fw-bold">
-                <a href="{{ route('academic.academic-years.show', $year) }}" class="text-decoration-none">
+                <a href="{{ route('academic-year.show', $year) }}" class="text-decoration-none">
                   {{ $year->name }}
                 </a>
               </td>
@@ -136,20 +136,20 @@
               <td>{{ Str::limit($year->description ?? 'N/A', 40) }}</td>
               <td class="text-end">
                 @if (! $year->is_current)
-                  <form action="{{ route('academic.academic-years.make-current', $year) }}" method="POST" class="d-inline" onsubmit="return confirm('Set {{ $year->name }} as the current university academic year?');">
+                  <form action="{{ route('academic-year.make-current', $year) }}" method="POST" class="d-inline" onsubmit="return confirm('Set {{ $year->name }} as the current university academic year?');">
                     @csrf
                     <button type="submit" class="btn btn-sm btn-outline-success" title="Set as Current Year">
                       <i class="bi bi-check-lg"></i> Set Current
                     </button>
                   </form>
                 @endif
-                <a href="{{ route('academic.academic-years.show', $year) }}" class="btn btn-sm btn-outline-info" title="View Details">
+                <a href="{{ route('academic-year.show', $year) }}" class="btn btn-sm btn-outline-info" title="View Details">
                   <i class="bi bi-eye"></i>
                 </a>
-                <a href="{{ route('academic.academic-years.edit', $year) }}" class="btn btn-sm btn-outline-warning" title="Edit Year">
+                <a href="{{ route('academic-year.edit', $year) }}" class="btn btn-sm btn-outline-warning" title="Edit Year">
                   <i class="bi bi-pencil"></i>
                 </a>
-                <form action="{{ route('academic.academic-years.destroy', $year) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete academic year {{ $year->name }}?');">
+                <form action="{{ route('academic-year.delete', $year) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete academic year {{ $year->name }}?');">
                   @csrf
                   @method('DELETE')
                   <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Year" {{ $year->is_current ? 'disabled' : '' }}>
@@ -173,7 +173,7 @@
           <span class="input-group-text"><i class="bi bi-search"></i></span>
           <input type="search" id="semesters-filter" class="form-control" placeholder="Filter rows..." autocomplete="off">
         </div>
-        <a href="{{ route('academic.semesters.create') }}" class="btn btn-primary btn-sm">
+        <a href="{{ route('semester.create') }}" class="btn btn-primary btn-sm">
           <i class="bi bi-plus-circle me-1"></i> Add Semester
         </a>
       </div>
@@ -248,17 +248,17 @@
                 </td>
                 <td class="text-end">
                   @if (! $semester->is_active)
-                    <form action="{{ route('academic.semesters.activate', $semester) }}" method="POST" class="d-inline" onsubmit="return confirm('Activate {{ $semester->name }} ({{ $year->name }}) as the current live session?');">
+                    <form action="{{ route('semester.activate', $semester) }}" method="POST" class="d-inline" onsubmit="return confirm('Activate {{ $semester->name }} ({{ $year->name }}) as the current live session?');">
                       @csrf
                       <button type="submit" class="btn btn-sm btn-outline-success" title="Activate Semester">
                         <i class="bi bi-play-circle me-1"></i> Activate
                       </button>
                     </form>
                   @endif
-                  <a href="{{ route('academic.semesters.edit', $semester) }}" class="btn btn-sm btn-outline-warning" title="Edit Semester">
+                  <a href="{{ route('semester.edit', $semester) }}" class="btn btn-sm btn-outline-warning" title="Edit Semester">
                     <i class="bi bi-pencil"></i>
                   </a>
-                  <form action="{{ route('academic.semesters.destroy', $semester) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete {{ $semester->name }}?');">
+                  <form action="{{ route('semester.delete', $semester) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete {{ $semester->name }}?');">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Semester" {{ $semester->is_active ? 'disabled' : '' }}>
@@ -394,7 +394,7 @@
                   >
                     <i class="bi bi-pencil"></i>
                   </button>
-                  <form action="{{ route('academic.events.destroy', $event) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete scheduled event {{ $event->title }}?');">
+                  <form action="{{ route('event.delete', $event) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete scheduled event {{ $event->title }}?');">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Event">
@@ -437,7 +437,7 @@
   <div class="modal fade" id="createEventModal" tabindex="-1" aria-labelledby="createEventModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
-        <form action="{{ route('academic.events.store') }}" method="POST">
+        <form action="{{ route('event.store') }}" method="POST">
           @csrf
           <div class="modal-header">
             <h5 class="modal-title" id="createEventModalLabel">
@@ -775,7 +775,7 @@
             center: 'title',
             right: 'dayGridMonth,timeGridWeek,listMonth'
           },
-          events: '{{ route('academic.events.feed') }}',
+          events: '{{ route('event.feed') }}',
           eventClick: function(info) {
             info.jsEvent.preventDefault();
             const event = info.event;

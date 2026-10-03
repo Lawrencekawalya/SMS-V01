@@ -449,7 +449,7 @@ class AssessmentDataArchitectureTest extends TestCase
             'status' => 'draft',
         ]);
 
-        $response = $this->get(route('academic.assessments.index'));
+        $response = $this->get(route('assessment.list'));
 
         $response->assertOk();
         $response->assertSee('Course Assessment &amp; Mark Sheets', false);
@@ -488,13 +488,13 @@ class AssessmentDataArchitectureTest extends TestCase
         ]);
 
         // Filter by department
-        $responseDept = $this->get(route('academic.assessments.index', ['department_id' => $this->department->id]));
+        $responseDept = $this->get(route('assessment.list', ['department_id' => $this->department->id]));
         $responseDept->assertOk();
         $responseDept->assertSee('CSC2101');
         $responseDept->assertDontSee('BIT3101');
 
         // Filter by status
-        $responseStatus = $this->get(route('academic.assessments.index', ['status' => 'published']));
+        $responseStatus = $this->get(route('assessment.list', ['status' => 'published']));
         $responseStatus->assertOk();
         $responseStatus->assertSee('BIT3101');
         $responseStatus->assertDontSee('CSC2101');
@@ -524,7 +524,7 @@ class AssessmentDataArchitectureTest extends TestCase
             'lecturer_remarks' => 'Outstanding participation',
         ]);
 
-        $response = $this->get(route('academic.assessments.show', $sheet));
+        $response = $this->get(route('assessment.show', $sheet));
 
         $response->assertOk();
         $response->assertSee('Course Assessment Sheet Details');
@@ -538,19 +538,19 @@ class AssessmentDataArchitectureTest extends TestCase
 
     public function test_sidebar_includes_examinations_and_grading_navigation(): void
     {
-        $response = $this->get(route('academic.assessments.index'));
+        $response = $this->get(route('assessment.list'));
 
         $response->assertOk();
         $response->assertSee('Examinations & Grading');
         $response->assertSee('Grading Policy & Scale');
         $response->assertSee('Course Mark Sheets');
-        $response->assertSee(route('academic.assessments.policy'));
-        $response->assertSee(route('academic.assessments.index'));
+        $response->assertSee(route('assessment.policy'));
+        $response->assertSee(route('assessment.list'));
     }
 
     public function test_institutional_grading_policy_page_renders_with_nche_scale(): void
     {
-        $response = $this->get(route('academic.assessments.policy'));
+        $response = $this->get(route('assessment.policy'));
 
         $response->assertOk();
         $response->assertSee('Institutional Assessment &amp; Grading Standards', false);
@@ -572,7 +572,7 @@ class AssessmentDataArchitectureTest extends TestCase
     public function test_policy_update_validates_that_ca_and_exam_weights_sum_to_100_percent(): void
     {
         // Unbalanced: 40 + 50 = 90%
-        $response = $this->post(route('academic.assessments.policy.update'), [
+        $response = $this->post(route('assessment.policy.update'), [
             'ca_weight' => 40.0,
             'exam_weight' => 50.0,
             'pass_mark' => 50.0,
@@ -584,13 +584,13 @@ class AssessmentDataArchitectureTest extends TestCase
     public function test_can_update_institutional_assessment_policy_with_valid_weights(): void
     {
         // Valid 30% CA + 70% Exam = 100%
-        $response = $this->post(route('academic.assessments.policy.update'), [
+        $response = $this->post(route('assessment.policy.update'), [
             'ca_weight' => 30.0,
             'exam_weight' => 70.0,
             'pass_mark' => 50.0,
         ]);
 
-        $response->assertRedirect(route('academic.assessments.policy'));
+        $response->assertRedirect(route('assessment.policy'));
         $response->assertSessionHas('success');
 
         $this->assertEquals(30.0, config('academic.assessment_ca_weight'));
@@ -611,7 +611,7 @@ class AssessmentDataArchitectureTest extends TestCase
         $tierA = GradingScaleTier::where('grade_letter', 'A')->firstOrFail();
 
         // Update tier A to start at 85% instead of 80%
-        $response = $this->put(route('academic.assessments.policy.scale.update'), [
+        $response = $this->put(route('assessment.policy.scale.update'), [
             'tiers' => [
                 [
                     'id' => $tierA->id,
@@ -624,15 +624,15 @@ class AssessmentDataArchitectureTest extends TestCase
             ],
         ]);
 
-        $response->assertRedirect(route('academic.assessments.policy'));
+        $response->assertRedirect(route('assessment.policy'));
         $response->assertSessionHas('success');
 
         $this->assertEquals(85.0, $tierA->fresh()->min_score);
         $this->assertEquals('Summa Cum Laude / Exceptional', $tierA->fresh()->classification);
 
         // Reset to defaults
-        $resetResponse = $this->post(route('academic.assessments.policy.scale.reset'));
-        $resetResponse->assertRedirect(route('academic.assessments.policy'));
+        $resetResponse = $this->post(route('assessment.policy.scale.reset'));
+        $resetResponse->assertRedirect(route('assessment.policy'));
         $resetResponse->assertSessionHas('success');
 
         $this->assertEquals(80.0, GradingScaleTier::where('grade_letter', 'A')->first()->min_score);
@@ -647,7 +647,7 @@ class AssessmentDataArchitectureTest extends TestCase
             ->firstOrFail();
 
         // Update First Class Honours threshold
-        $response = $this->put(route('academic.assessments.policy.awards.update'), [
+        $response = $this->put(route('assessment.policy.awards.update'), [
             'awards' => [
                 [
                     'id' => $degreeFirst->id,
@@ -659,7 +659,7 @@ class AssessmentDataArchitectureTest extends TestCase
             ],
         ]);
 
-        $response->assertRedirect(route('academic.assessments.policy'));
+        $response->assertRedirect(route('assessment.policy'));
         $response->assertSessionHas('success');
 
         $this->assertEquals(4.50, $degreeFirst->fresh()->min_cgpa);
@@ -670,8 +670,8 @@ class AssessmentDataArchitectureTest extends TestCase
         $this->assertTrue(AwardClassification::where('award_level', 'certificate')->exists());
 
         // Reset awards to defaults
-        $resetResponse = $this->post(route('academic.assessments.policy.awards.reset'));
-        $resetResponse->assertRedirect(route('academic.assessments.policy'));
+        $resetResponse = $this->post(route('assessment.policy.awards.reset'));
+        $resetResponse->assertRedirect(route('assessment.policy'));
         $resetResponse->assertSessionHas('success');
 
         $this->assertEquals(4.40, AwardClassification::where('award_level', 'degree')

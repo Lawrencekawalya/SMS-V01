@@ -166,7 +166,7 @@ class LecturerMarkEntryTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->instructor)
-            ->get(route('academic.assessments.edit', $this->draftSheet));
+            ->get(route('assessment.edit', $this->draftSheet));
 
         $response->assertStatus(200);
         $response->assertSee('Lecturer Mark Entry Workspace');
@@ -183,9 +183,9 @@ class LecturerMarkEntryTest extends TestCase
         $this->draftSheet->update(['status' => 'submitted_to_hod']);
 
         $response = $this->actingAs($this->instructor)
-            ->get(route('academic.assessments.edit', $this->draftSheet));
+            ->get(route('assessment.edit', $this->draftSheet));
 
-        $response->assertRedirect(route('academic.assessments.show', $this->draftSheet));
+        $response->assertRedirect(route('assessment.show', $this->draftSheet));
         $response->assertSessionHas('warning');
     }
 
@@ -200,7 +200,7 @@ class LecturerMarkEntryTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->instructor)
-            ->get(route('academic.assessments.edit', $this->draftSheet));
+            ->get(route('assessment.edit', $this->draftSheet));
 
         $response->assertStatus(200);
         $this->assertDatabaseHas('student_marks', [
@@ -246,9 +246,9 @@ class LecturerMarkEntryTest extends TestCase
         ];
 
         $response = $this->actingAs($this->instructor)
-            ->put(route('academic.assessments.update', $this->draftSheet), $payload);
+            ->put(route('assessment.update', $this->draftSheet), $payload);
 
-        $response->assertRedirect(route('academic.assessments.edit', $this->draftSheet));
+        $response->assertRedirect(route('assessment.edit', $this->draftSheet));
         $response->assertSessionHas('success');
 
         // Check Student 1: 34 + 48 = 82 -> A, 5.0 GP, Passed
@@ -299,9 +299,9 @@ class LecturerMarkEntryTest extends TestCase
         ];
 
         $response = $this->actingAs($this->instructor)
-            ->put(route('academic.assessments.update', $this->draftSheet), $payload);
+            ->put(route('assessment.update', $this->draftSheet), $payload);
 
-        $response->assertRedirect(route('academic.assessments.edit', $this->draftSheet));
+        $response->assertRedirect(route('assessment.edit', $this->draftSheet));
 
         $mark1->refresh();
         $this->assertEquals(32.5, (float) $mark1->ca_score);
@@ -336,9 +336,9 @@ class LecturerMarkEntryTest extends TestCase
         ];
 
         $response = $this->actingAs($this->instructor)
-            ->put(route('academic.assessments.update', $this->draftSheet), $payload);
+            ->put(route('assessment.update', $this->draftSheet), $payload);
 
-        $response->assertRedirect(route('academic.assessments.show', $this->draftSheet));
+        $response->assertRedirect(route('assessment.show', $this->draftSheet));
         $response->assertSessionHas('success');
 
         $this->draftSheet->refresh();
@@ -372,8 +372,8 @@ class LecturerMarkEntryTest extends TestCase
         ];
 
         $response = $this->actingAs($this->instructor)
-            ->from(route('academic.assessments.edit', $this->draftSheet))
-            ->put(route('academic.assessments.update', $this->draftSheet), $payload);
+            ->from(route('assessment.edit', $this->draftSheet))
+            ->put(route('assessment.update', $this->draftSheet), $payload);
 
         $response->assertSessionHasErrors(['marks.0.ca_score', 'marks.0.exam_score']);
     }
@@ -400,8 +400,8 @@ class LecturerMarkEntryTest extends TestCase
         ];
 
         $response = $this->actingAs($this->instructor)
-            ->from(route('academic.assessments.edit', $this->draftSheet))
-            ->put(route('academic.assessments.update', $this->draftSheet), $payload);
+            ->from(route('assessment.edit', $this->draftSheet))
+            ->put(route('assessment.update', $this->draftSheet), $payload);
 
         $response->assertSessionHasErrors(['marks.0.ca_score', 'marks.0.exam_score']);
     }
@@ -436,9 +436,9 @@ class LecturerMarkEntryTest extends TestCase
         ];
 
         $response = $this->actingAs($this->instructor)
-            ->put(route('academic.assessments.update', $this->draftSheet), $payload);
+            ->put(route('assessment.update', $this->draftSheet), $payload);
 
-        $response->assertRedirect(route('academic.assessments.edit', $this->draftSheet));
+        $response->assertRedirect(route('assessment.edit', $this->draftSheet));
 
         $this->assertDatabaseHas('grade_audit_logs', [
             'student_mark_id' => $mark1->id,
@@ -460,9 +460,9 @@ class LecturerMarkEntryTest extends TestCase
     public function test_lecturer_can_submit_to_hod_via_dedicated_submit_endpoint(): void
     {
         $response = $this->actingAs($this->instructor)
-            ->post(route('academic.assessments.submit', $this->draftSheet));
+            ->post(route('assessment.submit', $this->draftSheet));
 
-        $response->assertRedirect(route('academic.assessments.show', $this->draftSheet));
+        $response->assertRedirect(route('assessment.show', $this->draftSheet));
         $response->assertSessionHas('success');
 
         $this->draftSheet->refresh();
@@ -475,9 +475,9 @@ class LecturerMarkEntryTest extends TestCase
         $this->draftSheet->update(['status' => 'department_moderated']);
 
         $response = $this->actingAs($this->instructor)
-            ->post(route('academic.assessments.submit', $this->draftSheet));
+            ->post(route('assessment.submit', $this->draftSheet));
 
-        $response->assertRedirect(route('academic.assessments.show', $this->draftSheet));
+        $response->assertRedirect(route('assessment.show', $this->draftSheet));
         $response->assertSessionHas('warning');
 
         $this->draftSheet->refresh();
@@ -487,13 +487,13 @@ class LecturerMarkEntryTest extends TestCase
     public function test_action_buttons_displayed_on_index_and_show_views_when_sheet_is_editable(): void
     {
         $responseIndex = $this->actingAs($this->instructor)
-            ->get(route('academic.assessments.index'));
+            ->get(route('assessment.list'));
 
         $responseIndex->assertStatus(200);
-        $responseIndex->assertSee(route('academic.assessments.edit', $this->draftSheet));
+        $responseIndex->assertSee(route('assessment.edit', $this->draftSheet));
 
         $responseShow = $this->actingAs($this->instructor)
-            ->get(route('academic.assessments.show', $this->draftSheet));
+            ->get(route('assessment.show', $this->draftSheet));
 
         $responseShow->assertStatus(200);
         $responseShow->assertSee('Enter / Edit Marks');
@@ -523,9 +523,9 @@ class LecturerMarkEntryTest extends TestCase
         ];
 
         // Perform request WITHOUT actingAs()
-        $response = $this->put(route('academic.assessments.update', $this->draftSheet), $payload);
+        $response = $this->put(route('assessment.update', $this->draftSheet), $payload);
 
-        $response->assertRedirect(route('academic.assessments.edit', $this->draftSheet));
+        $response->assertRedirect(route('assessment.edit', $this->draftSheet));
         $response->assertSessionHas('success');
 
         $mark1->refresh();

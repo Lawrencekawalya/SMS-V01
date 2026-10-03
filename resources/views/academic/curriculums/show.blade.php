@@ -6,7 +6,7 @@
 @section('breadcrumb')
   <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
   <li class="breadcrumb-item">Academic Core</li>
-  <li class="breadcrumb-item"><a href="{{ route('academic.curriculums.index') }}">Curriculums</a></li>
+  <li class="breadcrumb-item"><a href="{{ route('curriculum.list') }}">Curriculums</a></li>
   <li class="breadcrumb-item active" aria-current="page">{{ $curriculum->programme->code }}</li>
 @endsection
 
@@ -44,10 +44,10 @@
               <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#assignCourseModal">
                 <i class="bi bi-plus-circle me-1"></i> Assign Course Unit
               </button>
-              <a href="{{ route('academic.curriculums.edit', $curriculum) }}" class="btn btn-outline-warning">
+              <a href="{{ route('curriculum.edit', $curriculum) }}" class="btn btn-outline-warning">
                 <i class="bi bi-pencil me-1"></i> Edit
               </a>
-              <a href="{{ route('academic.curriculums.index') }}" class="btn btn-outline-secondary">
+              <a href="{{ route('curriculum.list') }}" class="btn btn-outline-secondary">
                 <i class="bi bi-arrow-left me-1"></i> Back
               </a>
             </div>
@@ -132,7 +132,7 @@
                     </h5>
                     <div class="d-flex align-items-center gap-2">
                       <form class="stage-credit-form d-flex align-items-center"
-                            data-url="{{ route('academic.curriculums.stage-credit-limits.update', $curriculum) }}"
+                            data-url="{{ route('curriculum.stage-credit-limits.update', $curriculum) }}"
                             data-year="{{ $year }}"
                             data-semester="1">
                         @csrf
@@ -199,7 +199,7 @@
                                   <span class="badge text-bg-secondary">{{ $mapping->courseUnit->code }}</span>
                                 </td>
                                 <td>
-                                  <a href="{{ route('academic.courses.show', $mapping->courseUnit) }}" class="fw-bold text-decoration-none" target="_blank">
+                                  <a href="{{ route('course.show', $mapping->courseUnit) }}" class="fw-bold text-decoration-none" target="_blank">
                                     {{ $mapping->courseUnit->name }}
                                   </a>
                                   <small class="text-muted d-block">{{ $mapping->courseUnit->department->name ?? '' }}</small>
@@ -219,7 +219,7 @@
                                   @endif
                                 </td>
                                 <td class="text-end">
-                                  <form action="{{ route('academic.curriculums.courses.destroy', [$curriculum, $mapping]) }}" method="POST" onsubmit="return confirm('Remove course {{ $mapping->courseUnit->code }} from Year {{ $year }}, Semester 1?');">
+                                  <form action="{{ route('curriculum.courses.destroy', [$curriculum, $mapping]) }}" method="POST" onsubmit="return confirm('Remove course {{ $mapping->courseUnit->code }} from Year {{ $year }}, Semester 1?');">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-outline-danger" title="Remove Course from Curriculum">
@@ -253,7 +253,7 @@
                     </h5>
                     <div class="d-flex align-items-center gap-2">
                       <form class="stage-credit-form d-flex align-items-center"
-                            data-url="{{ route('academic.curriculums.stage-credit-limits.update', $curriculum) }}"
+                            data-url="{{ route('curriculum.stage-credit-limits.update', $curriculum) }}"
                             data-year="{{ $year }}"
                             data-semester="2">
                         @csrf
@@ -320,7 +320,7 @@
                                   <span class="badge text-bg-secondary">{{ $mapping->courseUnit->code }}</span>
                                 </td>
                                 <td>
-                                  <a href="{{ route('academic.courses.show', $mapping->courseUnit) }}" class="fw-bold text-decoration-none" target="_blank">
+                                  <a href="{{ route('course.show', $mapping->courseUnit) }}" class="fw-bold text-decoration-none" target="_blank">
                                     {{ $mapping->courseUnit->name }}
                                   </a>
                                   <small class="text-muted d-block">{{ $mapping->courseUnit->department->name ?? '' }}</small>
@@ -340,7 +340,7 @@
                                   @endif
                                 </td>
                                 <td class="text-end">
-                                  <form action="{{ route('academic.curriculums.courses.destroy', [$curriculum, $mapping]) }}" method="POST" onsubmit="return confirm('Remove course {{ $mapping->courseUnit->code }} from Year {{ $year }}, Semester 2?');">
+                                  <form action="{{ route('curriculum.courses.destroy', [$curriculum, $mapping]) }}" method="POST" onsubmit="return confirm('Remove course {{ $mapping->courseUnit->code }} from Year {{ $year }}, Semester 2?');">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-outline-danger" title="Remove Course from Curriculum">
@@ -372,7 +372,7 @@
   <div class="modal fade" id="assignCourseModal" tabindex="-1" aria-labelledby="assignCourseModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
-        <form action="{{ route('academic.curriculums.courses.store', $curriculum) }}" method="POST" id="allocateCourseForm">
+        <form action="{{ route('curriculum.courses.store', $curriculum) }}" method="POST" id="allocateCourseForm">
           @csrf
           <div class="modal-header">
             <h5 class="modal-title" id="assignCourseModalLabel">
@@ -383,7 +383,7 @@
           <div class="modal-body">
             @if ($availableCourses->isEmpty())
               <div class="alert alert-info mb-0">
-                <i class="bi bi-info-circle me-2"></i> All active catalog course units are already assigned to this curriculum structure. You can add more courses in the <a href="{{ route('academic.courses.create') }}" class="alert-link">Course Catalog</a>.
+                <i class="bi bi-info-circle me-2"></i> All active catalog course units are already assigned to this curriculum structure. You can add more courses in the <a href="{{ route('course.create') }}" class="alert-link">Course Catalog</a>.
               </div>
             @else
               <div class="row g-3">

@@ -207,14 +207,14 @@ class ExaminationModuleWeek3Test extends TestCase
 
         // 3. Lecturer logs in and accesses marks entry workspace
         $this->actingAs($this->lecturer);
-        $entryResponse = $this->get(route('academic.assessments.edit', $sheet));
+        $entryResponse = $this->get(route('assessment.edit', $sheet));
         $entryResponse->assertOk();
         $entryResponse->assertViewIs('academic.assessments.entry');
         $entryResponse->assertSee('SE1101');
         $entryResponse->assertSee('Alice Arinda');
 
         // 4. Lecturer enters CA (36.0) and Exam (54.0) marks -> Total: 90.0% (A, 5.0 GP) and submits to HoD
-        $submitResponse = $this->put(route('academic.assessments.update', $sheet), [
+        $submitResponse = $this->put(route('assessment.update', $sheet), [
             'action' => 'submit_hod',
             'marks' => [
                 [
@@ -226,7 +226,7 @@ class ExaminationModuleWeek3Test extends TestCase
             ],
         ]);
 
-        $submitResponse->assertRedirect(route('academic.assessments.show', $sheet));
+        $submitResponse->assertRedirect(route('assessment.show', $sheet));
         $submitResponse->assertSessionHas('success');
 
         // Verify mark and sheet status
@@ -241,17 +241,17 @@ class ExaminationModuleWeek3Test extends TestCase
 
         // 5. HoD logs in, inspects sheet and statistical distribution on Moderation Desk
         $this->actingAs($this->hodUser);
-        $deskResponse = $this->get(route('academic.assessments.moderation.show', $sheet));
+        $deskResponse = $this->get(route('moderation.show', $sheet));
         $deskResponse->assertOk();
         $deskResponse->assertViewIs('academic.assessments.moderation.show');
         $deskResponse->assertSee('Class Mean &amp; Variance', false);
         $deskResponse->assertSee('Endorse &amp; Submit to Senate', false);
 
         // 6. HoD endorses sheet
-        $endorseResponse = $this->post(route('academic.assessments.moderation.endorse', $sheet), [
+        $endorseResponse = $this->post(route('moderation.endorse', $sheet), [
             'remarks' => 'Departmental moderation committee validated assessment standards.',
         ]);
-        $endorseResponse->assertRedirect(route('academic.assessments.moderation.show', $sheet));
+        $endorseResponse->assertRedirect(route('moderation.show', $sheet));
 
         $sheet->refresh();
         $this->assertEquals('department_moderated', $sheet->status);
@@ -259,8 +259,8 @@ class ExaminationModuleWeek3Test extends TestCase
 
         // 7. Academic Registrar / Senate officially publishes marks
         $this->actingAs($this->superAdmin);
-        $publishResponse = $this->post(route('academic.assessments.moderation.publish', $sheet));
-        $publishResponse->assertRedirect(route('academic.assessments.moderation.show', $sheet));
+        $publishResponse = $this->post(route('moderation.publish', $sheet));
+        $publishResponse->assertRedirect(route('moderation.show', $sheet));
 
         $sheet->refresh();
         $this->assertEquals('published', $sheet->status);
@@ -282,7 +282,7 @@ class ExaminationModuleWeek3Test extends TestCase
         $this->assertEquals(5.00, (float) $this->studentAlice->cumulative_gpa);
 
         // 9. Student / Registrar views the official printable semester result slip
-        $slipResponse = $this->get(route('academic.results.slip', [
+        $slipResponse = $this->get(route('result.slip', [
             'student' => $this->studentAlice,
             'semester' => $this->semester,
         ]));
@@ -296,7 +296,7 @@ class ExaminationModuleWeek3Test extends TestCase
         $slipResponse->assertSee('Normal Progress');
 
         // 10. Student / Registrar views the official cumulative academic transcript
-        $transcriptResponse = $this->get(route('academic.results.transcript', $this->studentAlice));
+        $transcriptResponse = $this->get(route('result.transcript', $this->studentAlice));
         $transcriptResponse->assertOk();
         $transcriptResponse->assertViewIs('academic.assessments.results.transcript');
         $transcriptResponse->assertSee('Official Cumulative Academic Transcript');
@@ -348,7 +348,7 @@ class ExaminationModuleWeek3Test extends TestCase
         $this->actingAs($this->lecturer);
 
         // Adjust CA from 25 -> 32 and Exam from 35 -> 48 (Final: 80.0%, Grade A)
-        $updateResponse = $this->put(route('academic.assessments.update', $sheet), [
+        $updateResponse = $this->put(route('assessment.update', $sheet), [
             'action' => 'save_draft',
             'marks' => [
                 [
@@ -360,7 +360,7 @@ class ExaminationModuleWeek3Test extends TestCase
             ],
         ]);
 
-        $updateResponse->assertRedirect(route('academic.assessments.edit', $sheet));
+        $updateResponse->assertRedirect(route('assessment.edit', $sheet));
 
         $markAlice->refresh();
         $this->assertEquals(80.0, (float) $markAlice->final_score);
@@ -385,7 +385,7 @@ class ExaminationModuleWeek3Test extends TestCase
 
         // Audit trail is visible on the detailed inspection workspace
         $moderationResponse = $this->actingAs($this->hodUser)
-            ->get(route('academic.assessments.moderation.show', $sheet));
+            ->get(route('moderation.show', $sheet));
         $moderationResponse->assertOk();
         $moderationResponse->assertSee('Examination Score Revision Audit Trail');
         $moderationResponse->assertSee('Coursework script remarked following student verification query.');
@@ -478,7 +478,7 @@ class ExaminationModuleWeek3Test extends TestCase
 
         // Verify Results Hub filters by Probation
         $this->actingAs($this->superAdmin);
-        $filterResponse = $this->get(route('academic.results.index', [
+        $filterResponse = $this->get(route('result.list', [
             'academic_standing' => 'Probation',
         ]));
         $filterResponse->assertOk();
@@ -486,7 +486,7 @@ class ExaminationModuleWeek3Test extends TestCase
         $filterResponse->assertSee('Probation');
 
         // Verify Printable Result Slip indicates Probation & Retake flags
-        $slipResponse = $this->get(route('academic.results.slip', [
+        $slipResponse = $this->get(route('result.slip', [
             'student' => $this->studentBob,
             'semester' => $this->semester,
         ]));

@@ -6,7 +6,7 @@
 @section('breadcrumb')
   <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
   <li class="breadcrumb-item">Academic Structure</li>
-  <li class="breadcrumb-item"><a href="{{ route('academic.campuses.index') }}">Campuses</a></li>
+  <li class="breadcrumb-item"><a href="{{ route('campus.list') }}">Campuses</a></li>
   <li class="breadcrumb-item active" aria-current="page">{{ $campus->code }}</li>
 @endsection
 
@@ -51,10 +51,10 @@
           </ul>
 
           <div class="d-grid gap-2">
-            <a href="{{ route('academic.campuses.edit', $campus) }}" class="btn btn-warning">
+            <a href="{{ route('campus.edit', $campus) }}" class="btn btn-warning">
               <i class="bi bi-pencil me-1"></i> Edit Campus Details
             </a>
-            <a href="{{ route('academic.campuses.index') }}" class="btn btn-outline-secondary">
+            <a href="{{ route('campus.list') }}" class="btn btn-outline-secondary">
               <i class="bi bi-arrow-left me-1"></i> Back to Campuses
             </a>
           </div>
@@ -67,7 +67,7 @@
         <div class="card-header">
           <h3 class="card-title">Faculties at this Campus ({{ $campus->faculties->count() }})</h3>
           <div class="card-tools me-0">
-            <a href="{{ route('academic.faculties.create', ['campus_id' => $campus->id]) }}" class="btn btn-sm btn-primary">
+            <a href="{{ route('faculty.create', ['campus_id' => $campus->id]) }}" class="btn btn-sm btn-primary">
               <i class="bi bi-plus-circle me-1"></i> Add Faculty
             </a>
           </div>
@@ -89,7 +89,7 @@
                   <tr>
                     <td><span class="badge text-bg-secondary">{{ $faculty->code }}</span></td>
                     <td class="fw-bold">
-                      <a href="{{ route('academic.faculties.show', $faculty) }}" class="text-decoration-none">
+                      <a href="{{ route('faculty.show', $faculty) }}" class="text-decoration-none">
                         {{ $faculty->name }}
                       </a>
                     </td>
@@ -108,10 +108,10 @@
                       @endif
                     </td>
                     <td class="text-end">
-                      <a href="{{ route('academic.faculties.show', $faculty) }}" class="btn btn-sm btn-outline-info">
+                      <a href="{{ route('faculty.show', $faculty) }}" class="btn btn-sm btn-outline-info">
                         <i class="bi bi-eye"></i>
                       </a>
-                      <a href="{{ route('academic.faculties.edit', $faculty) }}" class="btn btn-sm btn-outline-warning">
+                      <a href="{{ route('faculty.edit', $faculty) }}" class="btn btn-sm btn-outline-warning">
                         <i class="bi bi-pencil"></i>
                       </a>
                     </td>

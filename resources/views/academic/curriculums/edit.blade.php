@@ -6,7 +6,7 @@
 @section('breadcrumb')
   <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
   <li class="breadcrumb-item">Academic Core</li>
-  <li class="breadcrumb-item"><a href="{{ route('academic.curriculums.index') }}">Curriculums</a></li>
+  <li class="breadcrumb-item"><a href="{{ route('curriculum.list') }}">Curriculums</a></li>
   <li class="breadcrumb-item active" aria-current="page">Edit {{ $curriculum->version_name }}</li>
 @endsection
 
@@ -17,13 +17,13 @@
         <div class="card-header">
           <h3 class="card-title">Edit Curriculum: {{ $curriculum->version_name }}</h3>
           <div class="card-tools me-0">
-            <a href="{{ route('academic.curriculums.show', $curriculum) }}" class="btn btn-outline-secondary btn-sm">
+            <a href="{{ route('curriculum.show', $curriculum) }}" class="btn btn-outline-secondary btn-sm">
               <i class="bi bi-arrow-left me-1"></i> Back to Curriculum Matrix
             </a>
           </div>
         </div>
 
-        <form action="{{ route('academic.curriculums.update', $curriculum) }}" method="POST">
+        <form action="{{ route('curriculum.update', $curriculum) }}" method="POST">
           @csrf
           @method('PUT')
           <div class="card-body">
@@ -128,7 +128,7 @@
 
           <div class="card-footer clearfix">
             <div class="float-end">
-              <a href="{{ route('academic.curriculums.show', $curriculum) }}" class="btn btn-secondary me-2">Cancel</a>
+              <a href="{{ route('curriculum.show', $curriculum) }}" class="btn btn-secondary me-2">Cancel</a>
               <button type="submit" class="btn btn-warning">
                 <i class="bi bi-check-circle me-1"></i> Update Curriculum
               </button>

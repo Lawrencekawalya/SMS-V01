@@ -53,7 +53,7 @@ class CourseCatalogPhase4Test extends TestCase
             'credit_units' => 4.0,
         ]);
 
-        $response = $this->get(route('academic.courses.index'));
+        $response = $this->get(route('course.list'));
 
         $response->assertStatus(200);
         $response->assertSee('Master Course Catalog');
@@ -74,9 +74,9 @@ class CourseCatalogPhase4Test extends TestCase
             'status' => 'active',
         ];
 
-        $response = $this->post(route('academic.courses.store'), $payload);
+        $response = $this->post(route('course.store'), $payload);
 
-        $response->assertRedirect(route('academic.courses.index'));
+        $response->assertRedirect(route('course.list'));
         $this->assertDatabaseHas('course_units', [
             'code' => 'CSC1201',
             'name' => 'Object Oriented Programming with Java',
@@ -94,7 +94,7 @@ class CourseCatalogPhase4Test extends TestCase
             'status' => 'active',
         ];
 
-        $this->post(route('academic.courses.store'), $payload);
+        $this->post(route('course.store'), $payload);
 
         $this->assertDatabaseHas('course_units', [
             'code' => 'BIT1101',
@@ -108,7 +108,7 @@ class CourseCatalogPhase4Test extends TestCase
             'code' => 'CSC1101',
         ]);
 
-        $response = $this->post(route('academic.courses.store'), [
+        $response = $this->post(route('course.store'), [
             'department_id' => $this->department->id,
             'code' => 'CSC1101',
             'name' => 'Duplicate Course',
@@ -122,7 +122,7 @@ class CourseCatalogPhase4Test extends TestCase
     public function test_credit_units_must_be_within_valid_range(): void
     {
         // Negative / zero credit
-        $response1 = $this->post(route('academic.courses.store'), [
+        $response1 = $this->post(route('course.store'), [
             'department_id' => $this->department->id,
             'code' => 'CSC1105',
             'name' => 'Zero Credit Course',
@@ -132,7 +132,7 @@ class CourseCatalogPhase4Test extends TestCase
         $response1->assertSessionHasErrors(['credit_units']);
 
         // Excessively high credits (> 15)
-        $response2 = $this->post(route('academic.courses.store'), [
+        $response2 = $this->post(route('course.store'), [
             'department_id' => $this->department->id,
             'code' => 'CSC1106',
             'name' => 'Excessive Credit Course',
@@ -144,7 +144,7 @@ class CourseCatalogPhase4Test extends TestCase
 
     public function test_department_id_is_required_and_must_exist(): void
     {
-        $response = $this->post(route('academic.courses.store'), [
+        $response = $this->post(route('course.store'), [
             'department_id' => 99999, // Non-existent
             'code' => 'CSC9999',
             'name' => 'Orphan Course',
@@ -164,7 +164,7 @@ class CourseCatalogPhase4Test extends TestCase
             'description' => 'Relational database theory and SQL.',
         ]);
 
-        $response = $this->get(route('academic.courses.show', $course));
+        $response = $this->get(route('course.show', $course));
 
         $response->assertStatus(200);
         $response->assertSee($course->code);
@@ -182,7 +182,7 @@ class CourseCatalogPhase4Test extends TestCase
             'credit_units' => 3.0,
         ]);
 
-        $response = $this->put(route('academic.courses.update', $course), [
+        $response = $this->put(route('course.update', $course), [
             'department_id' => $this->department->id,
             'code' => 'CSC3101',
             'name' => 'Software Engineering Principles',
@@ -190,7 +190,7 @@ class CourseCatalogPhase4Test extends TestCase
             'status' => 'active',
         ]);
 
-        $response->assertRedirect(route('academic.courses.index'));
+        $response->assertRedirect(route('course.list'));
         $this->assertDatabaseHas('course_units', [
             'id' => $course->id,
             'name' => 'Software Engineering Principles',
@@ -205,9 +205,9 @@ class CourseCatalogPhase4Test extends TestCase
             'code' => 'CSC9999',
         ]);
 
-        $response = $this->delete(route('academic.courses.destroy', $course));
+        $response = $this->delete(route('course.delete', $course));
 
-        $response->assertRedirect(route('academic.courses.index'));
+        $response->assertRedirect(route('course.list'));
         $this->assertDatabaseMissing('course_units', [
             'id' => $course->id,
         ]);
@@ -230,13 +230,13 @@ class CourseCatalogPhase4Test extends TestCase
         ]);
 
         // Filter by department
-        $this->get(route('academic.courses.index', ['department_id' => $this->department->id]))
+        $this->get(route('course.list', ['department_id' => $this->department->id]))
             ->assertStatus(200)
             ->assertSee($course1->code)
             ->assertDontSee($course2->code);
 
         // Filter by status
-        $this->get(route('academic.courses.index', ['status' => 'archived']))
+        $this->get(route('course.list', ['status' => 'archived']))
             ->assertStatus(200)
             ->assertSee($course2->code)
             ->assertDontSee($course1->code);

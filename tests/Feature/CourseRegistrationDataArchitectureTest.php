@@ -295,7 +295,7 @@ class CourseRegistrationDataArchitectureTest extends TestCase
             'semester_id' => $this->semester->id,
         ]);
 
-        $response = $this->get(route('academic.registrations.index'));
+        $response = $this->get(route('registration.list'));
 
         $response->assertStatus(200);
         $response->assertSee('Semester Course Registrations');
@@ -308,20 +308,20 @@ class CourseRegistrationDataArchitectureTest extends TestCase
 
         // When advisor approvals are enabled, show pending and rejected cards
         config(['academic.require_registration_approval' => true]);
-        $responseWithApproval = $this->get(route('academic.registrations.index'));
+        $responseWithApproval = $this->get(route('registration.list'));
         $responseWithApproval->assertSee('Pending Advisor Review');
         $responseWithApproval->assertSee('Approved Enrollments');
         $responseWithApproval->assertSee('Changes Requested / Rejected');
 
         // When prerequisites are disabled, Eligibility Inspector button and sidebar tab are hidden
         config(['academic.enforce_prerequisites' => false]);
-        $response = $this->get(route('academic.registrations.index'));
+        $response = $this->get(route('registration.list'));
         $response->assertDontSee('Eligibility Inspector');
         $response->assertDontSee('Course Eligibility');
 
         // When prerequisites are enabled, they are shown
         config(['academic.enforce_prerequisites' => true]);
-        $responseWithPrereq = $this->get(route('academic.registrations.index'));
+        $responseWithPrereq = $this->get(route('registration.list'));
         $responseWithPrereq->assertSee('Eligibility Inspector');
         $responseWithPrereq->assertSee('Course Eligibility');
     }
@@ -342,7 +342,7 @@ class CourseRegistrationDataArchitectureTest extends TestCase
             'status' => 'registered',
         ]);
 
-        $response = $this->get(route('academic.registrations.show', $registration));
+        $response = $this->get(route('registration.show', $registration));
 
         $response->assertStatus(200);
         $response->assertSee('Course Registration Slip');
@@ -373,7 +373,7 @@ class CourseRegistrationDataArchitectureTest extends TestCase
             'semester_id' => $this->semester->id,
         ]);
 
-        $response = $this->get(route('academic.registrations.index', ['status' => 'submitted']));
+        $response = $this->get(route('registration.list', ['status' => 'submitted']));
 
         $response->assertStatus(200);
         $response->assertSee($student2->registration_number);

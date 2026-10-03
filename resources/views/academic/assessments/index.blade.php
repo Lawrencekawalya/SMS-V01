@@ -69,7 +69,7 @@
         <span class="badge text-bg-info">CA: {{ config('academic.assessment_ca_weight', 40) }}%</span>
         <span class="badge text-bg-primary">Exam: {{ config('academic.assessment_exam_weight', 60) }}%</span>
         <span class="badge text-bg-success">Pass Mark: {{ config('academic.assessment_pass_mark', 50) }}%</span>
-        <a href="{{ route('academic.assessments.policy') }}" class="btn btn-sm btn-outline-info ms-2">
+        <a href="{{ route('assessment.policy') }}" class="btn btn-sm btn-outline-info ms-2">
           <i class="bi bi-sliders me-1"></i> Policy &amp; Scale
         </a>
       </div>
@@ -84,7 +84,7 @@
       </h3>
     </div>
     <div class="card-body">
-      <form action="{{ route('academic.assessments.index') }}" method="GET" class="row g-3">
+      <form action="{{ route('assessment.list') }}" method="GET" class="row g-3">
         <div class="col-12 col-md-3">
           <label for="academic_year_id" class="form-label small fw-semibold">Academic Year</label>
           <select name="academic_year_id" id="academic_year_id" class="form-select form-select-sm">
@@ -134,7 +134,7 @@
         </div>
 
         <div class="col-12 d-flex justify-content-end gap-2">
-          <a href="{{ route('academic.assessments.index') }}" class="btn btn-sm btn-outline-secondary">
+          <a href="{{ route('assessment.list') }}" class="btn btn-sm btn-outline-secondary">
             <i class="bi bi-x-circle me-1"></i> Clear Filter
           </a>
           <button type="submit" class="btn btn-sm btn-primary">
@@ -194,14 +194,14 @@
             <tr>
               <td>{{ $loop->iteration }}</td>
               <td>
-                <a href="{{ route('academic.assessments.show', $sheet) }}" class="fw-bold font-monospace text-primary text-decoration-none">
+                <a href="{{ route('assessment.show', $sheet) }}" class="fw-bold font-monospace text-primary text-decoration-none">
                   #AS-{{ str_pad($sheet->id, 5, '0', STR_PAD_LEFT) }}
                 </a>
               </td>
               <td>
                 <span class="badge text-bg-primary">{{ $sheet->courseUnit->code }}</span>
                 <span class="badge text-bg-secondary ms-1">{{ number_format($sheet->courseUnit->credit_units, 1) }} CU</span>
-                <a href="{{ route('academic.assessments.show', $sheet) }}" class="fw-bold mt-1 text-decoration-none text-body d-block">
+                <a href="{{ route('assessment.show', $sheet) }}" class="fw-bold mt-1 text-decoration-none text-body d-block">
                   {{ $sheet->courseUnit->name }}
                 </a>
               </td>
@@ -247,16 +247,16 @@
               <td class="text-end text-nowrap">
                 <div class="d-inline-flex gap-1 justify-content-end align-items-center">
                   @if (in_array($sheet->status, ['draft', 'returned_for_revision']))
-                    <a href="{{ route('academic.assessments.edit', $sheet) }}" class="btn btn-sm btn-primary text-nowrap" title="Enter / Edit Marks">
+                    <a href="{{ route('assessment.edit', $sheet) }}" class="btn btn-sm btn-primary text-nowrap" title="Enter / Edit Marks">
                       <i class="bi bi-pencil-square me-1"></i> Marks
                     </a>
                   @endif
                   @if (in_array($sheet->status, ['submitted_to_hod', 'department_moderated']))
-                    <a href="{{ route('academic.assessments.moderation.show', $sheet) }}" class="btn btn-sm btn-warning text-dark text-nowrap" title="HoD Moderation Desk">
+                    <a href="{{ route('moderation.show', $sheet) }}" class="btn btn-sm btn-warning text-dark text-nowrap" title="HoD Moderation Desk">
                       <i class="bi bi-shield-check me-1"></i> Moderate
                     </a>
                   @endif
-                  <a href="{{ route('academic.assessments.show', $sheet) }}" class="btn btn-sm btn-outline-primary" title="View Assessment Sheet">
+                  <a href="{{ route('assessment.show', $sheet) }}" class="btn btn-sm btn-outline-primary" title="View Assessment Sheet">
                     <i class="bi bi-eye"></i>
                   </a>
                 </div>

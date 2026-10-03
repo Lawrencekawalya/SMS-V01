@@ -15,7 +15,7 @@
       <!-- Filter Bar -->
       <div class="card mb-3">
         <div class="card-body py-2">
-          <form action="{{ route('academic.courses.index') }}" method="GET" class="row g-2 align-items-center">
+          <form action="{{ route('course.list') }}" method="GET" class="row g-2 align-items-center">
             <div class="col-auto">
               <label for="dept_filter" class="col-form-label fw-bold">
                 <i class="bi bi-funnel me-1"></i> Filter by Department:
@@ -47,7 +47,7 @@
 
             @if ($departmentId || $status)
               <div class="col-auto">
-                <a href="{{ route('academic.courses.index') }}" class="btn btn-sm btn-outline-secondary">
+                <a href="{{ route('course.list') }}" class="btn btn-sm btn-outline-secondary">
                   <i class="bi bi-x-circle me-1"></i> Clear Filter
                 </a>
               </div>
@@ -65,7 +65,7 @@
               <span class="input-group-text"><i class="bi bi-search"></i></span>
               <input type="search" id="courses-filter" class="form-control" placeholder="Filter rows..." autocomplete="off">
             </div>
-            <a href="{{ route('academic.courses.create', $departmentId ? ['department_id' => $departmentId] : []) }}" class="btn btn-primary btn-sm">
+            <a href="{{ route('course.create', $departmentId ? ['department_id' => $departmentId] : []) }}" class="btn btn-primary btn-sm">
               <i class="bi bi-plus-circle me-1"></i> Add Course Unit
             </a>
           </div>
@@ -104,7 +104,7 @@
                     <span class="badge text-bg-secondary">{{ $course->code }}</span>
                   </td>
                   <td class="fw-bold">
-                    <a href="{{ route('academic.courses.show', $course) }}" class="text-decoration-none">
+                    <a href="{{ route('course.show', $course) }}" class="text-decoration-none">
                       {{ $course->name }}
                     </a>
                   </td>
@@ -134,13 +134,13 @@
                     @endif
                   </td>
                   <td class="text-end">
-                    <a href="{{ route('academic.courses.show', $course) }}" class="btn btn-sm btn-outline-info" title="View Details">
+                    <a href="{{ route('course.show', $course) }}" class="btn btn-sm btn-outline-info" title="View Details">
                       <i class="bi bi-eye"></i>
                     </a>
-                    <a href="{{ route('academic.courses.edit', $course) }}" class="btn btn-sm btn-outline-warning" title="Edit Course Unit">
+                    <a href="{{ route('course.edit', $course) }}" class="btn btn-sm btn-outline-warning" title="Edit Course Unit">
                       <i class="bi bi-pencil"></i>
                     </a>
-                    <form action="{{ route('academic.courses.destroy', $course) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete course {{ $course->code }}?');">
+                    <form action="{{ route('course.delete', $course) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete course {{ $course->code }}?');">
                       @csrf
                       @method('DELETE')
                       <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Course Unit">

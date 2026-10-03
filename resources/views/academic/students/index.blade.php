@@ -58,7 +58,7 @@
       </h3>
     </div>
     <div class="card-body">
-      <form action="{{ route('academic.students.index') }}" method="GET" class="row g-3">
+      <form action="{{ route('student.list') }}" method="GET" class="row g-3">
         <div class="col-12 col-md-4">
           <label for="programme_id" class="form-label small fw-semibold">Academic Programme</label>
           <select name="programme_id" id="programme_id" class="form-select form-select-sm">
@@ -97,7 +97,7 @@
           <button type="submit" class="btn btn-primary btn-sm flex-grow-1">
             <i class="bi bi-search me-1"></i> Filter
           </button>
-          <a href="{{ route('academic.students.index') }}" class="btn btn-outline-secondary btn-sm" title="Reset Filters">
+          <a href="{{ route('student.list') }}" class="btn btn-outline-secondary btn-sm" title="Reset Filters">
             <i class="bi bi-arrow-counterclockwise"></i>
           </a>
         </div>
@@ -183,7 +183,7 @@
                 </span>
               </td>
               <td class="text-end">
-                <a href="{{ route('academic.students.show', $student) }}" class="btn btn-sm btn-outline-primary" title="View Student Profile">
+                <a href="{{ route('student.show', $student) }}" class="btn btn-sm btn-outline-primary" title="View Student Profile">
                   <i class="bi bi-eye"></i>
                 </a>
               </td>

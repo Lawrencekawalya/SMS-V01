@@ -39,22 +39,22 @@
 
         @php
           $isAcademicStructureActive = request()->routeIs([
-            'academic.campuses.*',
-            'academic.faculties.*',
-            'academic.departments.*',
-            'academic.programmes.*',
-            'academic.curriculums.*',
-            'academic.courses.*',
-            'academic.academic-years.*',
-            'academic.semesters.*',
-            'academic.events.*',
-            'academic.students.*',
-            'academic.university.*',
+            'campus.*',
+            'faculty.*',
+            'department.*',
+            'programme.*',
+            'curriculum.*',
+            'course.*',
+            'academic-year.*',
+            'semester.*',
+            'event.*',
+            'student.*',
+            'university.*',
           ]);
 
           $isCourseRegistrationActive = request()->routeIs([
-            'academic.registrations.*',
-            'academic.approvals.*',
+            'registration.*',
+            'approval.*',
           ]);
 
           $pendingApprovalsCount = \Illuminate\Support\Facades\Schema::hasTable('course_registrations')
@@ -75,61 +75,61 @@
           </a>
           <ul class="nav nav-treeview">
             <li class="nav-item">
-              <a href="{{ route('academic.campuses.index') }}" class="nav-link {{ request()->routeIs('academic.campuses.*') ? 'active' : '' }}">
+              <a href="{{ route('campus.list') }}" class="nav-link {{ request()->routeIs('campus.*') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-buildings"></i>
                 <p>Campuses</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{{ route('academic.faculties.index') }}" class="nav-link {{ request()->routeIs('academic.faculties.*') ? 'active' : '' }}">
+              <a href="{{ route('faculty.list') }}" class="nav-link {{ request()->routeIs('faculty.*') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-mortarboard"></i>
                 <p>Faculties</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{{ route('academic.departments.index') }}" class="nav-link {{ request()->routeIs('academic.departments.*') ? 'active' : '' }}">
+              <a href="{{ route('department.list') }}" class="nav-link {{ request()->routeIs('department.*') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-diagram-3"></i>
                 <p>Departments</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{{ route('academic.programmes.index') }}" class="nav-link {{ request()->routeIs('academic.programmes.*') ? 'active' : '' }}">
+              <a href="{{ route('programme.list') }}" class="nav-link {{ request()->routeIs('programme.*') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-award"></i>
                 <p>Programmes</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{{ route('academic.curriculums.index') }}" class="nav-link {{ request()->routeIs('academic.curriculums.*') ? 'active' : '' }}">
+              <a href="{{ route('curriculum.list') }}" class="nav-link {{ request()->routeIs('curriculum.*') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-mortarboard-fill"></i>
                 <p>Curriculums</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{{ route('academic.courses.index') }}" class="nav-link {{ request()->routeIs('academic.courses.*') ? 'active' : '' }}">
+              <a href="{{ route('course.list') }}" class="nav-link {{ request()->routeIs('course.*') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-journal-bookmark-fill"></i>
                 <p>Course Unit Catalog</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{{ route('academic.academic-years.index') }}" class="nav-link {{ request()->routeIs('academic.academic-years.*') || request()->routeIs('academic.semesters.*') ? 'active' : '' }}">
+              <a href="{{ route('academic-year.list') }}" class="nav-link {{ request()->routeIs('academic-year.*') || request()->routeIs('semester.*') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-calendar3"></i>
                 <p>Academic Calendar</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{{ route('academic.events.index') }}" class="nav-link {{ request()->routeIs('academic.events.*') ? 'active' : '' }}">
+              <a href="{{ route('event.list') }}" class="nav-link {{ request()->routeIs('event.*') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-calendar-event"></i>
                 <p>Events & Almanac</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{{ route('academic.students.index') }}" class="nav-link {{ request()->routeIs('academic.students.*') ? 'active' : '' }}">
+              <a href="{{ route('student.list') }}" class="nav-link {{ request()->routeIs('student.*') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-people"></i>
                 <p>Students</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{{ route('academic.university.edit') }}" class="nav-link {{ request()->routeIs('academic.university.*') ? 'active' : '' }}">
+              <a href="{{ route('university.edit') }}" class="nav-link {{ request()->routeIs('university.*') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-bank"></i>
                 <p>Institution Profile</p>
               </a>
@@ -152,20 +152,20 @@
           </a>
           <ul class="nav nav-treeview">
             <li class="nav-item">
-              <a href="{{ route('academic.registrations.index') }}" class="nav-link {{ request()->routeIs('academic.registrations.index') || (request()->routeIs('academic.registrations.show') && !request()->routeIs('academic.registrations.print')) ? 'active' : '' }}">
+              <a href="{{ route('registration.list') }}" class="nav-link {{ request()->routeIs('registration.list') || (request()->routeIs('registration.show') && !request()->routeIs('registration.print')) ? 'active' : '' }}">
                 <i class="nav-icon bi bi-journal-text"></i>
                 <p>Registration Slips</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{{ route('academic.registrations.create') }}" class="nav-link {{ request()->routeIs('academic.registrations.create') ? 'active' : '' }}">
+              <a href="{{ route('registration.create') }}" class="nav-link {{ request()->routeIs('registration.create') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-pencil-square"></i>
                 <p>Register Courses</p>
               </a>
             </li>
             @if (config('academic.enforce_prerequisites', false))
               <li class="nav-item">
-                <a href="{{ route('academic.registrations.eligibility') }}" class="nav-link {{ request()->routeIs('academic.registrations.eligibility') ? 'active' : '' }}">
+                <a href="{{ route('registration.eligibility') }}" class="nav-link {{ request()->routeIs('registration.eligibility') ? 'active' : '' }}">
                   <i class="nav-icon bi bi-shield-check"></i>
                   <p>Course Eligibility</p>
                 </a>
@@ -173,7 +173,7 @@
             @endif
             @if (config('academic.require_registration_approval', false))
               <li class="nav-item">
-                <a href="{{ route('academic.approvals.index') }}" class="nav-link {{ request()->routeIs('academic.approvals.*') ? 'active' : '' }}">
+                <a href="{{ route('approval.list') }}" class="nav-link {{ request()->routeIs('approval.*') ? 'active' : '' }}">
                   <i class="nav-icon bi bi-clipboard-check"></i>
                   <p>
                     Advisor Approvals
@@ -185,7 +185,7 @@
               </li>
             @endif
             <li class="nav-item">
-              <a href="{{ route('academic.registrations.active-session') }}" class="nav-link {{ request()->routeIs('academic.registrations.active-session') ? 'active' : '' }}">
+              <a href="{{ route('registration.active-session') }}" class="nav-link {{ request()->routeIs('registration.active-session') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-calendar2-check"></i>
                 <p>Active Session Cohorts</p>
               </a>
@@ -196,9 +196,11 @@
 
         @php
           $isAssessmentActive = request()->routeIs([
-            'academic.assessments.*',
-            'academic.results.*',
-            'academic.reports.*',
+            'assessment.*',
+            'moderation.*',
+            'result.*',
+            'broad-sheet.*',
+            'analytics.*',
           ]);
 
           $pendingModerationCount = \Illuminate\Support\Facades\Schema::hasTable('course_assessment_sheets')
@@ -220,19 +222,19 @@
           </a>
           <ul class="nav nav-treeview">
             <li class="nav-item">
-              <a href="{{ route('academic.assessments.policy') }}" class="nav-link {{ request()->routeIs('academic.assessments.policy') ? 'active' : '' }}">
+              <a href="{{ route('assessment.policy') }}" class="nav-link {{ request()->routeIs('assessment.policy') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-sliders"></i>
                 <p>Grading Policy &amp; Scale</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{{ route('academic.assessments.index') }}" class="nav-link {{ request()->routeIs('academic.assessments.index') || (request()->routeIs('academic.assessments.show') && !request()->routeIs('academic.assessments.moderation.*')) ? 'active' : '' }}">
+              <a href="{{ route('assessment.list') }}" class="nav-link {{ request()->routeIs('assessment.list') || (request()->routeIs('assessment.show') && !request()->routeIs('moderation.*')) ? 'active' : '' }}">
                 <i class="nav-icon bi bi-card-checklist"></i>
                 <p>Course Mark Sheets</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{{ route('academic.assessments.moderation.index') }}" class="nav-link {{ request()->routeIs('academic.assessments.moderation.*') ? 'active' : '' }}">
+              <a href="{{ route('moderation.list') }}" class="nav-link {{ request()->routeIs('moderation.*') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-person-check-fill"></i>
                 <p>
                   HoD Moderation Desk
@@ -243,19 +245,19 @@
               </a>
             </li>
             <li class="nav-item">
-              <a href="{{ route('academic.results.index') }}" class="nav-link {{ request()->routeIs('academic.results.*') ? 'active' : '' }}">
+              <a href="{{ route('result.list') }}" class="nav-link {{ request()->routeIs('result.*') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-file-earmark-text-fill"></i>
                 <p>Results &amp; Transcripts</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{{ route('academic.reports.broad-sheet') }}" class="nav-link {{ request()->routeIs('academic.reports.broad-sheet*') ? 'active' : '' }}">
+              <a href="{{ route('broad-sheet.list') }}" class="nav-link {{ request()->routeIs('broad-sheet.*') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-table"></i>
                 <p>Senate Broad-Sheets</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{{ route('academic.reports.analytics') }}" class="nav-link {{ request()->routeIs('academic.reports.analytics*') ? 'active' : '' }}">
+              <a href="{{ route('analytics.list') }}" class="nav-link {{ request()->routeIs('analytics.*') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-graph-up-arrow"></i>
                 <p>Academic Analytics</p>
               </a>
@@ -265,7 +267,7 @@
         <!--end::Examinations & Grading Treeview-->
 
         @php
-          $isGraduationActive = request()->routeIs('academic.graduation.*');
+          $isGraduationActive = request()->routeIs('graduation.*');
         @endphp
 
         <!--begin::Graduation & Clearance Treeview-->
@@ -279,13 +281,13 @@
           </a>
           <ul class="nav nav-treeview">
             <li class="nav-item">
-              <a href="{{ route('academic.graduation.index') }}" class="nav-link {{ request()->routeIs('academic.graduation.index') || request()->routeIs('academic.graduation.audit') ? 'active' : '' }}">
+              <a href="{{ route('graduation.list') }}" class="nav-link {{ request()->routeIs('graduation.list') || request()->routeIs('graduation.audit') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-shield-check"></i>
                 <p>Clearance Audit</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{{ route('academic.graduation.honors-roll') }}" class="nav-link {{ request()->routeIs('academic.graduation.honors-roll') ? 'active' : '' }}">
+              <a href="{{ route('graduation.honors-roll') }}" class="nav-link {{ request()->routeIs('graduation.honors-roll') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-journal-bookmark-fill"></i>
                 <p>Honors Roll Gazette</p>
               </a>

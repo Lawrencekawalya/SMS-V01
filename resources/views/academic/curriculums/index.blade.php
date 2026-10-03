@@ -15,7 +15,7 @@
       <!-- Filter Bar -->
       <div class="card mb-3">
         <div class="card-body py-2">
-          <form action="{{ route('academic.curriculums.index') }}" method="GET" class="row g-2 align-items-center">
+          <form action="{{ route('curriculum.list') }}" method="GET" class="row g-2 align-items-center">
             <div class="col-auto">
               <label for="prog_filter" class="col-form-label fw-bold">
                 <i class="bi bi-funnel me-1"></i> Filter by Programme:
@@ -47,7 +47,7 @@
 
             @if ($programmeId || $status !== null && $status !== '')
               <div class="col-auto">
-                <a href="{{ route('academic.curriculums.index') }}" class="btn btn-sm btn-outline-secondary">
+                <a href="{{ route('curriculum.list') }}" class="btn btn-sm btn-outline-secondary">
                   <i class="bi bi-x-circle me-1"></i> Clear Filter
                 </a>
               </div>
@@ -65,7 +65,7 @@
               <span class="input-group-text"><i class="bi bi-search"></i></span>
               <input type="search" id="curriculums-filter" class="form-control" placeholder="Filter rows..." autocomplete="off">
             </div>
-            <a href="{{ route('academic.curriculums.create', $programmeId ? ['programme_id' => $programmeId] : []) }}" class="btn btn-primary btn-sm">
+            <a href="{{ route('curriculum.create', $programmeId ? ['programme_id' => $programmeId] : []) }}" class="btn btn-primary btn-sm">
               <i class="bi bi-plus-circle me-1"></i> Add Curriculum
             </a>
           </div>
@@ -106,7 +106,7 @@
                     <small class="text-muted d-block">{{ $curr->programme->department->name ?? '' }}</small>
                   </td>
                   <td class="fw-bold">
-                    <a href="{{ route('academic.curriculums.show', $curr) }}" class="text-decoration-none">
+                    <a href="{{ route('curriculum.show', $curr) }}" class="text-decoration-none">
                       {{ $curr->version_name }}
                     </a>
                   </td>
@@ -133,13 +133,13 @@
                     @endif
                   </td>
                   <td class="text-end">
-                    <a href="{{ route('academic.curriculums.show', $curr) }}" class="btn btn-sm btn-outline-primary" title="View Curriculum Matrix Dashboard">
+                    <a href="{{ route('curriculum.show', $curr) }}" class="btn btn-sm btn-outline-primary" title="View Curriculum Matrix Dashboard">
                       <i class="bi bi-grid-3x3-gap"></i>
                     </a>
-                    <a href="{{ route('academic.curriculums.edit', $curr) }}" class="btn btn-sm btn-outline-warning" title="Edit Curriculum">
+                    <a href="{{ route('curriculum.edit', $curr) }}" class="btn btn-sm btn-outline-warning" title="Edit Curriculum">
                       <i class="bi bi-pencil"></i>
                     </a>
-                    <form action="{{ route('academic.curriculums.destroy', $curr) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete curriculum {{ $curr->version_name }}?');">
+                    <form action="{{ route('curriculum.delete', $curr) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete curriculum {{ $curr->version_name }}?');">
                       @csrf
                       @method('DELETE')
                       <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Curriculum">

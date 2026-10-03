@@ -6,7 +6,7 @@
 @section('breadcrumb')
   <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
   <li class="breadcrumb-item">Academic Core</li>
-  <li class="breadcrumb-item"><a href="{{ route('academic.academic-years.index') }}">Academic Calendar</a></li>
+  <li class="breadcrumb-item"><a href="{{ route('academic-year.list') }}">Academic Calendar</a></li>
   <li class="breadcrumb-item active" aria-current="page">Add Academic Year</li>
 @endsection
 
@@ -17,13 +17,13 @@
         <div class="card-header">
           <h3 class="card-title">New Academic Year Details</h3>
           <div class="card-tools me-0">
-            <a href="{{ route('academic.academic-years.index') }}" class="btn btn-outline-secondary btn-sm">
+            <a href="{{ route('academic-year.list') }}" class="btn btn-outline-secondary btn-sm">
               <i class="bi bi-arrow-left me-1"></i> Back to Calendar
             </a>
           </div>
         </div>
 
-        <form action="{{ route('academic.academic-years.store') }}" method="POST">
+        <form action="{{ route('academic-year.store') }}" method="POST">
           @csrf
           <div class="card-body">
             <div class="row g-3">
@@ -110,7 +110,7 @@
 
           <div class="card-footer clearfix">
             <div class="float-end">
-              <a href="{{ route('academic.academic-years.index') }}" class="btn btn-secondary me-2">Cancel</a>
+              <a href="{{ route('academic-year.list') }}" class="btn btn-secondary me-2">Cancel</a>
               <button type="submit" class="btn btn-primary">
                 <i class="bi bi-check-circle me-1"></i> Save Academic Year
               </button>

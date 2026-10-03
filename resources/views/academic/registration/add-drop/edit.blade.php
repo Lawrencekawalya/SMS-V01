@@ -14,10 +14,10 @@
       </div>
       <div class="col-sm-6">
         <div class="float-sm-end d-flex gap-2">
-          <a href="{{ route('academic.registrations.show', $registration) }}" class="btn btn-outline-secondary btn-sm">
+          <a href="{{ route('registration.show', $registration) }}" class="btn btn-outline-secondary btn-sm">
             <i class="bi bi-arrow-left me-1"></i> Return to Slip Details
           </a>
-          <a href="{{ route('academic.registrations.index') }}" class="btn btn-outline-primary btn-sm">
+          <a href="{{ route('registration.list') }}" class="btn btn-outline-primary btn-sm">
             <i class="bi bi-list-columns me-1"></i> Slips Directory
           </a>
         </div>
@@ -223,7 +223,7 @@
                                   data-course-code="{{ $item->courseUnit->code ?? '' }}"
                                   data-course-title="{{ $item->courseUnit->name ?? '' }}"
                                   data-credit-units="{{ number_format($item->credit_units, 1) }}"
-                                  data-drop-url="{{ route('academic.registrations.add-drop.drop', [$registration, $item]) }}"
+                                  data-drop-url="{{ route('registration.add-drop.drop', [$registration, $item]) }}"
                                   data-new-total="{{ number_format($projectedRemaining, 1) }}"
                                   data-is-under-min="{{ $isUnderMin ? '1' : '0' }}">
                             <i class="bi bi-dash-circle me-1"></i> Drop
@@ -312,7 +312,7 @@
                               <i class="bi bi-ban me-1"></i> Max
                             </button>
                           @else
-                            <form action="{{ route('academic.registrations.add-drop.add', $registration) }}" method="POST" class="d-inline">
+                            <form action="{{ route('registration.add-drop.add', $registration) }}" method="POST" class="d-inline">
                               @csrf
                               <input type="hidden" name="course_unit_id" value="{{ $course->id }}">
                               <button type="submit" class="btn btn-success btn-sm fw-semibold">

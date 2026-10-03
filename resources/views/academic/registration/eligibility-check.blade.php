@@ -5,7 +5,7 @@
 
 @section('breadcrumb')
   <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
-  <li class="breadcrumb-item"><a href="{{ route('academic.registrations.index') }}">Course Registrations</a></li>
+  <li class="breadcrumb-item"><a href="{{ route('registration.list') }}">Course Registrations</a></li>
   <li class="breadcrumb-item active" aria-current="page">Eligibility Inspector</li>
 @endsection
 
@@ -18,7 +18,7 @@
       </h3>
     </div>
     <div class="card-body">
-      <form action="{{ route('academic.registrations.eligibility') }}" method="GET" class="row g-3 align-items-center">
+      <form action="{{ route('registration.eligibility') }}" method="GET" class="row g-3 align-items-center">
         <div class="col-12 col-md-8">
           <label for="student_id" class="form-label small fw-semibold">Select Student Persona:</label>
           <select name="student_id" id="student_id" class="form-select" onchange="this.form.submit()">
@@ -33,7 +33,7 @@
           <button type="submit" class="btn btn-primary flex-grow-1">
             <i class="bi bi-arrow-repeat me-1"></i> Inspect Eligibility
           </button>
-          <a href="{{ route('academic.registrations.index') }}" class="btn btn-outline-secondary" title="Back to Directory">
+          <a href="{{ route('registration.list') }}" class="btn btn-outline-secondary" title="Back to Directory">
             <i class="bi bi-journal-text me-1"></i> Slips Directory
           </a>
         </div>
@@ -87,7 +87,7 @@
             @if ($eligibility['summary']['existing_registration'])
               <div class="small mt-2 text-info">
                 <i class="bi bi-info-circle me-1"></i> Slip already created:
-                <a href="{{ route('academic.registrations.show', $eligibility['summary']['existing_registration']) }}" class="fw-bold text-decoration-none">
+                <a href="{{ route('registration.show', $eligibility['summary']['existing_registration']) }}" class="fw-bold text-decoration-none">
                   #REG-{{ str_pad($eligibility['summary']['existing_registration']->id, 5, '0', STR_PAD_LEFT) }}
                   ({{ $eligibility['summary']['existing_registration']->status_label }})
                 </a>

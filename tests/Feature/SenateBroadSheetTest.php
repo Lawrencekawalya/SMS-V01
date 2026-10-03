@@ -262,7 +262,7 @@ class SenateBroadSheetTest extends TestCase
     public function test_broad_sheet_workspace_loads_successfully(): void
     {
         $response = $this->actingAs($this->adminUser)
-            ->get(route('academic.reports.broad-sheet', [
+            ->get(route('broad-sheet.list', [
                 'programme_id' => $this->programme->id,
                 'academic_year_id' => $this->academicYear->id,
                 'semester_id' => $this->semester->id,
@@ -282,7 +282,7 @@ class SenateBroadSheetTest extends TestCase
     public function test_broad_sheet_renders_2d_matrix_with_accurate_student_grades(): void
     {
         $response = $this->actingAs($this->adminUser)
-            ->get(route('academic.reports.broad-sheet', [
+            ->get(route('broad-sheet.list', [
                 'programme_id' => $this->programme->id,
                 'academic_year_id' => $this->academicYear->id,
                 'semester_id' => $this->semester->id,
@@ -306,7 +306,7 @@ class SenateBroadSheetTest extends TestCase
     public function test_broad_sheet_calculates_course_unit_statistics_in_footer(): void
     {
         $response = $this->actingAs($this->adminUser)
-            ->get(route('academic.reports.broad-sheet', [
+            ->get(route('broad-sheet.list', [
                 'programme_id' => $this->programme->id,
                 'academic_year_id' => $this->academicYear->id,
                 'semester_id' => $this->semester->id,
@@ -325,7 +325,7 @@ class SenateBroadSheetTest extends TestCase
     public function test_broad_sheet_csv_export_streams_valid_tabular_data(): void
     {
         $response = $this->actingAs($this->adminUser)
-            ->get(route('academic.reports.broad-sheet.export', [
+            ->get(route('broad-sheet.export', [
                 'programme_id' => $this->programme->id,
                 'academic_year_id' => $this->academicYear->id,
                 'semester_id' => $this->semester->id,

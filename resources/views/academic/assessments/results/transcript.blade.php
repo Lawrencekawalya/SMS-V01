@@ -101,7 +101,7 @@
         <span>Official Academic Transcript &bull; {{ $student->registration_number }}</span>
       </div>
       <div class="d-flex gap-2">
-        <a href="{{ route('academic.results.index') }}" class="btn btn-outline-light btn-sm">
+        <a href="{{ route('result.list') }}" class="btn btn-outline-light btn-sm">
           <i class="bi bi-arrow-left me-1"></i> Results Hub
         </a>
         <button type="button" class="btn btn-primary btn-sm fw-semibold" onclick="window.print()">

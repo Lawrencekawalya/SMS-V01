@@ -6,7 +6,7 @@
 @section('breadcrumb')
   <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
   <li class="breadcrumb-item">Academic Structure</li>
-  <li class="breadcrumb-item"><a href="{{ route('academic.students.index') }}">Students</a></li>
+  <li class="breadcrumb-item"><a href="{{ route('student.list') }}">Students</a></li>
   <li class="breadcrumb-item active" aria-current="page">{{ $student->registration_number }}</li>
 @endsection
 
@@ -71,10 +71,10 @@
           </ul>
 
           <div class="d-grid gap-2">
-            <a href="{{ route('academic.results.transcript', $student) }}" class="btn btn-outline-primary">
+            <a href="{{ route('result.transcript', $student) }}" class="btn btn-outline-primary">
               <i class="bi bi-mortarboard-fill me-1"></i> Official Academic Transcript
             </a>
-            <a href="{{ route('academic.students.index') }}" class="btn btn-outline-secondary">
+            <a href="{{ route('student.list') }}" class="btn btn-outline-secondary">
               <i class="bi bi-arrow-left me-1"></i> Back to Students Directory
             </a>
           </div>
@@ -99,7 +99,7 @@
                   <h6 class="fw-bold mb-0 text-primary">{{ $student->programme->name }}</h6>
                   <small class="text-muted">{{ $student->programme->department->name }} &bull; {{ $student->programme->department->faculty->name ?? '' }}</small>
                 </div>
-                <a href="{{ route('academic.programmes.show', $student->programme) }}" class="btn btn-sm btn-outline-primary" title="View Programme">
+                <a href="{{ route('programme.show', $student->programme) }}" class="btn btn-sm btn-outline-primary" title="View Programme">
                   <i class="bi bi-arrow-right"></i>
                 </a>
               </div>
@@ -143,7 +143,7 @@
             <p class="mb-2 text-muted small">
               This student is configured for the <strong>Week 2 Course Registration Module</strong>. The registration system will dynamically fetch courses allocated to <strong>Year {{ $student->current_study_year }} Semester {{ $student->current_semester }}</strong> in the <strong>{{ $student->curriculum->version_name }}</strong> progression matrix.
             </p>
-            <a href="{{ route('academic.curriculums.show', $student->curriculum) }}" class="btn btn-sm btn-success">
+            <a href="{{ route('curriculum.show', $student->curriculum) }}" class="btn btn-sm btn-success">
               <i class="bi bi-diagram-3-fill me-1"></i> Inspect Curriculum Progression Matrix
             </a>
           </div>

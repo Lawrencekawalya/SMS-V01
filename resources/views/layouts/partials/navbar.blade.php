@@ -21,27 +21,27 @@
         <ul class="dropdown-menu shadow" aria-labelledby="personaQuickSwitcher" style="min-width: 320px;">
           <li class="dropdown-header small text-uppercase fw-bold text-muted">Simulated Enrollment Journeys</li>
           <li>
-            <a class="dropdown-item py-2" href="{{ route('academic.registrations.create', ['student_id' => 1]) }}">
+            <a class="dropdown-item py-2" href="{{ route('registration.create', ['student_id' => 1]) }}">
               <div class="fw-bold text-primary"><i class="bi bi-person-fill me-1"></i> Ronald Mukasa</div>
               <div class="small text-muted">BSCS Fresher &bull; Reg: 26/BSCS/001 &bull; Sem 1 Workspace</div>
             </a>
           </li>
           <li>
-            <a class="dropdown-item py-2" href="{{ route('academic.registrations.index') }}">
+            <a class="dropdown-item py-2" href="{{ route('registration.list') }}">
               <div class="fw-bold text-success"><i class="bi bi-arrow-left-right me-1"></i> Sarah Namubiru</div>
               <div class="small text-muted">BSSE Year 2 &bull; Reg: 25/BSSE/008 &bull; Add / Drop Workspace</div>
             </a>
           </li>
           @if (config('academic.enforce_prerequisites', false))
             <li>
-              <a class="dropdown-item py-2" href="{{ route('academic.registrations.eligibility', ['student_id' => 5]) }}">
+              <a class="dropdown-item py-2" href="{{ route('registration.eligibility', ['student_id' => 5]) }}">
                 <div class="fw-bold text-info"><i class="bi bi-shield-check me-1"></i> Emmanuel Twinomujuni</div>
                 <div class="small text-muted">DCA Diploma &bull; Reg: 26/DCA/001 &bull; Stage Restrictions</div>
               </a>
             </li>
           @else
             <li>
-              <a class="dropdown-item py-2" href="{{ route('academic.registrations.active-session') }}">
+              <a class="dropdown-item py-2" href="{{ route('registration.active-session') }}">
                 <div class="fw-bold text-success"><i class="bi bi-people-fill me-1"></i> Active Session Cohorts</div>
                 <div class="small text-muted">Multi-Stage Enrollment Breakdown &amp; Progression</div>
               </a>
@@ -50,7 +50,7 @@
           @if (config('academic.require_registration_approval', false))
             <li><hr class="dropdown-divider"></li>
             <li>
-              <a class="dropdown-item py-2" href="{{ route('academic.approvals.index') }}">
+              <a class="dropdown-item py-2" href="{{ route('approval.list') }}">
                 <div class="fw-bold text-warning"><i class="bi bi-clipboard-check me-1"></i> Academic Advisor Portal</div>
                 <div class="small text-muted">Review, Verify, and Batch Approve Slips</div>
               </a>
@@ -156,7 +156,7 @@
           <div class="dropdown-divider m-0"></div>
 
           @forelse ($navbarUpcomingEvents ?? [] as $event)
-            <a href="{{ route('academic.events.index') }}" class="dropdown-item py-2 px-3">
+            <a href="{{ route('event.list') }}" class="dropdown-item py-2 px-3">
               <div class="d-flex align-items-start gap-2">
                 <span class="mt-1">
                   @if ($event->event_type === 'examination')
@@ -196,7 +196,7 @@
             <div class="dropdown-divider m-0"></div>
           @endforelse
 
-          <a href="{{ route('academic.events.index') }}" class="dropdown-item dropdown-footer text-center fw-bold text-primary py-2">
+          <a href="{{ route('event.list') }}" class="dropdown-item dropdown-footer text-center fw-bold text-primary py-2">
             See All Events &amp; Almanac <i class="bi bi-arrow-right ms-1"></i>
           </a>
         </div>

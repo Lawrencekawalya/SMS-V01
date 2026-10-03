@@ -16,7 +16,7 @@
         <div class="card-header">
           <h3 class="card-title">Root Institution Governance Profile</h3>
         </div>
-        <form action="{{ route('academic.university.update', $university) }}" method="POST">
+        <form action="{{ route('university.update', $university) }}" method="POST">
           @csrf
           @method('PUT')
           <div class="card-body">

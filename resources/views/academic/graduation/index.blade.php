@@ -61,13 +61,13 @@
         <i class="bi bi-funnel me-1"></i> Filter Graduation Candidates
       </h3>
       <div class="d-flex gap-2">
-        <a href="{{ route('academic.graduation.honors-roll', request()->query()) }}" class="btn btn-sm btn-outline-primary">
+        <a href="{{ route('graduation.honors-roll', request()->query()) }}" class="btn btn-sm btn-outline-primary">
           <i class="bi bi-journal-bookmark me-1"></i> View Honors Roll Gazette
         </a>
       </div>
     </div>
     <div class="card-body">
-      <form action="{{ route('academic.graduation.index') }}" method="GET" class="row g-3">
+      <form action="{{ route('graduation.list') }}" method="GET" class="row g-3">
         <div class="col-12 col-md-4">
           <label for="search" class="form-label small fw-semibold">Search Candidate</label>
           <div class="input-group input-group-sm">
@@ -101,7 +101,7 @@
           <button type="submit" class="btn btn-sm btn-primary w-100">
             <i class="bi bi-filter me-1"></i> Filter
           </button>
-          <a href="{{ route('academic.graduation.index') }}" class="btn btn-sm btn-outline-secondary">
+          <a href="{{ route('graduation.list') }}" class="btn btn-sm btn-outline-secondary">
             Reset
           </a>
         </div>
@@ -185,10 +185,10 @@
                 </td>
                 <td class="text-end">
                   <div class="btn-group btn-group-sm">
-                    <a href="{{ route('academic.graduation.audit', $st->id) }}" class="btn btn-outline-primary" title="Audit Clearance">
+                    <a href="{{ route('graduation.audit', $st->id) }}" class="btn btn-outline-primary" title="Audit Clearance">
                       <i class="bi bi-shield-check me-1"></i> Audit
                     </a>
-                    <a href="{{ route('academic.results.transcript', $st->id) }}" class="btn btn-outline-secondary" title="View Transcript">
+                    <a href="{{ route('result.transcript', $st->id) }}" class="btn btn-outline-secondary" title="View Transcript">
                       <i class="bi bi-file-earmark-text"></i>
                     </a>
                   </div>

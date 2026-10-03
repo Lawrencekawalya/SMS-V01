@@ -5,7 +5,7 @@
 
 @section('breadcrumb')
   <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
-  <li class="breadcrumb-item"><a href="{{ route('academic.registrations.index') }}">Course Registrations</a></li>
+  <li class="breadcrumb-item"><a href="{{ route('registration.list') }}">Course Registrations</a></li>
   <li class="breadcrumb-item active" aria-current="page">Advisor Approvals</li>
 @endsection
 
@@ -94,7 +94,7 @@
       </h3>
     </div>
     <div class="card-body">
-      <form method="GET" action="{{ route('academic.approvals.index') }}" class="row g-2 align-items-end">
+      <form method="GET" action="{{ route('approval.list') }}" class="row g-2 align-items-end">
         <div class="col-md-3">
           <label class="form-label small text-muted mb-1">Department</label>
           <select name="department_id" class="form-select form-select-sm">
@@ -147,7 +147,7 @@
           <button type="submit" class="btn btn-primary btn-sm flex-fill">
             <i class="bi bi-filter me-1"></i> Apply
           </button>
-          <a href="{{ route('academic.approvals.index') }}" class="btn btn-outline-secondary btn-sm" title="Reset Filters">
+          <a href="{{ route('approval.list') }}" class="btn btn-outline-secondary btn-sm" title="Reset Filters">
             <i class="bi bi-arrow-counterclockwise"></i>
           </a>
         </div>
@@ -188,7 +188,7 @@
         </button>
       </div>
 
-      <form id="batchApproveForm" method="POST" action="{{ route('academic.approvals.batch-approve') }}">
+      <form id="batchApproveForm" method="POST" action="{{ route('approval.batch-approve') }}">
         @csrf
         <table id="approvals-table" class="table table-hover table-striped align-middle mb-0">
           <thead>
@@ -221,7 +221,7 @@
                   @endif
                 </td>
                 <td>
-                  <a href="{{ route('academic.approvals.show', $reg) }}" class="fw-bold font-monospace text-primary text-decoration-none">
+                  <a href="{{ route('approval.show', $reg) }}" class="fw-bold font-monospace text-primary text-decoration-none">
                     #REG-{{ str_pad($reg->id, 5, '0', STR_PAD_LEFT) }}
                   </a>
                 </td>
@@ -260,18 +260,18 @@
                   </small>
                 </td>
                 <td class="text-end text-nowrap">
-                  <a href="{{ route('academic.approvals.show', $reg) }}" class="btn btn-sm btn-outline-primary" title="Inspect & Verify Slip">
+                  <a href="{{ route('approval.show', $reg) }}" class="btn btn-sm btn-outline-primary" title="Inspect & Verify Slip">
                     <i class="bi bi-search"></i>
                   </a>
                   @if ($isPending)
                     <button type="button" class="btn btn-sm btn-success quick-approve-btn" data-slip-id="{{ $reg->id }}" data-student-name="{{ $reg->student->full_name }}" data-bs-toggle="modal" data-bs-target="#quickApproveModal" title="Quick Approve">
                       <i class="bi bi-check-lg"></i>
                     </button>
-                    <button type="button" class="btn btn-sm btn-outline-danger quick-reject-btn" data-slip-id="{{ $reg->id }}" data-student-name="{{ $reg->student->full_name }}" data-reject-url="{{ route('academic.approvals.reject', $reg) }}" data-bs-toggle="modal" data-bs-target="#rejectSlipModal" title="Request Changes / Reject">
+                    <button type="button" class="btn btn-sm btn-outline-danger quick-reject-btn" data-slip-id="{{ $reg->id }}" data-student-name="{{ $reg->student->full_name }}" data-reject-url="{{ route('approval.reject', $reg) }}" data-bs-toggle="modal" data-bs-target="#rejectSlipModal" title="Request Changes / Reject">
                       <i class="bi bi-x-lg"></i>
                     </button>
                   @else
-                    <a href="{{ route('academic.registrations.print', $reg) }}" target="_blank" class="btn btn-sm btn-outline-secondary" title="Print Slip">
+                    <a href="{{ route('registration.print', $reg) }}" target="_blank" class="btn btn-sm btn-outline-secondary" title="Print Slip">
                       <i class="bi bi-printer"></i>
                     </a>
                   @endif

@@ -6,7 +6,7 @@
 @section('breadcrumb')
   <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
   <li class="breadcrumb-item">Academic Core</li>
-  <li class="breadcrumb-item"><a href="{{ route('academic.registrations.index') }}">Course Registrations</a></li>
+  <li class="breadcrumb-item"><a href="{{ route('registration.list') }}">Course Registrations</a></li>
   <li class="breadcrumb-item active" aria-current="page">Active Session Cohorts</li>
 @endsection
 
@@ -34,7 +34,7 @@
           @endif
         </div>
         <div class="d-flex align-items-center gap-2">
-          <form method="GET" action="{{ route('academic.registrations.active-session') }}" class="d-flex align-items-center gap-2">
+          <form method="GET" action="{{ route('registration.active-session') }}" class="d-flex align-items-center gap-2">
             <label for="semester_id_select" class="small fw-semibold text-muted text-nowrap mb-0 d-none d-sm-inline">Switch Session:</label>
             <select name="semester_id" id="semester_id_select" class="form-select form-select-sm" onchange="this.form.submit()">
               @foreach ($allSemesters as $sem)
@@ -44,7 +44,7 @@
               @endforeach
             </select>
           </form>
-          <a href="{{ route('academic.registrations.index') }}" class="btn btn-outline-secondary btn-sm text-nowrap">
+          <a href="{{ route('registration.list') }}" class="btn btn-outline-secondary btn-sm text-nowrap">
             <i class="bi bi-arrow-left me-1"></i> All Registration Slips
           </a>
         </div>
@@ -80,29 +80,29 @@
               <i class="bi bi-diagram-3-fill me-1 text-primary"></i> Session Cohort Breakdown (All Concurrent in This Session):
             </div>
             <div class="d-flex flex-wrap gap-2">
-              <a href="{{ route('academic.registrations.active-session', array_merge(request()->query(), ['study_year' => 1])) }}"
+              <a href="{{ route('registration.active-session', array_merge(request()->query(), ['study_year' => 1])) }}"
                  class="badge {{ (string) $studyYear === '1' ? 'text-bg-primary' : 'bg-body text-body border' }} text-decoration-none px-3 py-2 fs-7 shadow-xs">
                 <i class="bi bi-mortarboard-fill me-1 text-primary"></i>
                 <span class="fw-semibold">Year 1 (Freshers):</span> {{ $stats['year_1'] }} Students
               </a>
-              <a href="{{ route('academic.registrations.active-session', array_merge(request()->query(), ['study_year' => 2])) }}"
+              <a href="{{ route('registration.active-session', array_merge(request()->query(), ['study_year' => 2])) }}"
                  class="badge {{ (string) $studyYear === '2' ? 'text-bg-info text-dark' : 'bg-body text-body border' }} text-decoration-none px-3 py-2 fs-7 shadow-xs">
                 <i class="bi bi-mortarboard-fill me-1 text-info"></i>
                 <span class="fw-semibold">Year 2 (Continuing):</span> {{ $stats['year_2'] }} Students
               </a>
-              <a href="{{ route('academic.registrations.active-session', array_merge(request()->query(), ['study_year' => 3])) }}"
+              <a href="{{ route('registration.active-session', array_merge(request()->query(), ['study_year' => 3])) }}"
                  class="badge {{ (string) $studyYear === '3' ? 'text-bg-dark' : 'bg-body text-body border' }} text-decoration-none px-3 py-2 fs-7 shadow-xs">
                 <i class="bi bi-mortarboard-fill me-1 text-warning"></i>
                 <span class="fw-semibold">Year 3 (Finalists):</span> {{ $stats['year_3'] }} Students
               </a>
               @if ($stats['year_4'] > 0)
-                <a href="{{ route('academic.registrations.active-session', array_merge(request()->query(), ['study_year' => 4])) }}"
+                <a href="{{ route('registration.active-session', array_merge(request()->query(), ['study_year' => 4])) }}"
                    class="badge {{ (string) $studyYear === '4' ? 'text-bg-secondary' : 'bg-body text-body border' }} text-decoration-none px-3 py-2 fs-7 shadow-xs">
                   <i class="bi bi-mortarboard-fill me-1"></i>
                   <span class="fw-semibold">Year 4:</span> {{ $stats['year_4'] }} Students
                 </a>
               @endif
-              <a href="{{ route('academic.registrations.active-session', array_diff_key(request()->query(), ['study_year' => ''])) }}"
+              <a href="{{ route('registration.active-session', array_diff_key(request()->query(), ['study_year' => ''])) }}"
                  class="badge {{ empty($studyYear) ? 'text-bg-success' : 'bg-body text-body border' }} text-decoration-none px-3 py-2 fs-7 shadow-xs">
                 <i class="bi bi-people-fill me-1"></i>
                 <span class="fw-semibold">All Cohorts:</span> {{ $stats['total'] }} Students
@@ -182,14 +182,14 @@
           <i class="bi bi-funnel me-1"></i> Filter Active Session Cohorts
         </h3>
         @if ($studyYear || $programmeId || $status)
-          <a href="{{ route('academic.registrations.active-session', ['semester_id' => $currentSemester?->id]) }}" class="badge text-bg-warning text-decoration-none">
+          <a href="{{ route('registration.active-session', ['semester_id' => $currentSemester?->id]) }}" class="badge text-bg-warning text-decoration-none">
             <i class="bi bi-x-circle me-1"></i> Reset Active Filters
           </a>
         @endif
       </div>
     </div>
     <div class="card-body py-2">
-      <form action="{{ route('academic.registrations.active-session') }}" method="GET" class="row g-2 align-items-end">
+      <form action="{{ route('registration.active-session') }}" method="GET" class="row g-2 align-items-end">
         <input type="hidden" name="semester_id" value="{{ $currentSemester?->id }}">
 
         <div class="col-12 col-sm-6 col-md-3">
@@ -231,7 +231,7 @@
           <button type="submit" class="btn btn-primary btn-sm flex-grow-1" title="Filter Roster">
             <i class="bi bi-filter me-1"></i> Filter
           </button>
-          <a href="{{ route('academic.registrations.active-session', ['semester_id' => $currentSemester?->id]) }}" class="btn btn-outline-secondary btn-sm" title="Clear Filters">
+          <a href="{{ route('registration.active-session', ['semester_id' => $currentSemester?->id]) }}" class="btn btn-outline-secondary btn-sm" title="Clear Filters">
             <i class="bi bi-arrow-counterclockwise"></i>
           </a>
         </div>
@@ -254,7 +254,7 @@
           </div>
         </div>
         <div class="card-tools d-flex flex-wrap align-items-center gap-2 me-0">
-          <a href="{{ route('academic.registrations.create') }}" class="btn btn-primary btn-sm">
+          <a href="{{ route('registration.create') }}" class="btn btn-primary btn-sm">
             <i class="bi bi-plus-circle me-1"></i> Register Student
           </a>
           <div class="input-group input-group-sm" style="width: 14rem;">
@@ -394,10 +394,10 @@
 
                 <!-- Actions -->
                 <td class="text-end text-nowrap">
-                  <a href="{{ route('academic.registrations.show', $reg) }}" class="btn btn-sm btn-outline-primary" title="View Official Registration Slip">
+                  <a href="{{ route('registration.show', $reg) }}" class="btn btn-sm btn-outline-primary" title="View Official Registration Slip">
                     <i class="bi bi-eye"></i>
                   </a>
-                  <a href="{{ route('academic.registrations.print', $reg) }}" target="_blank" class="btn btn-sm btn-outline-secondary" title="Print Official Slip">
+                  <a href="{{ route('registration.print', $reg) }}" target="_blank" class="btn btn-sm btn-outline-secondary" title="Print Official Slip">
                     <i class="bi bi-printer"></i>
                   </a>
                 </td>

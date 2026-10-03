@@ -5,7 +5,7 @@
 
 @section('breadcrumb')
   <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
-  <li class="breadcrumb-item"><a href="{{ route('academic.approvals.index') }}">Advisor Approvals</a></li>
+  <li class="breadcrumb-item"><a href="{{ route('approval.list') }}">Advisor Approvals</a></li>
   <li class="breadcrumb-item active" aria-current="page">#REG-{{ str_pad($registration->id, 5, '0', STR_PAD_LEFT) }}</li>
 @endsection
 
@@ -61,10 +61,10 @@
           @endif
         </div>
         <div class="card-tools d-flex flex-wrap align-items-center gap-2 me-0 ms-auto">
-          <a href="{{ route('academic.approvals.index') }}" class="btn btn-outline-secondary btn-sm">
+          <a href="{{ route('approval.list') }}" class="btn btn-outline-secondary btn-sm">
             <i class="bi bi-arrow-left me-1"></i> Back to Approvals
           </a>
-          <a href="{{ route('academic.registrations.print', $registration) }}" target="_blank" class="btn btn-outline-primary btn-sm">
+          <a href="{{ route('registration.print', $registration) }}" target="_blank" class="btn btn-outline-primary btn-sm">
             <i class="bi bi-printer me-1"></i> Official Print Slip
           </a>
           @if (in_array($registration->status, ['submitted', 'add_drop_pending']))
@@ -349,7 +349,7 @@
   <div class="modal fade" id="approveSlipModal" tabindex="-1" aria-labelledby="approveSlipModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
-        <form method="POST" action="{{ route('academic.approvals.approve', $registration) }}">
+        <form method="POST" action="{{ route('approval.approve', $registration) }}">
           @csrf
           <div class="modal-header bg-success text-white">
             <h5 class="modal-title fw-bold" id="approveSlipModalLabel">
@@ -385,7 +385,7 @@
   <div class="modal fade" id="rejectSlipModal" tabindex="-1" aria-labelledby="rejectSlipModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
-        <form method="POST" action="{{ route('academic.approvals.reject', $registration) }}">
+        <form method="POST" action="{{ route('approval.reject', $registration) }}">
           @csrf
           <div class="modal-header bg-danger text-white">
             <h5 class="modal-title fw-bold" id="rejectSlipModalLabel">

@@ -218,7 +218,7 @@ class CourseRegistrationWeek2Test extends TestCase
         $afn1102 = CourseUnit::where('code', 'AFN1102')->firstOrFail();
 
         // 1. Submit Course Registration (4 + 4 + 4 + 3 = 15.0 CU)
-        $submitResponse = $this->post(route('academic.registrations.store'), [
+        $submitResponse = $this->post(route('registration.store'), [
             'student_id' => $this->ronaldFresher->id,
             'semester_id' => $this->activeSemester->id,
             'action_status' => 'submitted',
@@ -235,13 +235,13 @@ class CourseRegistrationWeek2Test extends TestCase
         $this->assertCount(4, $registration->items);
 
         // 2. Advisor Reviews Slip in Approvals Hub
-        $approvalsList = $this->get(route('academic.approvals.index'));
+        $approvalsList = $this->get(route('approval.list'));
         $approvalsList->assertStatus(200);
         $approvalsList->assertSee($this->ronaldFresher->full_name);
 
         // 3. Advisor Approves the Registration
         $this->actingAs($this->advisor);
-        $approveResponse = $this->post(route('academic.approvals.approve', $registration), [
+        $approveResponse = $this->post(route('approval.approve', $registration), [
             'advisor_remarks' => 'First Year Fresher registration verified and approved.',
         ]);
         $approveResponse->assertRedirect();
@@ -252,7 +252,7 @@ class CourseRegistrationWeek2Test extends TestCase
         $this->assertEquals($this->advisor->id, $approvedSlip->approved_by_user_id);
 
         // 4. Printable Slip Renders Cleanly with Signature Blocks
-        $printResponse = $this->get(route('academic.registrations.print', $approvedSlip));
+        $printResponse = $this->get(route('registration.print', $approvedSlip));
         $printResponse->assertStatus(200);
         $printResponse->assertSee('Bishop Stuart University');
         $printResponse->assertSee('Official Semester Course Registration Slip');
@@ -290,13 +290,13 @@ class CourseRegistrationWeek2Test extends TestCase
         $this->assertEquals(14.0, (float) $registration->fresh()->total_credits);
 
         // 2. Sarah accesses Add/Drop Workspace
-        $workspace = $this->get(route('academic.registrations.add-drop.edit', $registration));
+        $workspace = $this->get(route('registration.add-drop.edit', $registration));
         $workspace->assertStatus(200);
         $workspace->assertSee('Active Course Add / Drop Adjustment Window');
 
         // 3. Drop elective SWE2102 (14.0 - 3.0 = 11.0 CU, wait! 11.0 < 12.0 CU floor!)
         // Dropping SWE2102 should be BLOCKED because remaining is 11.0 CU (< 12.0 CU)!
-        $blockedDrop = $this->post(route('academic.registrations.add-drop.drop', [
+        $blockedDrop = $this->post(route('registration.add-drop.drop', [
             'registration' => $registration,
             'item' => $item3,
         ]), [
@@ -321,14 +321,14 @@ class CourseRegistrationWeek2Test extends TestCase
             'course_type' => 'Elective',
         ]);
 
-        $addResponse = $this->post(route('academic.registrations.add-drop.add', $registration), [
+        $addResponse = $this->post(route('registration.add-drop.add', $registration), [
             'course_unit_id' => $extraCourse->id,
         ]);
         $addResponse->assertSessionHas('success');
         $this->assertEquals(17.0, (float) $registration->fresh()->total_credits);
 
         // Now drop SWE2102 (17.0 - 3.0 = 14.0 CU >= 12.0 CU floor) -> Allowed!
-        $dropResponse = $this->post(route('academic.registrations.add-drop.drop', [
+        $dropResponse = $this->post(route('registration.add-drop.drop', [
             'registration' => $registration,
             'item' => $item3,
         ]), [
@@ -343,7 +343,7 @@ class CourseRegistrationWeek2Test extends TestCase
 
         // 4. Advisor reviews change log and re-approves
         $this->actingAs($this->advisor);
-        $reApprove = $this->post(route('academic.approvals.approve', $registration), [
+        $reApprove = $this->post(route('approval.approve', $registration), [
             'advisor_remarks' => 'Add/Drop adjustment authorized.',
         ]);
         $reApprove->assertSessionHas('success');
@@ -355,7 +355,7 @@ class CourseRegistrationWeek2Test extends TestCase
      */
     public function test_journey_3_dca_diploma_curriculum_and_stage_isolation(): void
     {
-        $response = $this->get(route('academic.registrations.eligibility', [
+        $response = $this->get(route('registration.eligibility', [
             'student_id' => $this->emmanuelDca->id,
         ]));
 
@@ -377,7 +377,7 @@ class CourseRegistrationWeek2Test extends TestCase
         $mth1101 = CourseUnit::where('code', 'MTH1101')->firstOrFail();
 
         // 1. Credit overload > 24 CU is rejected
-        $overloadResponse = $this->post(route('academic.registrations.store'), [
+        $overloadResponse = $this->post(route('registration.store'), [
             'student_id' => $this->ronaldFresher->id,
             'semester_id' => $this->activeSemester->id,
             'action_status' => 'submitted',
@@ -392,7 +392,7 @@ class CourseRegistrationWeek2Test extends TestCase
             'registration_end_date' => now()->subDays(5), // closed in past
         ]);
 
-        $closedResponse = $this->get(route('academic.registrations.create', [
+        $closedResponse = $this->get(route('registration.create', [
             'student_id' => $this->ronaldFresher->id,
         ]));
         $closedResponse->assertStatus(200);

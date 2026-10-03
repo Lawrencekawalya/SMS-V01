@@ -27,109 +27,201 @@ Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
-Route::prefix('academic')->name('academic.')->group(function () {
-    // University Profile
-    Route::get('university', [UniversityController::class, 'edit'])->name('university.edit');
-    Route::put('university/{university}', [UniversityController::class, 'update'])->name('university.update');
+Route::prefix('academic')->group(function () {
+    // 1. University Profile
+    Route::controller(UniversityController::class)->prefix('university')->group(function () {
+        Route::get('edit', 'edit')->name('university.edit');
+        Route::match(['put', 'patch'], 'update/{university}', 'update')->name('university.update');
+    });
 
-    // Campuses
-    Route::resource('campuses', CampusController::class);
+    // 2. Campuses
+    Route::controller(CampusController::class)->prefix('campus')->group(function () {
+        Route::get('list', 'index')->name('campus.list');
+        Route::get('create', 'create')->name('campus.create');
+        Route::post('store', 'store')->name('campus.store');
+        Route::get('show/{campus}', 'show')->name('campus.show');
+        Route::get('edit/{campus}', 'edit')->name('campus.edit');
+        Route::match(['put', 'patch'], 'update/{campus}', 'update')->name('campus.update');
+        Route::delete('delete/{campus}', 'destroy')->name('campus.delete');
+    });
 
-    // Faculties
-    Route::resource('faculties', FacultyController::class);
+    // 3. Faculties
+    Route::controller(FacultyController::class)->prefix('faculty')->group(function () {
+        Route::get('list', 'index')->name('faculty.list');
+        Route::get('create', 'create')->name('faculty.create');
+        Route::post('store', 'store')->name('faculty.store');
+        Route::get('show/{faculty}', 'show')->name('faculty.show');
+        Route::get('edit/{faculty}', 'edit')->name('faculty.edit');
+        Route::match(['put', 'patch'], 'update/{faculty}', 'update')->name('faculty.update');
+        Route::delete('delete/{faculty}', 'destroy')->name('faculty.delete');
+    });
 
-    // Departments
-    Route::resource('departments', DepartmentController::class);
+    // 4. Departments
+    Route::controller(DepartmentController::class)->prefix('department')->group(function () {
+        Route::get('list', 'index')->name('department.list');
+        Route::get('create', 'create')->name('department.create');
+        Route::post('store', 'store')->name('department.store');
+        Route::get('show/{department}', 'show')->name('department.show');
+        Route::get('edit/{department}', 'edit')->name('department.edit');
+        Route::match(['put', 'patch'], 'update/{department}', 'update')->name('department.update');
+        Route::delete('delete/{department}', 'destroy')->name('department.delete');
+    });
 
-    // Programmes
-    Route::resource('programmes', ProgrammeController::class);
+    // 5. Programmes
+    Route::controller(ProgrammeController::class)->prefix('programme')->group(function () {
+        Route::get('list', 'index')->name('programme.list');
+        Route::get('create', 'create')->name('programme.create');
+        Route::post('store', 'store')->name('programme.store');
+        Route::get('show/{programme}', 'show')->name('programme.show');
+        Route::get('edit/{programme}', 'edit')->name('programme.edit');
+        Route::match(['put', 'patch'], 'update/{programme}', 'update')->name('programme.update');
+        Route::delete('delete/{programme}', 'destroy')->name('programme.delete');
+    });
 
-    // Academic Years & Calendar
-    Route::post('academic-years/{academic_year}/make-current', [AcademicYearController::class, 'makeCurrent'])->name('academic-years.make-current');
-    Route::resource('academic-years', AcademicYearController::class);
+    // 6. Academic Years
+    Route::controller(AcademicYearController::class)->prefix('academic-year')->group(function () {
+        Route::get('list', 'index')->name('academic-year.list');
+        Route::get('create', 'create')->name('academic-year.create');
+        Route::post('store', 'store')->name('academic-year.store');
+        Route::get('show/{academic_year}', 'show')->name('academic-year.show');
+        Route::post('make-current/{academic_year}', 'makeCurrent')->name('academic-year.make-current');
+        Route::get('edit/{academic_year}', 'edit')->name('academic-year.edit');
+        Route::match(['put', 'patch'], 'update/{academic_year}', 'update')->name('academic-year.update');
+        Route::delete('delete/{academic_year}', 'destroy')->name('academic-year.delete');
+    });
 
-    // Semesters
-    Route::post('semesters/{semester}/activate', [SemesterController::class, 'activate'])->name('semesters.activate');
-    Route::resource('semesters', SemesterController::class)->except(['index', 'show']);
+    // 7. Semesters
+    Route::controller(SemesterController::class)->prefix('semester')->group(function () {
+        Route::get('create', 'create')->name('semester.create');
+        Route::post('store', 'store')->name('semester.store');
+        Route::post('activate/{semester}', 'activate')->name('semester.activate');
+        Route::get('edit/{semester}', 'edit')->name('semester.edit');
+        Route::match(['put', 'patch'], 'update/{semester}', 'update')->name('semester.update');
+        Route::delete('delete/{semester}', 'destroy')->name('semester.delete');
+    });
 
-    // Course Units / Master Catalog
-    Route::resource('courses', CourseUnitController::class)->parameters(['courses' => 'course_unit']);
+    // 8. Course Units
+    Route::controller(CourseUnitController::class)->prefix('course')->group(function () {
+        Route::get('list', 'index')->name('course.list');
+        Route::get('create', 'create')->name('course.create');
+        Route::post('store', 'store')->name('course.store');
+        Route::get('show/{course_unit}', 'show')->name('course.show');
+        Route::get('edit/{course_unit}', 'edit')->name('course.edit');
+        Route::match(['put', 'patch'], 'update/{course_unit}', 'update')->name('course.update');
+        Route::delete('delete/{course_unit}', 'destroy')->name('course.delete');
+    });
 
-    // Curriculums & Progression Matrix
-    Route::resource('curriculums', CurriculumController::class);
-    Route::post('curriculums/{curriculum}/courses', [CurriculumCourseController::class, 'store'])->name('curriculums.courses.store');
-    Route::delete('curriculums/{curriculum}/courses/{curriculumCourse}', [CurriculumCourseController::class, 'destroy'])->name('curriculums.courses.destroy');
-    Route::post('curriculums/{curriculum}/stage-credit-limits', [CurriculumController::class, 'updateStageCreditLimits'])->name('curriculums.stage-credit-limits.update');
+    // 9. Curriculums
+    Route::controller(CurriculumController::class)->prefix('curriculum')->group(function () {
+        Route::get('list', 'index')->name('curriculum.list');
+        Route::get('create', 'create')->name('curriculum.create');
+        Route::post('store', 'store')->name('curriculum.store');
+        Route::get('show/{curriculum}', 'show')->name('curriculum.show');
+        Route::get('edit/{curriculum}', 'edit')->name('curriculum.edit');
+        Route::match(['put', 'patch'], 'update/{curriculum}', 'update')->name('curriculum.update');
+        Route::delete('delete/{curriculum}', 'destroy')->name('curriculum.delete');
+        Route::post('stage-credit-limits/{curriculum}', 'updateStageCreditLimits')->name('curriculum.stage-credit-limits.update');
+    });
 
-    // Scheduled Academic Events & Almanac
-    Route::get('events', [AcademicEventController::class, 'index'])->name('events.index');
-    Route::get('events/feed', [AcademicEventController::class, 'feed'])->name('events.feed');
-    Route::post('events', [AcademicEventController::class, 'store'])->name('events.store');
-    Route::put('events/{academic_event}', [AcademicEventController::class, 'update'])->name('events.update');
-    Route::delete('events/{academic_event}', [AcademicEventController::class, 'destroy'])->name('events.destroy');
+    // 10. Curriculum Courses
+    Route::controller(CurriculumCourseController::class)->prefix('curriculum-course')->group(function () {
+        Route::post('store/{curriculum}', 'store')->name('curriculum.courses.store');
+        Route::delete('delete/{curriculum}/{curriculumCourse}', 'destroy')->name('curriculum.courses.destroy');
+    });
 
-    // Students Directory (Academic Enrollment Foundation)
-    Route::resource('students', StudentController::class)->only(['index', 'show']);
+    // 11. Scheduled Academic Events
+    Route::controller(AcademicEventController::class)->prefix('event')->group(function () {
+        Route::get('list', 'index')->name('event.list');
+        Route::get('feed', 'feed')->name('event.feed');
+        Route::post('store', 'store')->name('event.store');
+        Route::match(['put', 'patch'], 'update/{academic_event}', 'update')->name('event.update');
+        Route::delete('delete/{academic_event}', 'destroy')->name('event.delete');
+    });
 
-    // Course Eligibility & Prerequisite Inspector
-    Route::get('registrations/eligibility', [CourseRegistrationController::class, 'eligibilityCheck'])->name('registrations.eligibility');
+    // 12. Students Directory
+    Route::controller(StudentController::class)->prefix('student')->group(function () {
+        Route::get('list', 'index')->name('student.list');
+        Route::get('show/{student}', 'show')->name('student.show');
+    });
 
-    // Active Session Cohorts & Student Progression Stage Roster
-    Route::get('registrations/active-session', [CourseRegistrationController::class, 'activeSessionRoster'])->name('registrations.active-session');
+    // 13. Course Registrations Hub
+    Route::controller(CourseRegistrationController::class)->prefix('registration')->group(function () {
+        Route::get('list', 'index')->name('registration.list');
+        Route::get('create', 'create')->name('registration.create');
+        Route::post('store', 'store')->name('registration.store');
+        Route::get('eligibility', 'eligibilityCheck')->name('registration.eligibility');
+        Route::get('active-session', 'activeSessionRoster')->name('registration.active-session');
+        Route::get('print/{registration}', 'printSlip')->name('registration.print');
+        Route::get('show/{registration}', 'show')->name('registration.show');
+        Route::get('edit/{registration}', 'edit')->name('registration.edit');
+        Route::match(['put', 'patch'], 'update/{registration}', 'update')->name('registration.update');
+        Route::delete('delete/{registration}', 'destroy')->name('registration.delete');
+    });
 
-    // Official Printable Registration Slip
-    Route::get('registrations/{registration}/print', [CourseRegistrationController::class, 'printSlip'])->name('registrations.print');
+    // 14. Course Add/Drop Adjustment Engine
+    Route::controller(AddDropController::class)->prefix('registration/add-drop')->group(function () {
+        Route::get('{registration}', 'edit')->name('registration.add-drop.edit');
+        Route::post('add/{registration}', 'addCourse')->name('registration.add-drop.add');
+        Route::post('drop/{registration}/{item}', 'dropCourse')->name('registration.add-drop.drop');
+    });
 
-    // Course Add/Drop Adjustment Workflow Engine
-    Route::get('registrations/{registration}/add-drop', [AddDropController::class, 'edit'])->name('registrations.add-drop.edit');
-    Route::post('registrations/{registration}/add-drop/drop/{item}', [AddDropController::class, 'dropCourse'])->name('registrations.add-drop.drop');
-    Route::post('registrations/{registration}/add-drop/add', [AddDropController::class, 'addCourse'])->name('registrations.add-drop.add');
+    // 15. Academic Advisor & Registrar Approvals
+    Route::controller(RegistrationApprovalController::class)->prefix('approval')->group(function () {
+        Route::get('list', 'index')->name('approval.list');
+        Route::get('show/{registration}', 'show')->name('approval.show');
+        Route::post('approve/{registration}', 'approve')->name('approval.approve');
+        Route::post('reject/{registration}', 'reject')->name('approval.reject');
+        Route::post('batch-approve', 'batchApprove')->name('approval.batch-approve');
+    });
 
-    // Academic Advisor & Registrar Approval Portal
-    Route::post('approvals/batch-approve', [RegistrationApprovalController::class, 'batchApprove'])->name('approvals.batch-approve');
-    Route::post('approvals/{registration}/approve', [RegistrationApprovalController::class, 'approve'])->name('approvals.approve');
-    Route::post('approvals/{registration}/reject', [RegistrationApprovalController::class, 'reject'])->name('approvals.reject');
-    Route::get('approvals/{registration}', [RegistrationApprovalController::class, 'show'])->name('approvals.show');
-    Route::get('approvals', [RegistrationApprovalController::class, 'index'])->name('approvals.index');
+    // 16. Examinations, Grading Policy & Course Mark Sheets
+    Route::controller(CourseAssessmentController::class)->prefix('assessment')->group(function () {
+        Route::get('policy', 'policy')->name('assessment.policy');
+        Route::post('policy', 'updatePolicy')->name('assessment.policy.update');
+        Route::match(['put', 'patch'], 'policy/grading-scale', 'updateGradingScale')->name('assessment.policy.scale.update');
+        Route::post('policy/grading-scale/reset', 'resetGradingScale')->name('assessment.policy.scale.reset');
+        Route::match(['put', 'patch'], 'policy/awards', 'updateAwardClassifications')->name('assessment.policy.awards.update');
+        Route::post('policy/awards/reset', 'resetAwardClassifications')->name('assessment.policy.awards.reset');
 
-    // Course Registrations & Enrollment Slips Hub
-    Route::resource('registrations', CourseRegistrationController::class);
+        Route::get('list', 'index')->name('assessment.list');
+        Route::get('show/{sheet}', 'show')->name('assessment.show');
+        Route::get('edit/{sheet}', 'edit')->name('assessment.edit');
+        Route::get('entry/{sheet}', 'edit')->name('assessment.entry');
+        Route::match(['put', 'patch'], 'update/{sheet}', 'update')->name('assessment.update');
+        Route::post('submit/{sheet}', 'submitToHod')->name('assessment.submit');
+    });
 
-    // Examinations, Grading & Assessment Hub
-    Route::get('assessments/policy', [CourseAssessmentController::class, 'policy'])->name('assessments.policy');
-    Route::post('assessments/policy', [CourseAssessmentController::class, 'updatePolicy'])->name('assessments.policy.update');
-    Route::put('assessments/policy/grading-scale', [CourseAssessmentController::class, 'updateGradingScale'])->name('assessments.policy.scale.update');
-    Route::post('assessments/policy/grading-scale/reset', [CourseAssessmentController::class, 'resetGradingScale'])->name('assessments.policy.scale.reset');
-    Route::put('assessments/policy/awards', [CourseAssessmentController::class, 'updateAwardClassifications'])->name('assessments.policy.awards.update');
-    Route::post('assessments/policy/awards/reset', [CourseAssessmentController::class, 'resetAwardClassifications'])->name('assessments.policy.awards.reset');
+    // 17. Departmental & Senate Grade Moderation Workflow
+    Route::controller(GradeModerationController::class)->prefix('moderation')->group(function () {
+        Route::get('list', 'index')->name('moderation.list');
+        Route::get('show/{sheet}', 'show')->name('moderation.show');
+        Route::post('endorse/{sheet}', 'endorse')->name('moderation.endorse');
+        Route::post('return/{sheet}', 'returnToLecturer')->name('moderation.return');
+        Route::post('publish/{sheet}', 'publish')->name('moderation.publish');
+    });
 
-    // Departmental & Senate Grade Moderation Workflow
-    Route::get('assessments/moderation', [GradeModerationController::class, 'index'])->name('assessments.moderation.index');
-    Route::get('assessments/moderation/{sheet}', [GradeModerationController::class, 'show'])->name('assessments.moderation.show');
-    Route::post('assessments/moderation/{sheet}/endorse', [GradeModerationController::class, 'endorse'])->name('assessments.moderation.endorse');
-    Route::post('assessments/moderation/{sheet}/return', [GradeModerationController::class, 'returnToLecturer'])->name('assessments.moderation.return');
-    Route::post('assessments/moderation/{sheet}/publish', [GradeModerationController::class, 'publish'])->name('assessments.moderation.publish');
+    // 18. Official Student Results, Result Slips & Transcripts
+    Route::controller(StudentResultController::class)->prefix('result')->group(function () {
+        Route::get('list', 'index')->name('result.list');
+        Route::get('slip/{student}/{semester}', 'semesterResultSlip')->name('result.slip');
+        Route::get('transcript/{student}', 'academicTranscript')->name('result.transcript');
+    });
 
-    Route::get('assessments', [CourseAssessmentController::class, 'index'])->name('assessments.index');
-    Route::get('assessments/{sheet}', [CourseAssessmentController::class, 'show'])->name('assessments.show');
-    Route::get('assessments/{sheet}/entry', [CourseAssessmentController::class, 'edit'])->name('assessments.edit');
-    Route::put('assessments/{sheet}', [CourseAssessmentController::class, 'update'])->name('assessments.update');
-    Route::post('assessments/{sheet}/submit', [CourseAssessmentController::class, 'submitToHod'])->name('assessments.submit');
+    // 19. Official Senate Master Broad-Sheet (Gazette / Master Ledger)
+    Route::controller(SenateBroadSheetController::class)->prefix('broad-sheet')->group(function () {
+        Route::get('list', 'index')->name('broad-sheet.list');
+        Route::get('export', 'export')->name('broad-sheet.export');
+    });
 
-    // Official Student Results, Result Slips & Cumulative Transcripts
-    Route::get('results', [StudentResultController::class, 'index'])->name('results.index');
-    Route::get('results/slip/{student}/{semester}', [StudentResultController::class, 'semesterResultSlip'])->name('results.slip');
-    Route::get('results/transcript/{student}', [StudentResultController::class, 'academicTranscript'])->name('results.transcript');
+    // 20. Departmental & Faculty Academic Performance Analytics
+    Route::controller(AcademicAnalyticsController::class)->prefix('analytics')->group(function () {
+        Route::get('list', 'index')->name('analytics.list');
+    });
 
-    // Official Senate Master Broad-Sheet (Gazette / Master Ledger)
-    Route::get('reports/broad-sheet', [SenateBroadSheetController::class, 'index'])->name('reports.broad-sheet');
-    Route::get('reports/broad-sheet/export', [SenateBroadSheetController::class, 'export'])->name('reports.broad-sheet.export');
-
-    // Departmental & Faculty Academic Performance Analytics
-    Route::get('reports/analytics', [AcademicAnalyticsController::class, 'index'])->name('reports.analytics');
-
-    // Graduation Clearance, Audit & Official Honors Roll Gazette
-    Route::get('graduation', [GraduationClearanceController::class, 'index'])->name('graduation.index');
-    Route::get('graduation/audit/{student}', [GraduationClearanceController::class, 'audit'])->name('graduation.audit');
-    Route::get('graduation/honors-roll', [GraduationClearanceController::class, 'honorsRoll'])->name('graduation.honors-roll');
+    // 21. Graduation Clearance, Audit & Official Honors Roll Gazette
+    Route::controller(GraduationClearanceController::class)->prefix('graduation')->group(function () {
+        Route::get('list', 'index')->name('graduation.list');
+        Route::get('audit/{student}', 'audit')->name('graduation.audit');
+        Route::get('honors-roll', 'honorsRoll')->name('graduation.honors-roll');
+    });
 });

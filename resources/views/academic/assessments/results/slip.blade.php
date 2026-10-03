@@ -78,10 +78,10 @@
         <span>Official Printable Result Slip &bull; {{ $student->registration_number }}</span>
       </div>
       <div class="d-flex gap-2">
-        <a href="{{ route('academic.results.index') }}" class="btn btn-outline-light btn-sm">
+        <a href="{{ route('result.list') }}" class="btn btn-outline-light btn-sm">
           <i class="bi bi-arrow-left me-1"></i> Results Hub
         </a>
-        <a href="{{ route('academic.results.transcript', $student) }}" class="btn btn-outline-info btn-sm">
+        <a href="{{ route('result.transcript', $student) }}" class="btn btn-outline-info btn-sm">
           <i class="bi bi-mortarboard me-1"></i> Transcript
         </a>
         <button type="button" class="btn btn-primary btn-sm fw-semibold" onclick="window.print()">
