@@ -48,7 +48,25 @@ class FacultyController extends Controller
      */
     public function store(StoreFacultyRequest $request): RedirectResponse
     {
-        Faculty::create($request->validated());
+        $faculty = Faculty::create($request->safe()->only([
+            'campus_id',
+            'name',
+            'code',
+            'dean_user_id',
+            'description',
+            'status',
+        ]));
+
+        if ($request->boolean('from_campus')) {
+            return redirect()
+                ->route('campus.show', $faculty->campus_id)
+                ->with('success', 'Faculty created successfully.');
+        }
+
+        if ($request->filled('return_to')) {
+            return redirect($request->input('return_to'))
+                ->with('success', 'Faculty created successfully.');
+        }
 
         return redirect()
             ->route('faculty.list')

@@ -67,7 +67,7 @@
         <div class="card-header">
           <h3 class="card-title">Faculties at this Campus ({{ $campus->faculties->count() }})</h3>
           <div class="card-tools me-0">
-            <a href="{{ route('faculty.create', ['campus_id' => $campus->id]) }}" class="btn btn-sm btn-primary">
+            <a href="{{ route('faculty.create', ['campus_id' => $campus->id, 'from_campus' => 1]) }}" class="btn btn-sm btn-primary">
               <i class="bi bi-plus-circle me-1"></i> Add Faculty
             </a>
           </div>

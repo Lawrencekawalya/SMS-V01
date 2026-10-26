@@ -135,6 +135,29 @@ class AcademicStructurePhase1Test extends TestCase
         ]);
     }
 
+    public function test_creating_faculty_from_campus_screen_redirects_to_campus_show(): void
+    {
+        $campus = Campus::factory()->create(['university_id' => $this->university->id]);
+
+        $payload = [
+            'campus_id' => $campus->id,
+            'name' => 'Faculty of Law',
+            'code' => 'FOL',
+            'status' => 'active',
+            'from_campus' => '1',
+        ];
+
+        $response = $this->post(route('faculty.store'), $payload);
+
+        $response->assertRedirect(route('campus.show', $campus));
+        $response->assertSessionHas('success');
+
+        $this->assertDatabaseHas('faculties', [
+            'campus_id' => $campus->id,
+            'code' => 'FOL',
+        ]);
+    }
+
     public function test_validation_prevents_duplicate_faculty_code_in_same_campus(): void
     {
         $campus = Campus::factory()->create(['university_id' => $this->university->id]);

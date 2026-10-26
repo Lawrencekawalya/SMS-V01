@@ -34,6 +34,8 @@ class StoreFacultyRequest extends FormRequest
             'dean_user_id' => ['nullable', 'exists:users,id'],
             'description' => ['nullable', 'string', 'max:1000'],
             'status' => ['required', Rule::in(['active', 'inactive'])],
+            'from_campus' => ['nullable', 'boolean'],
+            'return_to' => ['nullable', 'string'],
         ];
     }
 }

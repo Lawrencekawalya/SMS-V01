@@ -6,7 +6,11 @@
 @section('breadcrumb')
   <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
   <li class="breadcrumb-item">Academic Structure</li>
-  <li class="breadcrumb-item"><a href="{{ route('faculty.list') }}">Faculties</a></li>
+  @if (request('campus_id'))
+    <li class="breadcrumb-item"><a href="{{ route('campus.show', request('campus_id')) }}">Campus Details</a></li>
+  @else
+    <li class="breadcrumb-item"><a href="{{ route('faculty.list') }}">Faculties</a></li>
+  @endif
   <li class="breadcrumb-item active" aria-current="page">Add New</li>
 @endsection
 
@@ -19,6 +23,12 @@
         </div>
         <form action="{{ route('faculty.store') }}" method="POST">
           @csrf
+          @if (old('from_campus', request('from_campus', request()->has('campus_id') ? '1' : '0')) === '1')
+            <input type="hidden" name="from_campus" value="1">
+          @endif
+          @if (request()->filled('return_to') || old('return_to'))
+            <input type="hidden" name="return_to" value="{{ old('return_to', request('return_to')) }}">
+          @endif
           <div class="card-body">
             <div class="mb-3">
               <label for="campus_id" class="form-label">Campus Branch <span class="text-danger">*</span></label>
@@ -117,7 +127,15 @@
             </div>
           </div>
           <div class="card-footer">
-            <a href="{{ route('faculty.list') }}" class="btn btn-outline-secondary">
+            @php
+              $cancelUrl = route('faculty.list');
+              if (old('return_to', request('return_to'))) {
+                $cancelUrl = old('return_to', request('return_to'));
+              } elseif (old('from_campus', request('from_campus', request()->has('campus_id') ? '1' : '0')) === '1' && (old('campus_id', request('campus_id')))) {
+                $cancelUrl = route('campus.show', old('campus_id', request('campus_id')));
+              }
+            @endphp
+            <a href="{{ $cancelUrl }}" class="btn btn-outline-secondary">
               <i class="bi bi-arrow-left me-1"></i> Cancel
             </a>
             <button type="submit" class="btn btn-primary float-end">
