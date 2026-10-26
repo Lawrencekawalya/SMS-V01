@@ -131,33 +131,35 @@
                       <i class="bi bi-1-circle me-1 text-primary"></i> Semester 1 Schedule
                     </h5>
                     <div class="d-flex align-items-center gap-2">
-                      <form class="stage-credit-form d-flex align-items-center"
-                            data-url="{{ route('curriculum.stage-credit-limits.update', $curriculum) }}"
-                            data-year="{{ $year }}"
-                            data-semester="1">
-                        @csrf
-                        <div class="input-group input-group-sm" style="width: 230px;">
-                          <span class="input-group-text py-0 px-2 text-body-secondary small" title="Minimum required semester credits">Min</span>
-                          <input type="number"
-                                 name="min_credits"
-                                 class="form-control form-control-sm text-center px-1"
-                                 value="{{ number_format($stage1Bounds['min'], 1) }}"
-                                 step="0.5" min="0" max="40"
-                                 title="Minimum semester credits"
-                                 required>
-                          <span class="input-group-text py-0 px-2 text-body-secondary small" title="Maximum allowed semester credits">Max</span>
-                          <input type="number"
-                                 name="max_credits"
-                                 class="form-control form-control-sm text-center px-1"
-                                 value="{{ number_format($stage1Bounds['max'], 1) }}"
-                                 step="0.5" min="0" max="60"
-                                 title="Maximum semester credits"
-                                 required>
-                          <button type="submit" class="btn btn-sm btn-outline-primary py-0 px-2 btn-save-bounds" title="Save Credit Limits">
-                            <i class="bi bi-check2"></i>
-                          </button>
-                        </div>
-                      </form>
+                      @if (config('academic.enforce_credit_limits', false))
+                        <form class="stage-credit-form d-flex align-items-center"
+                              data-url="{{ route('curriculum.stage-credit-limits.update', $curriculum) }}"
+                              data-year="{{ $year }}"
+                              data-semester="1">
+                          @csrf
+                          <div class="input-group input-group-sm" style="width: 230px;">
+                            <span class="input-group-text py-0 px-2 text-body-secondary small" title="Minimum required semester credits">Min</span>
+                            <input type="number"
+                                   name="min_credits"
+                                   class="form-control form-control-sm text-center px-1"
+                                   value="{{ number_format($stage1Bounds['min'], 1) }}"
+                                   step="0.5" min="0" max="40"
+                                   title="Minimum semester credits"
+                                   required>
+                            <span class="input-group-text py-0 px-2 text-body-secondary small" title="Maximum allowed semester credits">Max</span>
+                            <input type="number"
+                                   name="max_credits"
+                                   class="form-control form-control-sm text-center px-1"
+                                   value="{{ number_format($stage1Bounds['max'], 1) }}"
+                                   step="0.5" min="0" max="60"
+                                   title="Maximum semester credits"
+                                   required>
+                            <button type="submit" class="btn btn-sm btn-outline-primary py-0 px-2 btn-save-bounds" title="Save Credit Limits">
+                              <i class="bi bi-check2"></i>
+                            </button>
+                          </div>
+                        </form>
+                      @endif
                       <span class="badge text-bg-light border fw-bold text-nowrap">
                         {{ number_format($matrix[$year][1]['credits'] ?? 0, 1) }} CU
                       </span>
@@ -252,33 +254,35 @@
                       <i class="bi bi-2-circle me-1 text-success"></i> Semester 2 Schedule
                     </h5>
                     <div class="d-flex align-items-center gap-2">
-                      <form class="stage-credit-form d-flex align-items-center"
-                            data-url="{{ route('curriculum.stage-credit-limits.update', $curriculum) }}"
-                            data-year="{{ $year }}"
-                            data-semester="2">
-                        @csrf
-                        <div class="input-group input-group-sm" style="width: 230px;">
-                          <span class="input-group-text py-0 px-2 text-body-secondary small" title="Minimum required semester credits">Min</span>
-                          <input type="number"
-                                 name="min_credits"
-                                 class="form-control form-control-sm text-center px-1"
-                                 value="{{ number_format($stage2Bounds['min'], 1) }}"
-                                 step="0.5" min="0" max="40"
-                                 title="Minimum semester credits"
-                                 required>
-                          <span class="input-group-text py-0 px-2 text-body-secondary small" title="Maximum allowed semester credits">Max</span>
-                          <input type="number"
-                                 name="max_credits"
-                                 class="form-control form-control-sm text-center px-1"
-                                 value="{{ number_format($stage2Bounds['max'], 1) }}"
-                                 step="0.5" min="0" max="60"
-                                 title="Maximum semester credits"
-                                 required>
-                          <button type="submit" class="btn btn-sm btn-outline-success py-0 px-2 btn-save-bounds" title="Save Credit Limits">
-                            <i class="bi bi-check2"></i>
-                          </button>
-                        </div>
-                      </form>
+                      @if (config('academic.enforce_credit_limits', false))
+                        <form class="stage-credit-form d-flex align-items-center"
+                              data-url="{{ route('curriculum.stage-credit-limits.update', $curriculum) }}"
+                              data-year="{{ $year }}"
+                              data-semester="2">
+                          @csrf
+                          <div class="input-group input-group-sm" style="width: 230px;">
+                            <span class="input-group-text py-0 px-2 text-body-secondary small" title="Minimum required semester credits">Min</span>
+                            <input type="number"
+                                   name="min_credits"
+                                   class="form-control form-control-sm text-center px-1"
+                                   value="{{ number_format($stage2Bounds['min'], 1) }}"
+                                   step="0.5" min="0" max="40"
+                                   title="Minimum semester credits"
+                                   required>
+                            <span class="input-group-text py-0 px-2 text-body-secondary small" title="Maximum allowed semester credits">Max</span>
+                            <input type="number"
+                                   name="max_credits"
+                                   class="form-control form-control-sm text-center px-1"
+                                   value="{{ number_format($stage2Bounds['max'], 1) }}"
+                                   step="0.5" min="0" max="60"
+                                   title="Maximum semester credits"
+                                   required>
+                            <button type="submit" class="btn btn-sm btn-outline-success py-0 px-2 btn-save-bounds" title="Save Credit Limits">
+                              <i class="bi bi-check2"></i>
+                            </button>
+                          </div>
+                        </form>
+                      @endif
                       <span class="badge text-bg-light border fw-bold text-nowrap">
                         {{ number_format($matrix[$year][2]['credits'] ?? 0, 1) }} CU
                       </span>

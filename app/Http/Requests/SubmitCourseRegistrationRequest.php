@@ -56,17 +56,21 @@ class SubmitCourseRegistrationRequest extends FormRequest
         ];
 
         if ($this->input('status') === 'submitted') {
-            $student = Student::find($this->input('student_id'));
-            $semester = Semester::find($this->input('semester_id'));
-            $minCredits = CourseEligibilityService::MIN_SEMESTER_CREDITS;
-            $maxCredits = CourseEligibilityService::MAX_SEMESTER_CREDITS;
-            if ($student && $semester) {
-                $eligibility = app(CourseEligibilityService::class)->getEligibleCoursesForStudent($student, $semester);
-                $minCredits = (float) ($eligibility['summary']['min_credits'] ?? $minCredits);
-                $maxCredits = (float) ($eligibility['summary']['max_credits'] ?? $maxCredits);
-            }
+            if (config('academic.enforce_credit_limits', false)) {
+                $student = Student::find($this->input('student_id'));
+                $semester = Semester::find($this->input('semester_id'));
+                $minCredits = CourseEligibilityService::MIN_SEMESTER_CREDITS;
+                $maxCredits = CourseEligibilityService::MAX_SEMESTER_CREDITS;
+                if ($student && $semester) {
+                    $eligibility = app(CourseEligibilityService::class)->getEligibleCoursesForStudent($student, $semester);
+                    $minCredits = (float) ($eligibility['summary']['min_credits'] ?? $minCredits);
+                    $maxCredits = (float) ($eligibility['summary']['max_credits'] ?? $maxCredits);
+                }
 
-            $rules['total_credits'] = ['required', 'numeric', new ValidSemesterCreditLoad($maxCredits, $minCredits)];
+                $rules['total_credits'] = ['required', 'numeric', new ValidSemesterCreditLoad($maxCredits, $minCredits)];
+            } else {
+                $rules['total_credits'] = ['required', 'numeric', 'min:0'];
+            }
         } else {
             $rules['total_credits'] = ['nullable', 'numeric'];
         }

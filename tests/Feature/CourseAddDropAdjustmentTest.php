@@ -336,8 +336,10 @@ class CourseAddDropAdjustmentTest extends TestCase
         $this->assertEquals('add_drop_pending', $freshRegistration->status);
     }
 
-    public function test_cannot_drop_courses_below_minimum_credit_floor(): void
+    public function test_cannot_drop_courses_below_minimum_credit_floor_when_enforcement_is_enabled(): void
     {
+        config(['academic.enforce_credit_limits' => true]);
+
         // Adjust registration to minimum load: 12.0 CU (Core 4.0 + Core 4.0 + Elective 4.0)
         $this->registration->items()->where('course_unit_id', $this->core3->id)->delete();
         $this->registration->items()->where('course_unit_id', $this->elective2->id)->delete();
@@ -363,6 +365,36 @@ class CourseAddDropAdjustmentTest extends TestCase
             'dropped_at' => null,
         ]);
         $this->assertEquals(12.0, (float) $this->registration->fresh()->total_credits);
+    }
+
+    public function test_can_drop_courses_below_minimum_credit_floor_when_enforcement_is_disabled(): void
+    {
+        config(['academic.enforce_credit_limits' => false]);
+
+        // Adjust registration to minimum load: 12.0 CU (Core 4.0 + Core 4.0 + Elective 4.0)
+        $this->registration->items()->where('course_unit_id', $this->core3->id)->delete();
+        $this->registration->items()->where('course_unit_id', $this->elective2->id)->delete();
+        $this->registration->recalculateTotalCredits();
+        $this->assertEquals(12.0, (float) $this->registration->fresh()->total_credits);
+
+        $electiveItem = $this->registration->items()->where('course_unit_id', $this->elective1->id)->first();
+
+        $response = $this->post(route('registration.add-drop.drop', [
+            'registration' => $this->registration,
+            'item' => $electiveItem,
+        ]), [
+            'drop_reason' => 'Dropping to lessen semester work pressure under relaxed credit limit policy.',
+        ]);
+
+        $response->assertRedirect(route('registration.add-drop.edit', $this->registration));
+        $response->assertSessionHas('success');
+
+        // Item is marked dropped and total credits decrease to 8.0 CU
+        $this->assertDatabaseHas('course_registration_items', [
+            'id' => $electiveItem->id,
+            'status' => 'dropped',
+        ]);
+        $this->assertEquals(8.0, (float) $this->registration->fresh()->total_credits);
     }
 
     public function test_student_can_add_eligible_elective_course(): void
@@ -392,8 +424,10 @@ class CourseAddDropAdjustmentTest extends TestCase
         $this->assertEquals('add_drop_pending', $freshRegistration->status);
     }
 
-    public function test_cannot_add_course_exceeding_maximum_credit_ceiling(): void
+    public function test_cannot_add_course_exceeding_maximum_credit_ceiling_when_enforcement_is_enabled(): void
     {
+        config(['academic.enforce_credit_limits' => true]);
+
         // Registration is currently at 19.0 CU.
         // Create a large 6.0 CU course so 19.0 + 6.0 = 25.0 CU > 24.0 CU
         $largeCourse = CourseUnit::factory()->create([
@@ -421,6 +455,40 @@ class CourseAddDropAdjustmentTest extends TestCase
             'course_unit_id' => $largeCourse->id,
         ]);
         $this->assertEquals(19.0, (float) $this->registration->fresh()->total_credits);
+    }
+
+    public function test_can_add_course_exceeding_maximum_credit_ceiling_when_enforcement_is_disabled(): void
+    {
+        config(['academic.enforce_credit_limits' => false]);
+
+        // Registration is currently at 19.0 CU.
+        // Create a large 6.0 CU course so 19.0 + 6.0 = 25.0 CU > 24.0 CU
+        $largeCourse = CourseUnit::factory()->create([
+            'credit_units' => 6.0,
+            'status' => 'active',
+        ]);
+
+        CurriculumCourse::create([
+            'curriculum_id' => $this->student->curriculum_id,
+            'course_unit_id' => $largeCourse->id,
+            'study_year' => 1,
+            'semester' => 1,
+            'course_type' => 'Elective',
+        ]);
+
+        $response = $this->post(route('registration.add-drop.add', $this->registration), [
+            'course_unit_id' => $largeCourse->id,
+        ]);
+
+        $response->assertRedirect(route('registration.add-drop.edit', $this->registration));
+        $response->assertSessionHas('success');
+
+        $this->assertDatabaseHas('course_registration_items', [
+            'course_registration_id' => $this->registration->id,
+            'course_unit_id' => $largeCourse->id,
+            'status' => 'registered',
+        ]);
+        $this->assertEquals(25.0, (float) $this->registration->fresh()->total_credits);
     }
 
     public function test_cannot_add_course_with_unmet_prerequisites_when_enforcement_is_enabled(): void

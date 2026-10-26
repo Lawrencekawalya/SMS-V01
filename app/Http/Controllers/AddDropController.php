@@ -116,16 +116,18 @@ class AddDropController extends Controller
                 ->with('error', 'Mandatory Core course units cannot be dropped under standard Add/Drop procedures.');
         }
 
-        // Enforce credit load floor (minimum 12.0 CU)
-        $remainingCredits = (float) $registration->items()
-            ->where('status', '!=', 'dropped')
-            ->where('id', '!=', $item->id)
-            ->sum('credit_units');
+        // Enforce credit load floor (minimum 12.0 CU) if policy enabled
+        if (config('academic.enforce_credit_limits', false)) {
+            $remainingCredits = (float) $registration->items()
+                ->where('status', '!=', 'dropped')
+                ->where('id', '!=', $item->id)
+                ->sum('credit_units');
 
-        if ($remainingCredits < CourseEligibilityService::MIN_SEMESTER_CREDITS) {
-            return redirect()
-                ->route('registration.add-drop.edit', $registration)
-                ->with('error', 'Cannot drop course unit '.($item->courseUnit->code ?? '').'. Dropping this course would leave '.$remainingCredits.' CU, falling below the mandatory minimum of '.CourseEligibilityService::MIN_SEMESTER_CREDITS.' CU.');
+            if ($remainingCredits < CourseEligibilityService::MIN_SEMESTER_CREDITS) {
+                return redirect()
+                    ->route('registration.add-drop.edit', $registration)
+                    ->with('error', 'Cannot drop course unit '.($item->courseUnit->code ?? '').'. Dropping this course would leave '.$remainingCredits.' CU, falling below the mandatory minimum of '.CourseEligibilityService::MIN_SEMESTER_CREDITS.' CU.');
+            }
         }
 
         $requiresApproval = (bool) config('academic.require_registration_approval', false);
@@ -188,17 +190,19 @@ class AddDropController extends Controller
                 ->with('error', "Course unit {$courseUnit->code} is already actively enrolled in this registration slip.");
         }
 
-        // Enforce credit load ceiling (maximum 24.0 CU)
-        $currentCredits = (float) $registration->items()
-            ->where('status', '!=', 'dropped')
-            ->sum('credit_units');
+        // Enforce credit load ceiling (maximum 24.0 CU) if policy enabled
+        if (config('academic.enforce_credit_limits', false)) {
+            $currentCredits = (float) $registration->items()
+                ->where('status', '!=', 'dropped')
+                ->sum('credit_units');
 
-        if (($currentCredits + (float) $courseUnit->credit_units) > CourseEligibilityService::MAX_SEMESTER_CREDITS) {
-            $projectedCredits = $currentCredits + (float) $courseUnit->credit_units;
+            if (($currentCredits + (float) $courseUnit->credit_units) > CourseEligibilityService::MAX_SEMESTER_CREDITS) {
+                $projectedCredits = $currentCredits + (float) $courseUnit->credit_units;
 
-            return redirect()
-                ->route('registration.add-drop.edit', $registration)
-                ->with('error', "Cannot add course unit {$courseUnit->code}. Total semester load ({$projectedCredits} CU) would exceed the maximum institutional ceiling of ".CourseEligibilityService::MAX_SEMESTER_CREDITS.' CU.');
+                return redirect()
+                    ->route('registration.add-drop.edit', $registration)
+                    ->with('error', "Cannot add course unit {$courseUnit->code}. Total semester load ({$projectedCredits} CU) would exceed the maximum institutional ceiling of ".CourseEligibilityService::MAX_SEMESTER_CREDITS.' CU.');
+            }
         }
 
         // Validate prerequisite compliance (only when enforced by institution policy)

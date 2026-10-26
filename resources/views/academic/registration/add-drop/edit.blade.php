@@ -143,21 +143,23 @@
             <div class="p-3 bg-body-secondary border rounded text-center">
               <span class="text-muted small text-uppercase fw-semibold d-block">Current Active Load</span>
               <div class="fs-2 fw-bold text-primary">{{ number_format($currentCredits, 1) }} <span class="fs-6 text-muted">CU</span></div>
-              <div class="small text-muted mt-1">
-                Institutional Bounds: <strong>{{ number_format($minCredits, 1) }}</strong> &mdash; <strong>{{ number_format($maxCredits, 1) }} CU</strong>
-              </div>
-              @php
-                $dropBuffer = $currentCredits - $minCredits;
-                $addCapacity = $maxCredits - $currentCredits;
-              @endphp
-              <div class="mt-2 d-flex justify-content-center gap-2 small">
-                <span class="badge bg-info-subtle text-info border">
-                  Drop Buffer: {{ number_format(max(0, $dropBuffer), 1) }} CU
-                </span>
-                <span class="badge bg-success-subtle text-success border">
-                  Add Margin: {{ number_format(max(0, $addCapacity), 1) }} CU
-                </span>
-              </div>
+              @if (config('academic.enforce_credit_limits', false))
+                <div class="small text-muted mt-1">
+                  Institutional Bounds: <strong>{{ number_format($minCredits, 1) }}</strong> &mdash; <strong>{{ number_format($maxCredits, 1) }} CU</strong>
+                </div>
+                @php
+                  $dropBuffer = $currentCredits - $minCredits;
+                  $addCapacity = $maxCredits - $currentCredits;
+                @endphp
+                <div class="mt-2 d-flex justify-content-center gap-2 small">
+                  <span class="badge bg-info-subtle text-info border">
+                    Drop Buffer: {{ number_format(max(0, $dropBuffer), 1) }} CU
+                  </span>
+                  <span class="badge bg-success-subtle text-success border">
+                    Add Margin: {{ number_format(max(0, $addCapacity), 1) }} CU
+                  </span>
+                </div>
+              @endif
             </div>
           </div>
         </div>
@@ -213,7 +215,7 @@
                         @else
                           @php
                             $projectedRemaining = $currentCredits - $item->credit_units;
-                            $isUnderMin = $projectedRemaining < $minCredits;
+                            $isUnderMin = config('academic.enforce_credit_limits', false) && ($projectedRemaining < $minCredits);
                           @endphp
                           <button type="button" 
                                   class="btn btn-outline-danger btn-sm drop-course-btn" 
@@ -285,7 +287,7 @@
                   <tbody>
                     @foreach ($availableElectives as $course)
                       @php
-                        $exceedsMax = ($currentCredits + $course->credit_units) > $maxCredits;
+                        $exceedsMax = config('academic.enforce_credit_limits', false) && (($currentCredits + $course->credit_units) > $maxCredits);
                       @endphp
                       <tr>
                         <td>

@@ -183,6 +183,7 @@ class CourseEligibilityService
                 'is_registration_open' => $semester?->isRegistrationOpen() ?? false,
                 'existing_registration' => $existingRegistration,
                 'prerequisites_enforced' => (bool) config('academic.enforce_prerequisites', false),
+                'credit_limits_enforced' => (bool) config('academic.enforce_credit_limits', false),
             ],
         ];
     }
@@ -247,17 +248,19 @@ class CourseEligibilityService
             }
         }
 
-        // 6. Credit Load Floor & Ceiling Enforcement
+        // 6. Credit Load Floor & Ceiling Enforcement (when policy enabled)
         $totalCredits = (float) $selectedCourses->sum('credit_units');
         $minCredits = (float) ($eligibility['summary']['min_credits'] ?? self::MIN_SEMESTER_CREDITS);
         $maxCredits = (float) ($eligibility['summary']['max_credits'] ?? self::MAX_SEMESTER_CREDITS);
 
-        if ($totalCredits < $minCredits) {
-            $errors[] = "Total registered credits ({$totalCredits} CU) is below the institutional minimum limit of {$minCredits} CU.";
-        }
+        if (config('academic.enforce_credit_limits', false)) {
+            if ($totalCredits < $minCredits) {
+                $errors[] = "Total registered credits ({$totalCredits} CU) is below the institutional minimum limit of {$minCredits} CU.";
+            }
 
-        if ($totalCredits > $maxCredits) {
-            $errors[] = "Total registered credits ({$totalCredits} CU) exceeds the institutional maximum limit of {$maxCredits} CU.";
+            if ($totalCredits > $maxCredits) {
+                $errors[] = "Total registered credits ({$totalCredits} CU) exceeds the institutional maximum limit of {$maxCredits} CU.";
+            }
         }
 
         return [

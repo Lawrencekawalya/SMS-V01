@@ -192,30 +192,34 @@
         <div class="card card-outline card-success mb-4 sticky-top shadow-sm" style="top: 1rem; z-index: 10;">
           <div class="card-header">
             <h3 class="card-title">
-              <i class="bi bi-card-checklist me-1 text-success"></i> Slip Summary & Credit Meter
+              <i class="bi bi-card-checklist me-1 text-success"></i> Slip Summary{{ config('academic.enforce_credit_limits', false) ? ' & Credit Meter' : '' }}
             </h3>
           </div>
           <div class="card-body">
             <div class="mb-3 text-center p-3 rounded bg-body-secondary border border-secondary-subtle">
               <span class="small text-body-secondary fw-semibold d-block">TOTAL ENROLLED LOAD</span>
               <span class="fs-1 fw-bold text-success" id="meter-total-credits">{{ number_format($registration->total_credits, 1) }} CU</span>
-              <small class="text-body-secondary d-block mt-1" id="meter-status-note">Evaluating credit bounds...</small>
+              @if (config('academic.enforce_credit_limits', false))
+                <small class="text-body-secondary d-block mt-1" id="meter-status-note">Evaluating credit bounds...</small>
+              @endif
             </div>
 
-            <!-- Visual Capacity Progress Bar -->
-            <div class="mb-3">
-              <div class="d-flex justify-content-between small text-body-secondary mb-1">
-                <span>Capacity</span>
-                <span id="meter-percentage" class="fw-bold">0%</span>
+            @if (config('academic.enforce_credit_limits', false))
+              <!-- Visual Capacity Progress Bar -->
+              <div class="mb-3">
+                <div class="d-flex justify-content-between small text-body-secondary mb-1">
+                  <span>Capacity</span>
+                  <span id="meter-percentage" class="fw-bold">0%</span>
+                </div>
+                <div class="progress" style="height: 12px;">
+                  <div id="meter-progress-bar" class="progress-bar bg-success" role="progressbar" style="width: 50%;" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+                <div class="d-flex justify-content-between small text-body-secondary mt-1">
+                  <span>Min: {{ number_format($eligibility['summary']['min_credits'] ?? \App\Services\CourseEligibilityService::MIN_SEMESTER_CREDITS, 1) }} CU</span>
+                  <span>Max: {{ number_format($eligibility['summary']['max_credits'] ?? \App\Services\CourseEligibilityService::MAX_SEMESTER_CREDITS, 1) }} CU</span>
+                </div>
               </div>
-              <div class="progress" style="height: 12px;">
-                <div id="meter-progress-bar" class="progress-bar bg-success" role="progressbar" style="width: 50%;" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
-              </div>
-              <div class="d-flex justify-content-between small text-body-secondary mt-1">
-                <span>Min: {{ number_format($eligibility['summary']['min_credits'] ?? \App\Services\CourseEligibilityService::MIN_SEMESTER_CREDITS, 1) }} CU</span>
-                <span>Max: {{ number_format($eligibility['summary']['max_credits'] ?? \App\Services\CourseEligibilityService::MAX_SEMESTER_CREDITS, 1) }} CU</span>
-              </div>
-            </div>
+            @endif
 
             <!-- Rules Compliance Checklist -->
             <ul class="list-group list-group-flush mb-4 small">
@@ -223,14 +227,16 @@
                 <span>Mandatory Core Courses</span>
                 <span class="text-success fw-bold"><i class="bi bi-check-circle-fill me-1"></i> Included</span>
               </li>
-              <li class="list-group-item d-flex justify-content-between align-items-center px-0">
-                <span>Minimum Floor (&ge; {{ number_format($eligibility['summary']['min_credits'] ?? \App\Services\CourseEligibilityService::MIN_SEMESTER_CREDITS, 1) }} CU)</span>
-                <span id="checklist-floor" class="fw-bold text-success"><i class="bi bi-check-circle-fill me-1"></i> Met</span>
-              </li>
-              <li class="list-group-item d-flex justify-content-between align-items-center px-0">
-                <span>Maximum Ceiling (&le; {{ number_format($eligibility['summary']['max_credits'] ?? \App\Services\CourseEligibilityService::MAX_SEMESTER_CREDITS, 1) }} CU)</span>
-                <span id="checklist-ceiling" class="fw-bold text-success"><i class="bi bi-check-circle-fill me-1"></i> Valid</span>
-              </li>
+              @if (config('academic.enforce_credit_limits', false))
+                <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                  <span>Minimum Floor (&ge; {{ number_format($eligibility['summary']['min_credits'] ?? \App\Services\CourseEligibilityService::MIN_SEMESTER_CREDITS, 1) }} CU)</span>
+                  <span id="checklist-floor" class="fw-bold text-success"><i class="bi bi-check-circle-fill me-1"></i> Met</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                  <span>Maximum Ceiling (&le; {{ number_format($eligibility['summary']['max_credits'] ?? \App\Services\CourseEligibilityService::MAX_SEMESTER_CREDITS, 1) }} CU)</span>
+                  <span id="checklist-ceiling" class="fw-bold text-success"><i class="bi bi-check-circle-fill me-1"></i> Valid</span>
+                </li>
+              @endif
             </ul>
 
             <!-- Submission Action Buttons -->
@@ -266,6 +272,7 @@
 @push('scripts')
   <script>
     document.addEventListener('DOMContentLoaded', function () {
+      const enforceCreditLimits = {{ config('academic.enforce_credit_limits', false) ? 'true' : 'false' }};
       const baseCoreCredits = {{ $eligibility ? (float) $eligibility['summary']['core_credits'] : 0.0 }};
       const minCredits = {{ $eligibility ? (float) ($eligibility['summary']['min_credits'] ?? \App\Services\CourseEligibilityService::MIN_SEMESTER_CREDITS) : \App\Services\CourseEligibilityService::MIN_SEMESTER_CREDITS }};
       const maxCredits = {{ $eligibility ? (float) ($eligibility['summary']['max_credits'] ?? \App\Services\CourseEligibilityService::MAX_SEMESTER_CREDITS) : \App\Services\CourseEligibilityService::MAX_SEMESTER_CREDITS }};
@@ -295,6 +302,12 @@
         const formTotalCreditsInput = document.getElementById('form-total-credits');
         if (formTotalCreditsInput) {
           formTotalCreditsInput.value = totalCredits.toFixed(1);
+        }
+
+        if (!enforceCreditLimits) {
+          if (meterTotalEl) meterTotalEl.className = 'fs-1 fw-bold text-success';
+          if (submitSlipBtn) submitSlipBtn.disabled = false;
+          return;
         }
 
         const percentage = Math.min(100, Math.round((totalCredits / maxCredits) * 100));

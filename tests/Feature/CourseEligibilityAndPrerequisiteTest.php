@@ -303,6 +303,8 @@ class CourseEligibilityAndPrerequisiteTest extends TestCase
 
     public function test_validate_course_selection_rejects_credit_underload(): void
     {
+        config(['academic.enforce_credit_limits' => true]);
+
         // Only 1 course (4.0 CU) selected, below the 12.0 CU minimum floor
         $selectedIds = [$this->coreCourse1->id];
 
@@ -318,6 +320,8 @@ class CourseEligibilityAndPrerequisiteTest extends TestCase
 
     public function test_validate_course_selection_rejects_credit_overload(): void
     {
+        config(['academic.enforce_credit_limits' => true]);
+
         // Create extra courses to exceed 24.0 CU
         $extraCourses = CourseUnit::factory()->count(4)->create(['credit_units' => 4.0]);
         foreach ($extraCourses as $ec) {
@@ -343,6 +347,36 @@ class CourseEligibilityAndPrerequisiteTest extends TestCase
 
         $this->assertFalse($validation['is_valid']);
         $this->assertStringContainsString('exceeds the institutional maximum limit of 24 CU', implode(' ', $validation['errors']));
+    }
+
+    public function test_validate_course_selection_allows_overload_when_policy_disabled(): void
+    {
+        config(['academic.enforce_credit_limits' => false]);
+
+        $extraCourses = CourseUnit::factory()->count(4)->create(['credit_units' => 4.0]);
+        foreach ($extraCourses as $ec) {
+            CurriculumCourse::create([
+                'curriculum_id' => $this->curriculum->id,
+                'course_unit_id' => $ec->id,
+                'study_year' => 1,
+                'semester' => 1,
+                'course_type' => 'Elective',
+            ]);
+        }
+
+        $allSelected = array_merge(
+            [$this->coreCourse1->id, $this->coreCourse2->id, $this->coreCourse3->id], // 12 CU
+            $extraCourses->pluck('id')->toArray() // 16 CU -> total 28 CU
+        );
+
+        $validation = $this->service->validateCourseSelection(
+            $this->fresherStudent,
+            $this->activeSemester,
+            $allSelected
+        );
+
+        $this->assertTrue($validation['is_valid']);
+        $this->assertEquals(28.0, $validation['total_credits']);
     }
 
     public function test_validate_course_selection_rejects_omitting_mandatory_core_course(): void

@@ -33,6 +33,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Semester Credit Limits Enforcement
+    |--------------------------------------------------------------------------
+    |
+    | When enabled (true), students must register within strict minimum and maximum
+    | semester credit unit boundaries (e.g., minimum 12 CU, maximum 24 CU).
+    | When disabled (false, default for Ugandan universities), semester credit boundaries
+    | are not enforced as hard blockers during course registration or add/drop,
+    | and the limit settings/meters are hidden from view.
+    |
+    */
+    'enforce_credit_limits' => env('ENFORCE_SEMESTER_CREDIT_LIMITS', false),
+
+    /*
+    |--------------------------------------------------------------------------
     | Examination & Continuous Assessment (CA) Weightings
     |--------------------------------------------------------------------------
     |

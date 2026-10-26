@@ -98,6 +98,7 @@
       </div>
     </div>
 
+    @if (config('academic.enforce_credit_limits', false))
     <!-- Credit Threshold Gauge Widget Card -->
     <div class="card card-outline card-info mb-4 shadow-sm">
       <div class="card-header">
@@ -144,6 +145,7 @@
         </div>
       </div>
     </div>
+    @endif
 
     <!-- Mandatory Core Courses Matrix Card -->
     <div class="card card-outline card-primary mb-4 shadow-sm">

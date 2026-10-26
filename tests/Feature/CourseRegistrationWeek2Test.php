@@ -295,7 +295,8 @@ class CourseRegistrationWeek2Test extends TestCase
         $workspace->assertSee('Active Course Add / Drop Adjustment Window');
 
         // 3. Drop elective SWE2102 (14.0 - 3.0 = 11.0 CU, wait! 11.0 < 12.0 CU floor!)
-        // Dropping SWE2102 should be BLOCKED because remaining is 11.0 CU (< 12.0 CU)!
+        // When credit limits are enforced, dropping SWE2102 should be BLOCKED because remaining is 11.0 CU (< 12.0 CU)!
+        config(['academic.enforce_credit_limits' => true]);
         $blockedDrop = $this->post(route('registration.add-drop.drop', [
             'registration' => $registration,
             'item' => $item3,
@@ -372,11 +373,13 @@ class CourseRegistrationWeek2Test extends TestCase
      */
     public function test_journey_4_calendar_lockout_and_credit_overload_guards(): void
     {
+        config(['academic.enforce_credit_limits' => true]);
+
         $csc1101 = CourseUnit::where('code', 'CSC1101')->firstOrFail();
         $csc1102 = CourseUnit::where('code', 'CSC1102')->firstOrFail();
         $mth1101 = CourseUnit::where('code', 'MTH1101')->firstOrFail();
 
-        // 1. Credit overload > 24 CU is rejected
+        // 1. Credit overload > 24 CU is rejected when limits are enforced
         $overloadResponse = $this->post(route('registration.store'), [
             'student_id' => $this->ronaldFresher->id,
             'semester_id' => $this->activeSemester->id,
