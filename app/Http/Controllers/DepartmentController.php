@@ -49,7 +49,25 @@ class DepartmentController extends Controller
      */
     public function store(StoreDepartmentRequest $request): RedirectResponse
     {
-        Department::create($request->validated());
+        $department = Department::create($request->safe()->only([
+            'faculty_id',
+            'name',
+            'code',
+            'hod_user_id',
+            'description',
+            'status',
+        ]));
+
+        if ($request->boolean('from_faculty')) {
+            return redirect()
+                ->route('faculty.show', $department->faculty_id)
+                ->with('success', 'Department created successfully.');
+        }
+
+        if ($request->filled('return_to')) {
+            return redirect($request->input('return_to'))
+                ->with('success', 'Department created successfully.');
+        }
 
         return redirect()
             ->route('department.list')

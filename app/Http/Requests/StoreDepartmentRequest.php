@@ -34,6 +34,8 @@ class StoreDepartmentRequest extends FormRequest
             'hod_user_id' => ['nullable', 'exists:users,id'],
             'description' => ['nullable', 'string', 'max:1000'],
             'status' => ['required', Rule::in(['active', 'inactive'])],
+            'from_faculty' => ['nullable', 'boolean'],
+            'return_to' => ['nullable', 'string'],
         ];
     }
 }

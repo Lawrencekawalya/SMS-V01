@@ -78,7 +78,7 @@
         <div class="card-header">
           <h3 class="card-title">Departments under {{ $faculty->code }} ({{ $faculty->departments->count() }})</h3>
           <div class="card-tools me-0">
-            <a href="{{ route('department.create', ['faculty_id' => $faculty->id]) }}" class="btn btn-sm btn-primary">
+            <a href="{{ route('department.create', ['faculty_id' => $faculty->id, 'from_faculty' => 1]) }}" class="btn btn-sm btn-primary">
               <i class="bi bi-plus-circle me-1"></i> Add Department
             </a>
           </div>

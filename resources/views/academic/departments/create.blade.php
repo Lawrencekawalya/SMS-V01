@@ -6,7 +6,11 @@
 @section('breadcrumb')
   <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
   <li class="breadcrumb-item">Academic Structure</li>
-  <li class="breadcrumb-item"><a href="{{ route('department.list') }}">Departments</a></li>
+  @if (request('faculty_id', $selectedFacultyId ?? null))
+    <li class="breadcrumb-item"><a href="{{ route('faculty.show', request('faculty_id', $selectedFacultyId)) }}">Faculty Details</a></li>
+  @else
+    <li class="breadcrumb-item"><a href="{{ route('department.list') }}">Departments</a></li>
+  @endif
   <li class="breadcrumb-item active" aria-current="page">Add New</li>
 @endsection
 
@@ -19,6 +23,12 @@
         </div>
         <form action="{{ route('department.store') }}" method="POST">
           @csrf
+          @if (old('from_faculty', request('from_faculty', (request()->has('faculty_id') || !empty($selectedFacultyId)) ? '1' : '0')) === '1')
+            <input type="hidden" name="from_faculty" value="1">
+          @endif
+          @if (request()->filled('return_to') || old('return_to'))
+            <input type="hidden" name="return_to" value="{{ old('return_to', request('return_to')) }}">
+          @endif
           <div class="card-body">
             <div class="mb-3">
               <label for="faculty_id" class="form-label">Parent Faculty <span class="text-danger">*</span></label>
@@ -118,7 +128,16 @@
             </div>
           </div>
           <div class="card-footer">
-            <a href="{{ route('department.list') }}" class="btn btn-outline-secondary">
+            @php
+              $cancelUrl = route('department.list');
+              $facultyIdContext = old('faculty_id', request('faculty_id', $selectedFacultyId ?? null));
+              if (old('return_to', request('return_to'))) {
+                $cancelUrl = old('return_to', request('return_to'));
+              } elseif (old('from_faculty', request('from_faculty', (request()->has('faculty_id') || !empty($selectedFacultyId)) ? '1' : '0')) === '1' && $facultyIdContext) {
+                $cancelUrl = route('faculty.show', $facultyIdContext);
+              }
+            @endphp
+            <a href="{{ $cancelUrl }}" class="btn btn-outline-secondary">
               <i class="bi bi-arrow-left me-1"></i> Cancel
             </a>
             <button type="submit" class="btn btn-primary float-end">

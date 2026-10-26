@@ -84,6 +84,30 @@ class AcademicStructurePhase2Test extends TestCase
         ]);
     }
 
+    public function test_creating_department_from_faculty_screen_redirects_to_faculty_show(): void
+    {
+        $hod = User::factory()->create();
+
+        $payload = [
+            'faculty_id' => $this->faculty->id,
+            'name' => 'Department of Data Science',
+            'code' => 'DS',
+            'hod_user_id' => $hod->id,
+            'status' => 'active',
+            'from_faculty' => '1',
+        ];
+
+        $response = $this->post(route('department.store'), $payload);
+
+        $response->assertRedirect(route('faculty.show', $this->faculty));
+        $response->assertSessionHas('success');
+
+        $this->assertDatabaseHas('departments', [
+            'faculty_id' => $this->faculty->id,
+            'code' => 'DS',
+        ]);
+    }
+
     public function test_department_code_must_be_unique_within_faculty(): void
     {
         Department::factory()->create([
