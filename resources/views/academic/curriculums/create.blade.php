@@ -49,7 +49,7 @@
                   name="version_name"
                   id="version_name"
                   class="form-control @error('version_name') is-invalid @enderror"
-                  placeholder="e.g. 2024-2028 Revised Curriculum Structure"
+                  placeholder="e.g. v2028"
                   value="{{ old('version_name') }}"
                   required
                 />
