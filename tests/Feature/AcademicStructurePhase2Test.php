@@ -155,6 +155,32 @@ class AcademicStructurePhase2Test extends TestCase
         ]);
     }
 
+    public function test_creating_programme_from_department_screen_redirects_to_department_show(): void
+    {
+        $department = Department::factory()->create(['faculty_id' => $this->faculty->id]);
+
+        $payload = [
+            'department_id' => $department->id,
+            'name' => 'Diploma in Computer Science',
+            'code' => 'DCS',
+            'award_type' => 'Diploma',
+            'duration_years' => 2,
+            'required_credits_to_graduate' => 80,
+            'status' => 'active',
+            'from_department' => '1',
+        ];
+
+        $response = $this->post(route('programme.store'), $payload);
+
+        $response->assertRedirect(route('department.show', $department));
+        $response->assertSessionHas('success');
+
+        $this->assertDatabaseHas('programmes', [
+            'department_id' => $department->id,
+            'code' => 'DCS',
+        ]);
+    }
+
     public function test_programme_code_must_be_unique_globally(): void
     {
         $department1 = Department::factory()->create(['faculty_id' => $this->faculty->id]);

@@ -35,6 +35,8 @@ class StoreProgrammeRequest extends FormRequest
             'required_credits_to_graduate' => ['required', 'integer', 'min:10', 'max:500'],
             'description' => ['nullable', 'string', 'max:1000'],
             'status' => ['required', Rule::in(['active', 'inactive'])],
+            'from_department' => ['nullable', 'boolean'],
+            'return_to' => ['nullable', 'string'],
         ];
     }
 }

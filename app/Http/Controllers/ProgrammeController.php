@@ -54,7 +54,27 @@ class ProgrammeController extends Controller
      */
     public function store(StoreProgrammeRequest $request): RedirectResponse
     {
-        Programme::create($request->validated());
+        $programme = Programme::create($request->safe()->only([
+            'department_id',
+            'name',
+            'code',
+            'award_type',
+            'duration_years',
+            'required_credits_to_graduate',
+            'description',
+            'status',
+        ]));
+
+        if ($request->boolean('from_department')) {
+            return redirect()
+                ->route('department.show', $programme->department_id)
+                ->with('success', 'Academic programme created successfully.');
+        }
+
+        if ($request->filled('return_to')) {
+            return redirect($request->input('return_to'))
+                ->with('success', 'Academic programme created successfully.');
+        }
 
         return redirect()
             ->route('programme.list')

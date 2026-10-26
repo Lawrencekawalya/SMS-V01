@@ -84,7 +84,7 @@
         <div class="card-header">
           <h3 class="card-title">Academic Programmes ({{ $department->programmes->count() }})</h3>
           <div class="card-tools me-0">
-            <a href="{{ route('programme.create', ['department_id' => $department->id]) }}" class="btn btn-sm btn-primary">
+            <a href="{{ route('programme.create', ['department_id' => $department->id, 'from_department' => 1]) }}" class="btn btn-sm btn-primary">
               <i class="bi bi-plus-circle me-1"></i> Add Programme
             </a>
           </div>
