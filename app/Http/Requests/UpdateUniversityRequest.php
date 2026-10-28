@@ -36,6 +36,8 @@ class UpdateUniversityRequest extends FormRequest
             'phone' => ['nullable', 'string', 'max:50'],
             'address' => ['nullable', 'string', 'max:255'],
             'website' => ['nullable', 'url', 'max:255'],
+            'logo' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg,webp,ico', 'max:2048'],
+            'remove_logo' => ['nullable', 'boolean'],
         ];
     }
 }

@@ -150,6 +150,8 @@ class StudentResultsAndTranscriptsTest extends TestCase
         $otherStudent = Student::factory()->create([
             'user_id' => $otherStudentUser->id,
             'programme_id' => $this->programme->id,
+            'curriculum_id' => $this->student->curriculum_id,
+            'admission_academic_year_id' => $this->academicYear->id,
             'registration_number' => '24/BSU/BSCS/099',
         ]);
 

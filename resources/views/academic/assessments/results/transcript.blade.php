@@ -117,7 +117,7 @@
     <!-- Official Institutional Banner -->
     <div class="header-border text-center">
       <div class="d-flex align-items-center justify-content-center gap-3 mb-2">
-        <img src="{{ asset('vendor/adminlte/assets/img/AdminLTELogo.png') }}" alt="Logo" style="height: 65px; width: 65px; object-fit: contain;">
+        <img src="{{ $university?->logo_url ?? $currentUniversity?->logo_url ?? asset('vendor/adminlte/assets/img/AdminLTELogo.png') }}" alt="Logo" style="height: 65px; width: 65px; object-fit: contain;">
         <div>
           <h2 class="fw-bold mb-0 text-uppercase tracking-wide" style="color: #0d47a1; letter-spacing: 1.5px;">
             {{ $university->name ?? 'Bishop Stuart University' }}

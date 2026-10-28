@@ -7,6 +7,9 @@ use App\Models\Faculty;
 use App\Models\University;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class AcademicStructurePhase1Test extends TestCase
@@ -216,5 +219,104 @@ class AcademicStructurePhase1Test extends TestCase
         $editResponse->assertSee('Apex Premier University of Uganda');
         $editResponse->assertSee('APEX-PREMIER');
         $this->assertEquals(1, University::count());
+    }
+
+    public function test_can_upload_and_update_institution_logo(): void
+    {
+        Storage::fake('public');
+
+        $logoFile = UploadedFile::fake()->image('crest.png', 300, 300);
+
+        $payload = [
+            'name' => $this->university->name,
+            'code' => $this->university->code,
+            'logo' => $logoFile,
+        ];
+
+        $response = $this->put(route('university.update', $this->university), $payload);
+
+        $response->assertRedirect(route('university.edit'));
+        $response->assertSessionHas('success');
+
+        $freshUniversity = $this->university->fresh();
+        $this->assertNotNull($freshUniversity->logo_path);
+        Storage::disk('public')->assertExists($freshUniversity->logo_path);
+        $this->assertTrue($freshUniversity->hasCustomLogo());
+        $this->assertStringContainsString('storage/logos/', $freshUniversity->logo_url);
+
+        // Verify the edit page and layouts render the uploaded logo and favicon
+        $editResponse = $this->get(route('university.edit'));
+        $editResponse->assertStatus(200);
+        $editResponse->assertSee($freshUniversity->logo_url);
+    }
+
+    public function test_can_remove_institution_logo(): void
+    {
+        Storage::fake('public');
+
+        // First upload a logo
+        $logoFile = UploadedFile::fake()->image('crest.png', 300, 300);
+        $storedPath = $logoFile->store('logos', 'public');
+        $this->university->update(['logo_path' => $storedPath]);
+
+        Storage::disk('public')->assertExists($storedPath);
+
+        // Send update with remove_logo = 1
+        $payload = [
+            'name' => $this->university->name,
+            'code' => $this->university->code,
+            'remove_logo' => 1,
+        ];
+
+        $response = $this->put(route('university.update', $this->university), $payload);
+
+        $response->assertRedirect(route('university.edit'));
+        $response->assertSessionHas('success');
+
+        $freshUniversity = $this->university->fresh();
+        $this->assertNull($freshUniversity->logo_path);
+        Storage::disk('public')->assertMissing($storedPath);
+        $this->assertFalse($freshUniversity->hasCustomLogo());
+        $this->assertStringContainsString('AdminLTELogo.png', $freshUniversity->logo_url);
+    }
+
+    public function test_rejects_invalid_institution_logo(): void
+    {
+        Storage::fake('public');
+
+        $invalidFile = UploadedFile::fake()->create('contract.pdf', 500, 'application/pdf');
+
+        $payload = [
+            'name' => $this->university->name,
+            'code' => $this->university->code,
+            'logo' => $invalidFile,
+        ];
+
+        $response = $this->put(route('university.update', $this->university), $payload);
+
+        $response->assertSessionHasErrors('logo');
+    }
+
+    public function test_university_current_safely_resolves_and_recovers_from_corrupted_cache(): void
+    {
+        University::clearCurrentCache();
+
+        $current = University::current();
+        $this->assertInstanceOf(University::class, $current);
+        $this->assertEquals($this->university->id, $current->id);
+
+        // Simulate corrupted legacy cache data
+        Cache::put('root_university', 'invalid_serialized_data');
+        University::clearCurrentCache();
+
+        $recovered = University::current();
+        $this->assertInstanceOf(University::class, $recovered);
+        $this->assertEquals($this->university->id, $recovered->id);
+
+        // Update the university and verify cache clears and returns fresh data
+        $this->university->update(['name' => 'Refreshed University Name']);
+        $updated = University::current();
+        $this->assertInstanceOf(University::class, $updated);
+        $this->assertEquals('Refreshed University Name', $updated->name);
     }
 }

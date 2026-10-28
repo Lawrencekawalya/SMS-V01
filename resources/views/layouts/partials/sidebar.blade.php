@@ -6,13 +6,14 @@
     <a href="{{ url('/') }}" class="brand-link">
       <!--begin::Brand Image-->
       <img
-        src="{{ asset('vendor/adminlte/assets/img/AdminLTELogo.png') }}"
-        alt="AdminLTE Logo"
-        class="brand-image opacity-75 shadow"
+        src="{{ $currentUniversity?->logo_url ?? asset('vendor/adminlte/assets/img/AdminLTELogo.png') }}"
+        alt="{{ $currentUniversity?->name ?? 'SMS-V01' }} Logo"
+        class="brand-image opacity-75 shadow rounded"
+        style="max-height: 33px; width: auto; object-fit: contain;"
       />
       <!--end::Brand Image-->
       <!--begin::Brand Text-->
-      <span class="brand-text fw-light">{{ config('app.name', 'SMS-V01') }}</span>
+      <span class="brand-text fw-light">{{ $currentUniversity?->code ?? config('app.name', 'SMS-V01') }}</span>
       <!--end::Brand Text-->
     </a>
     <!--end::Brand Link-->

@@ -95,7 +95,7 @@
     <!-- Institutional Crest & Official Header -->
     <div class="header-border text-center">
       <div class="d-flex align-items-center justify-content-center gap-3 mb-2">
-        <img src="{{ asset('vendor/adminlte/assets/img/AdminLTELogo.png') }}" alt="Logo" style="height: 60px; width: 60px; object-fit: contain;">
+        <img src="{{ $university?->logo_url ?? $currentUniversity?->logo_url ?? asset('vendor/adminlte/assets/img/AdminLTELogo.png') }}" alt="Logo" style="height: 60px; width: 60px; object-fit: contain;">
         <div>
           <h3 class="fw-bold mb-0 text-uppercase tracking-wide" style="color: #0d47a1; letter-spacing: 1px;">
             {{ $university->name ?? 'Bishop Stuart University' }}

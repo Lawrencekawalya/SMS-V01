@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\AcademicEvent;
+use App\Models\University;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
@@ -24,6 +25,12 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Paginator::useBootstrapFive();
+
+        View::composer('*', function ($view): void {
+            if (Schema::hasTable('universities')) {
+                $view->with('currentUniversity', University::current());
+            }
+        });
 
         View::composer('layouts.partials.navbar', function ($view): void {
             if (Schema::hasTable('academic_events')) {

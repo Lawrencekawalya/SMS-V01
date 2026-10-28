@@ -83,10 +83,10 @@
     <!-- University Crest & Official Header -->
     <div class="header-border text-center">
       <div class="d-flex align-items-center justify-content-center gap-3 mb-2">
-        <img src="{{ asset('vendor/adminlte/assets/img/AdminLTELogo.png') }}" alt="Logo" style="height: 60px; width: 60px; object-fit: contain;">
+        <img src="{{ $currentUniversity?->logo_url ?? asset('vendor/adminlte/assets/img/AdminLTELogo.png') }}" alt="Logo" style="height: 60px; width: 60px; object-fit: contain;">
         <div>
           <h3 class="fw-bold mb-0 text-uppercase tracking-wide" style="color: #0d47a1; letter-spacing: 1px;">
-            Bishop Stuart University
+            {{ $currentUniversity?->name ?? 'Bishop Stuart University' }}
           </h3>
           <h6 class="text-uppercase fw-semibold mb-0 text-muted">
             Office of the Academic Registrar &bull; Department of Academic Affairs

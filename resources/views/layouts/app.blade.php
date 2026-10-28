@@ -7,6 +7,12 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', config('app.name', 'SMS-V01'))</title>
 
+    <!--begin::Favicon-->
+    <link rel="icon" href="{{ $currentUniversity?->logo_url ?? asset('vendor/adminlte/assets/img/AdminLTELogo.png') }}" />
+    <link rel="shortcut icon" href="{{ $currentUniversity?->logo_url ?? asset('vendor/adminlte/assets/img/AdminLTELogo.png') }}" />
+    <link rel="apple-touch-icon" href="{{ $currentUniversity?->logo_url ?? asset('vendor/adminlte/assets/img/AdminLTELogo.png') }}" />
+    <!--end::Favicon-->
+
     <!--begin::Theme Init (prevents flash of incorrect theme on load)-->
     <script>
       (() => {

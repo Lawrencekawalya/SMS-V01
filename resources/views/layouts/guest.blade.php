@@ -7,6 +7,12 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', config('app.name', 'SMS-V01'))</title>
 
+    <!--begin::Favicon-->
+    <link rel="icon" href="{{ $currentUniversity?->logo_url ?? asset('vendor/adminlte/assets/img/AdminLTELogo.png') }}" />
+    <link rel="shortcut icon" href="{{ $currentUniversity?->logo_url ?? asset('vendor/adminlte/assets/img/AdminLTELogo.png') }}" />
+    <link rel="apple-touch-icon" href="{{ $currentUniversity?->logo_url ?? asset('vendor/adminlte/assets/img/AdminLTELogo.png') }}" />
+    <!--end::Favicon-->
+
     <!--begin::Theme Init-->
     <script>
       (() => {
@@ -64,9 +70,10 @@
   <body class="login-page bg-body-secondary">
     <main class="login-box">
       <div class="card card-outline card-primary">
-        <div class="card-header text-center">
+        <div class="card-header text-center py-3">
           <a href="{{ url('/') }}" class="link-dark text-center link-offset-2 link-opacity-100 link-opacity-50-hover text-decoration-none">
-            <h1 class="mb-0"><b>{{ config('app.name', 'SMS-V01') }}</b></h1>
+            <img src="{{ $currentUniversity?->logo_url ?? asset('vendor/adminlte/assets/img/AdminLTELogo.png') }}" alt="Logo" class="mb-2 rounded" style="max-height: 52px; width: auto; object-fit: contain;">
+            <h1 class="mb-0 fs-4 fw-bold"><b>{{ $currentUniversity?->name ?? config('app.name', 'SMS-V01') }}</b></h1>
           </a>
         </div>
         <div class="card-body login-card-body">

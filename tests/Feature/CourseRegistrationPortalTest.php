@@ -25,6 +25,8 @@ class CourseRegistrationPortalTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected University $university;
+
     protected Student $student;
 
     protected Semester $activeSemester;
@@ -41,8 +43,8 @@ class CourseRegistrationPortalTest extends TestCase
     {
         parent::setUp();
 
-        $university = University::factory()->create();
-        $campus = Campus::factory()->create(['university_id' => $university->id]);
+        $this->university = University::factory()->create();
+        $campus = Campus::factory()->create(['university_id' => $this->university->id]);
         $faculty = Faculty::factory()->create(['campus_id' => $campus->id]);
         $department = Department::factory()->create(['faculty_id' => $faculty->id]);
 
@@ -322,7 +324,7 @@ class CourseRegistrationPortalTest extends TestCase
         $response = $this->get(route('registration.print', $registration));
 
         $response->assertStatus(200);
-        $response->assertSee('Bishop Stuart University', false);
+        $response->assertSee($this->university->name, false);
         $response->assertSee('Official Semester Course Registration Slip', false);
         $response->assertSee($this->student->full_name);
         $response->assertSee($this->student->registration_number);
