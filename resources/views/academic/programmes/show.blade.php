@@ -58,8 +58,12 @@
               </span>
             </li>
             <li class="list-group-item d-flex justify-content-between align-items-center px-0">
-              Graduation Credits
-              <span class="fw-bold text-success">{{ $programme->required_credits_to_graduate }} CU</span>
+              Curriculum Requirement
+              @if ($activeCurriculum)
+                <span class="fw-bold text-success">{{ $activeCurriculum->min_graduation_credits }} CU</span>
+              @else
+                <span class="text-muted small">No active curriculum</span>
+              @endif
             </li>
             <li class="list-group-item d-flex justify-content-between align-items-center px-0">
               Operational Status
@@ -146,12 +150,12 @@
 
               <!-- Credit Units Progress -->
               @php
-                $targetCredits = $programme->required_credits_to_graduate ?: 1;
+                $targetCredits = $activeCurriculum?->min_graduation_credits ?: 1;
                 $pct = min(100, round(($totalMappedCredits / $targetCredits) * 100));
               @endphp
               <div class="d-flex justify-content-between small text-muted mb-1">
                 <span>Total Mapped Credits: <strong class="text-body">{{ $totalMappedCredits }} CU</strong></span>
-                <span>Graduation Requirement: <strong class="text-body">{{ $programme->required_credits_to_graduate }} CU</strong> ({{ $pct }}%)</span>
+                <span>Graduation Requirement: <strong class="text-body">{{ $activeCurriculum?->min_graduation_credits ? $activeCurriculum->min_graduation_credits . ' CU' : 'N/A' }}</strong> ({{ $pct }}%)</span>
               </div>
               <div class="progress" style="height: 6px;">
                 <div class="progress-bar {{ $pct >= 100 ? 'bg-success' : 'bg-primary' }}" role="progressbar" style="width: {{ $pct }}%;" aria-valuenow="{{ $pct }}" aria-valuemin="0" aria-valuemax="100"></div>
@@ -296,9 +300,6 @@
                 </span>
                 <span class="badge bg-body-secondary text-body border p-2">
                   <i class="bi bi-layers me-1"></i> 2 Semesters / Year
-                </span>
-                <span class="badge bg-body-secondary text-body border p-2">
-                  <i class="bi bi-check2-circle me-1"></i> {{ $programme->required_credits_to_graduate }} Target CU
                 </span>
               </div>
               <a href="{{ route('curriculum.create', ['programme_id' => $programme->id]) }}" class="btn btn-primary">

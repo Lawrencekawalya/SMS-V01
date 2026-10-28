@@ -137,7 +137,6 @@ class AcademicStructurePhase2Test extends TestCase
             'code' => 'BSSE',
             'award_type' => 'Bachelors',
             'duration_years' => 3,
-            'required_credits_to_graduate' => 115,
             'description' => 'Software engineering degree',
             'status' => 'active',
         ];
@@ -151,7 +150,6 @@ class AcademicStructurePhase2Test extends TestCase
             'department_id' => $department->id,
             'code' => 'BSSE',
             'duration_years' => 3,
-            'required_credits_to_graduate' => 115,
         ]);
     }
 
@@ -165,7 +163,6 @@ class AcademicStructurePhase2Test extends TestCase
             'code' => 'DCS',
             'award_type' => 'Diploma',
             'duration_years' => 2,
-            'required_credits_to_graduate' => 80,
             'status' => 'active',
             'from_department' => '1',
         ];
@@ -197,7 +194,6 @@ class AcademicStructurePhase2Test extends TestCase
             'code' => 'BSCS',
             'award_type' => 'Bachelors',
             'duration_years' => 3,
-            'required_credits_to_graduate' => 110,
             'status' => 'active',
         ];
 
@@ -206,7 +202,7 @@ class AcademicStructurePhase2Test extends TestCase
         $response->assertSessionHasErrors('code');
     }
 
-    public function test_programme_validation_rejects_invalid_duration_or_credits(): void
+    public function test_programme_validation_rejects_invalid_duration(): void
     {
         $department = Department::factory()->create(['faculty_id' => $this->faculty->id]);
 
@@ -216,13 +212,12 @@ class AcademicStructurePhase2Test extends TestCase
             'code' => 'INV',
             'award_type' => 'Bachelors',
             'duration_years' => 0, // Invalid: min 1
-            'required_credits_to_graduate' => -5, // Invalid: min 10
             'status' => 'active',
         ];
 
         $response = $this->post(route('programme.store'), $payload);
 
-        $response->assertSessionHasErrors(['duration_years', 'required_credits_to_graduate']);
+        $response->assertSessionHasErrors(['duration_years']);
     }
 
     public function test_can_filter_departments_by_faculty(): void

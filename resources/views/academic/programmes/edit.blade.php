@@ -112,36 +112,15 @@
               </div>
 
               <div class="col-md-6 mb-3">
-                <label for="required_credits_to_graduate" class="form-label">Graduation Credits (CU) <span class="text-danger">*</span></label>
-                <div class="input-group">
-                  <span class="input-group-text"><i class="bi bi-award"></i></span>
-                  <input
-                    type="number"
-                    name="required_credits_to_graduate"
-                    id="required_credits_to_graduate"
-                    min="10"
-                    max="500"
-                    class="form-control @error('required_credits_to_graduate') is-invalid @enderror"
-                    value="{{ old('required_credits_to_graduate', $programme->required_credits_to_graduate) }}"
-                    required
-                  />
-                  <span class="input-group-text">CU</span>
-                  @error('required_credits_to_graduate')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                  @enderror
-                </div>
+                <label for="status" class="form-label">Operational Status <span class="text-danger">*</span></label>
+                <select name="status" id="status" class="form-select @error('status') is-invalid @enderror" required>
+                  <option value="active" {{ old('status', $programme->status) === 'active' ? 'selected' : '' }}>Active</option>
+                  <option value="inactive" {{ old('status', $programme->status) === 'inactive' ? 'selected' : '' }}>Inactive</option>
+                </select>
+                @error('status')
+                  <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
               </div>
-            </div>
-
-            <div class="mb-3">
-              <label for="status" class="form-label">Operational Status <span class="text-danger">*</span></label>
-              <select name="status" id="status" class="form-select @error('status') is-invalid @enderror" required>
-                <option value="active" {{ old('status', $programme->status) === 'active' ? 'selected' : '' }}>Active</option>
-                <option value="inactive" {{ old('status', $programme->status) === 'inactive' ? 'selected' : '' }}>Inactive</option>
-              </select>
-              @error('status')
-                <div class="invalid-feedback">{{ $message }}</div>
-              @enderror
             </div>
 
             <div class="mb-3">

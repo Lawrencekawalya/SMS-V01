@@ -64,7 +64,6 @@ class GraduationClearanceTest extends TestCase
             'name' => 'Diploma in Information Technology',
             'code' => 'DIT',
             'award_type' => 'diploma',
-            'required_credits_to_graduate' => 7,
         ]);
 
         $this->curriculum = Curriculum::factory()->create([

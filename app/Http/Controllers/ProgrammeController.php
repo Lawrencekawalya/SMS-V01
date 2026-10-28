@@ -60,7 +60,6 @@ class ProgrammeController extends Controller
             'code',
             'award_type',
             'duration_years',
-            'required_credits_to_graduate',
             'description',
             'status',
         ]));

@@ -26,7 +26,6 @@ class Programme extends Model
         'code',
         'award_type',
         'duration_years',
-        'required_credits_to_graduate',
         'description',
         'status',
     ];
@@ -40,7 +39,6 @@ class Programme extends Model
     {
         return [
             'duration_years' => 'integer',
-            'required_credits_to_graduate' => 'integer',
         ];
     }
 

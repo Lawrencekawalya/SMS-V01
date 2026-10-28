@@ -70,7 +70,6 @@ class Week4AcademicGovernanceIntegrationTest extends TestCase
             'name' => 'Bachelor of Information Technology',
             'code' => 'BIT',
             'award_type' => 'bachelors',
-            'required_credits_to_graduate' => 7,
         ]);
 
         $this->curriculum = Curriculum::factory()->create([

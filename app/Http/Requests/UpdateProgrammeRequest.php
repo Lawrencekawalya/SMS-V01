@@ -41,7 +41,6 @@ class UpdateProgrammeRequest extends FormRequest
                 Rule::in(['Certificate', 'Diploma', 'Bachelors', 'Postgraduate Diploma', 'Masters', 'Doctorate']),
             ],
             'duration_years' => ['required', 'integer', 'min:1', 'max:7'],
-            'required_credits_to_graduate' => ['required', 'integer', 'min:10', 'max:500'],
             'description' => ['nullable', 'string', 'max:1000'],
             'status' => ['required', Rule::in(['active', 'inactive'])],
         ];

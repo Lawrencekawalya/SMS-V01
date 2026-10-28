@@ -25,7 +25,6 @@ class ProgrammeSeeder extends Seeder
                     'name' => 'Bachelor of Science in Computer Science',
                     'award_type' => 'Bachelors',
                     'duration_years' => 3,
-                    'required_credits_to_graduate' => 110,
                     'description' => 'A rigorous degree program covering algorithms, system programming, AI, and theoretical computing.',
                     'status' => 'active',
                 ]
@@ -38,7 +37,6 @@ class ProgrammeSeeder extends Seeder
                     'name' => 'Bachelor of Science in Software Engineering',
                     'award_type' => 'Bachelors',
                     'duration_years' => 3,
-                    'required_credits_to_graduate' => 115,
                     'description' => 'Specialized software engineering program focusing on software lifecycle, architecture, QA, and cloud engineering.',
                     'status' => 'active',
                 ]
@@ -53,7 +51,6 @@ class ProgrammeSeeder extends Seeder
                     'name' => 'Bachelor of Information Technology',
                     'award_type' => 'Bachelors',
                     'duration_years' => 3,
-                    'required_credits_to_graduate' => 105,
                     'description' => 'Designed to produce IT professionals skilled in systems administration, network design, and IT service management.',
                     'status' => 'active',
                 ]
@@ -66,7 +63,6 @@ class ProgrammeSeeder extends Seeder
                     'name' => 'Diploma in Computer Applications',
                     'award_type' => 'Diploma',
                     'duration_years' => 2,
-                    'required_credits_to_graduate' => 60,
                     'description' => 'A 2-year practical diploma offering foundational computer usage, web technologies, and support skills.',
                     'status' => 'active',
                 ]
@@ -79,7 +75,6 @@ class ProgrammeSeeder extends Seeder
                     'name' => 'Diploma in Information Technology',
                     'award_type' => 'Diploma',
                     'duration_years' => 2,
-                    'required_credits_to_graduate' => 91,
                     'description' => 'A 2-year practical diploma offering comprehensive IT systems, networking, databases, programming, and maintenance skills.',
                     'status' => 'active',
                 ]
@@ -94,7 +89,6 @@ class ProgrammeSeeder extends Seeder
                     'name' => 'Bachelor of Business Administration',
                     'award_type' => 'Bachelors',
                     'duration_years' => 3,
-                    'required_credits_to_graduate' => 110,
                     'description' => 'A comprehensive business degree with options in marketing, finance, human resource management, and entrepreneurship.',
                     'status' => 'active',
                 ]

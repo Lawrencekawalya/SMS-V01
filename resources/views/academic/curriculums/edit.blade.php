@@ -33,7 +33,7 @@
                 <select name="programme_id" id="programme_id" class="form-select @error('programme_id') is-invalid @enderror" required>
                   @foreach ($programmes as $prog)
                     <option value="{{ $prog->id }}" {{ (string) old('programme_id', $curriculum->programme_id) === (string) $prog->id ? 'selected' : '' }}>
-                      {{ $prog->name }} ({{ $prog->code }}) &bull; {{ $prog->department->name ?? '' }} ({{ $prog->duration_years }} Yrs, {{ $prog->required_credits_to_graduate }} Credits)
+                      {{ $prog->name }} ({{ $prog->code }}) &bull; {{ $prog->department->name ?? '' }} ({{ $prog->duration_years }} {{ Str::plural('Year', $prog->duration_years) }})
                     </option>
                   @endforeach
                 </select>

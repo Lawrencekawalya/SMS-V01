@@ -39,7 +39,6 @@ class CurriculumPhase5Test extends TestCase
             'name' => 'Bachelor of Science in Software Engineering',
             'code' => 'BSSE',
             'duration_years' => 4,
-            'required_credits_to_graduate' => 120,
         ]);
 
         $this->course1 = CourseUnit::factory()->create([

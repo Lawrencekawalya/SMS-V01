@@ -24,7 +24,6 @@ class ProgrammeFactory extends Factory
             'code' => strtoupper(fake()->unique()->lexify('B??')),
             'award_type' => fake()->randomElement(['Certificate', 'Diploma', 'Bachelors', 'Masters', 'Doctorate']),
             'duration_years' => fake()->numberBetween(1, 5),
-            'required_credits_to_graduate' => fake()->numberBetween(60, 160),
             'description' => fake()->paragraph(),
             'status' => 'active',
         ];

@@ -20,9 +20,8 @@ class GraduationService
         $curriculum = $student->curriculum
             ?? $student->programme?->curriculums()->where('is_active', true)->first();
 
-        // 1. Determine Required Graduation Credits
-        $requiredCredits = (float) ($curriculum?->min_graduation_credits
-            ?? ($student->programme?->required_credits_to_graduate ?? 0));
+        // 1. Determine Required Graduation Credits from Assigned Curriculum
+        $requiredCredits = (float) ($curriculum?->min_graduation_credits ?? 0);
 
         if ($requiredCredits <= 0 && $curriculum) {
             $requiredCredits = $curriculum->totalMappedCredits();

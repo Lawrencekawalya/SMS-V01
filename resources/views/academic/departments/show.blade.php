@@ -98,7 +98,7 @@
                   <th>Programme Name</th>
                   <th>Award Level</th>
                   <th>Duration</th>
-                  <th>Credits</th>
+                  <th>Curriculum Credits</th>
                   <th>Status</th>
                   <th class="text-end">Actions</th>
                 </tr>
@@ -124,7 +124,13 @@
                       @endif
                     </td>
                     <td><span class="badge bg-body-secondary text-body border">{{ $programme->duration_years }} {{ Str::plural('Year', $programme->duration_years) }}</span></td>
-                    <td><span class="fw-semibold">{{ $programme->required_credits_to_graduate }} CU</span></td>
+                    <td>
+                      @if ($programme->activeCurriculum)
+                        <span class="fw-semibold text-success">{{ $programme->activeCurriculum->min_graduation_credits }} CU</span>
+                      @else
+                        <span class="text-muted small">N/A</span>
+                      @endif
+                    </td>
                     <td>
                       @if ($programme->status === 'active')
                         <span class="badge text-bg-success">Active</span>

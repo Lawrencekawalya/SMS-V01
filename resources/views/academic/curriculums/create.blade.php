@@ -33,7 +33,7 @@
                   <option value="">-- Select Degree Programme --</option>
                   @foreach ($programmes as $prog)
                     <option value="{{ $prog->id }}" {{ (string) old('programme_id', $programmeId) === (string) $prog->id ? 'selected' : '' }}>
-                      {{ $prog->name }} ({{ $prog->code }}) &bull; {{ $prog->department->name ?? '' }} ({{ $prog->duration_years }} Yrs, {{ $prog->required_credits_to_graduate }} Credits)
+                      {{ $prog->name }} ({{ $prog->code }}) &bull; {{ $prog->department->name ?? '' }} ({{ $prog->duration_years }} {{ Str::plural('Year', $prog->duration_years) }})
                     </option>
                   @endforeach
                 </select>

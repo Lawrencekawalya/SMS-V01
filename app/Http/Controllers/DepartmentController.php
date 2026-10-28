@@ -79,7 +79,7 @@ class DepartmentController extends Controller
      */
     public function show(Department $department): View
     {
-        $department->load(['faculty.campus', 'hod', 'programmes']);
+        $department->load(['faculty.campus', 'hod', 'programmes.activeCurriculum']);
 
         return view('academic.departments.show', compact('department'));
     }
