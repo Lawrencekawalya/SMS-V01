@@ -19,11 +19,16 @@
           <div class="text-center mb-3">
             <span class="badge text-bg-primary fs-5 px-3 py-2">{{ $courseUnit->code }}</span>
             <h4 class="mt-3 mb-1 fw-bold">{{ $courseUnit->name }}</h4>
-            <div class="mt-2">
+            <div class="mt-2 d-flex justify-content-center gap-1 flex-wrap">
               @if ($courseUnit->status === 'active')
                 <span class="badge text-bg-success">Active Course</span>
               @else
                 <span class="badge text-bg-secondary">Archived</span>
+              @endif
+              @if ($courseUnit->hasAssessmentMarks())
+                <span class="badge text-bg-warning text-dark">
+                  <i class="bi bi-shield-lock-fill me-1"></i> Marks Recorded &bull; Immutable
+                </span>
               @endif
             </div>
           </div>
@@ -50,16 +55,25 @@
           </ul>
 
           <div class="d-grid gap-2">
-            <a href="{{ route('course.edit', $courseUnit) }}" class="btn btn-warning">
-              <i class="bi bi-pencil me-1"></i> Edit Course Specification
-            </a>
-            <form action="{{ route('course.delete', $courseUnit) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete course {{ $courseUnit->code }}?');">
-              @csrf
-              @method('DELETE')
-              <button type="submit" class="btn btn-outline-danger w-100">
-                <i class="bi bi-trash me-1"></i> Delete Course Unit
-              </button>
-            </form>
+            @if ($courseUnit->hasAssessmentMarks())
+              <a href="{{ route('course.edit', $courseUnit) }}" class="btn btn-outline-warning">
+                <i class="bi bi-shield-lock me-1"></i> View Locked Specification
+              </a>
+              <a href="{{ route('course.create', ['department_id' => $courseUnit->department_id]) }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-1"></i> Create New Unit for Curriculum
+              </a>
+            @else
+              <a href="{{ route('course.edit', $courseUnit) }}" class="btn btn-warning">
+                <i class="bi bi-pencil me-1"></i> Edit Course Specification
+              </a>
+              <form action="{{ route('course.delete', $courseUnit) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete course {{ $courseUnit->code }}?');">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn btn-outline-danger w-100">
+                  <i class="bi bi-trash me-1"></i> Delete Course Unit
+                </button>
+              </form>
+            @endif
             <a href="{{ route('course.list') }}" class="btn btn-outline-secondary">
               <i class="bi bi-arrow-left me-1"></i> Back to Catalog
             </a>

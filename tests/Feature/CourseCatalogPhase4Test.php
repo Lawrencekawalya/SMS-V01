@@ -3,9 +3,11 @@
 namespace Tests\Feature;
 
 use App\Models\Campus;
+use App\Models\CourseAssessmentSheet;
 use App\Models\CourseUnit;
 use App\Models\Department;
 use App\Models\Faculty;
+use App\Models\StudentMark;
 use App\Models\University;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -240,5 +242,122 @@ class CourseCatalogPhase4Test extends TestCase
             ->assertStatus(200)
             ->assertSee($course2->code)
             ->assertDontSee($course1->code);
+    }
+
+    public function test_cannot_update_course_unit_when_assessment_marks_are_attached(): void
+    {
+        $course = CourseUnit::factory()->create([
+            'department_id' => $this->department->id,
+            'code' => 'CSC2201',
+            'name' => 'Data Structures and Algorithms',
+            'credit_units' => 4.0,
+        ]);
+
+        $sheet = CourseAssessmentSheet::factory()->create([
+            'course_unit_id' => $course->id,
+        ]);
+
+        StudentMark::factory()->create([
+            'course_assessment_sheet_id' => $sheet->id,
+            'final_score' => 75.0,
+        ]);
+
+        $this->assertTrue($course->hasAssessmentMarks());
+
+        $response = $this->put(route('course.update', $course), [
+            'department_id' => $this->department->id,
+            'code' => 'CSC2201',
+            'name' => 'Modified Algorithms Title',
+            'credit_units' => 5.0,
+            'status' => 'active',
+        ]);
+
+        $response->assertRedirect(route('course.edit', $course));
+        $response->assertSessionHas('error');
+
+        $this->assertDatabaseHas('course_units', [
+            'id' => $course->id,
+            'name' => 'Data Structures and Algorithms',
+            'credit_units' => 4.0,
+        ]);
+        $this->assertDatabaseMissing('course_units', [
+            'name' => 'Modified Algorithms Title',
+        ]);
+    }
+
+    public function test_cannot_delete_course_unit_when_assessment_marks_are_attached(): void
+    {
+        $course = CourseUnit::factory()->create([
+            'department_id' => $this->department->id,
+            'code' => 'CSC2202',
+            'name' => 'Discrete Mathematics',
+        ]);
+
+        $sheet = CourseAssessmentSheet::factory()->create([
+            'course_unit_id' => $course->id,
+        ]);
+
+        StudentMark::factory()->create([
+            'course_assessment_sheet_id' => $sheet->id,
+        ]);
+
+        $response = $this->delete(route('course.delete', $course));
+
+        $response->assertRedirect(route('course.list'));
+        $response->assertSessionHas('error');
+
+        $this->assertDatabaseHas('course_units', [
+            'id' => $course->id,
+        ]);
+    }
+
+    public function test_edit_view_shows_locked_notice_and_disables_inputs_when_marks_exist(): void
+    {
+        $course = CourseUnit::factory()->create([
+            'department_id' => $this->department->id,
+            'code' => 'CSC3105',
+            'name' => 'Artificial Intelligence',
+        ]);
+
+        $sheet = CourseAssessmentSheet::factory()->create([
+            'course_unit_id' => $course->id,
+        ]);
+
+        StudentMark::factory()->create([
+            'course_assessment_sheet_id' => $sheet->id,
+        ]);
+
+        $response = $this->get(route('course.edit', $course));
+
+        $response->assertStatus(200);
+        $response->assertSee('Course Unit is Locked');
+        $response->assertSee('Assessment Marks Recorded');
+        $response->assertSee('Create New Course Unit Instead');
+        $response->assertSee('Locked &mdash; Cannot Update', false);
+    }
+
+    public function test_show_view_displays_locked_immutable_badge_and_hides_delete_button_when_marks_exist(): void
+    {
+        $course = CourseUnit::factory()->create([
+            'department_id' => $this->department->id,
+            'code' => 'CSC3201',
+            'name' => 'Computer Networks',
+        ]);
+
+        $sheet = CourseAssessmentSheet::factory()->create([
+            'course_unit_id' => $course->id,
+        ]);
+
+        StudentMark::factory()->create([
+            'course_assessment_sheet_id' => $sheet->id,
+        ]);
+
+        $response = $this->get(route('course.show', $course));
+
+        $response->assertStatus(200);
+        $response->assertSee('Marks Recorded &bull; Immutable', false);
+        $response->assertSee('View Locked Specification');
+        $response->assertSee('Create New Unit for Curriculum');
+        $response->assertDontSee('Delete Course Unit');
     }
 }

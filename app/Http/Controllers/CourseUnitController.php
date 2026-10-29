@@ -20,7 +20,10 @@ class CourseUnitController extends Controller
         $departmentId = $request->query('department_id');
         $status = $request->query('status');
 
-        $query = CourseUnit::with(['department.faculty.campus']);
+        $query = CourseUnit::with(['department.faculty.campus'])
+            ->withExists(['assessmentSheets as has_assessment_marks' => function ($q): void {
+                $q->whereHas('studentMarks');
+            }]);
 
         if ($departmentId) {
             $query->where('department_id', $departmentId);
@@ -74,8 +77,9 @@ class CourseUnitController extends Controller
     public function edit(CourseUnit $courseUnit): View
     {
         $departments = Department::with('faculty.campus')->orderBy('name')->get();
+        $hasMarks = $courseUnit->hasAssessmentMarks();
 
-        return view('academic.courses.edit', compact('courseUnit', 'departments'));
+        return view('academic.courses.edit', compact('courseUnit', 'departments', 'hasMarks'));
     }
 
     /**
@@ -83,6 +87,11 @@ class CourseUnitController extends Controller
      */
     public function update(UpdateCourseUnitRequest $request, CourseUnit $courseUnit): RedirectResponse
     {
+        if ($courseUnit->hasAssessmentMarks()) {
+            return redirect()->route('course.edit', $courseUnit)
+                ->with('error', "Course Unit '{$courseUnit->code}' cannot be modified because official student assessment marks have been recorded. To update curriculum content, please create a new course unit in the department.");
+        }
+
         $courseUnit->update($request->validated());
 
         return redirect()->route('course.list')
@@ -94,6 +103,11 @@ class CourseUnitController extends Controller
      */
     public function destroy(CourseUnit $courseUnit): RedirectResponse
     {
+        if ($courseUnit->hasAssessmentMarks()) {
+            return redirect()->route('course.list')
+                ->with('error', "Course Unit '{$courseUnit->code}' cannot be deleted because official student assessment marks have been recorded.");
+        }
+
         $code = $courseUnit->code;
         $courseUnit->delete();
 

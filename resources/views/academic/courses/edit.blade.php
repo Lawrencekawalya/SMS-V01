@@ -23,6 +23,26 @@
           </div>
         </div>
 
+        @if (! empty($hasMarks))
+          <div class="alert alert-warning border-warning d-flex align-items-start gap-3 m-3" role="alert">
+            <i class="bi bi-shield-lock-fill fs-3 text-warning flex-shrink-0"></i>
+            <div>
+              <h5 class="alert-heading fw-bold mb-1">
+                <i class="bi bi-lock-fill me-1"></i> Course Unit is Locked &mdash; Assessment Marks Recorded
+              </h5>
+              <p class="mb-2">
+                Official student assessment marks have already been recorded for <strong>{{ $courseUnit->code }}</strong>. To preserve historical academic records and ensure transcript integrity for past student cohorts, core specifications cannot be modified.
+              </p>
+              <div class="d-flex flex-wrap gap-2 align-items-center">
+                <span class="text-muted small">Need an updated syllabus or new credit units for a revised curriculum?</span>
+                <a href="{{ route('course.create', ['department_id' => $courseUnit->department_id]) }}" class="btn btn-sm btn-dark fw-semibold">
+                  <i class="bi bi-plus-circle me-1"></i> Create New Course Unit in {{ $courseUnit->department->name ?? 'Department' }}
+                </a>
+              </div>
+            </div>
+          </div>
+        @endif
+
         <form action="{{ route('course.update', $courseUnit) }}" method="POST">
           @csrf
           @method('PUT')
@@ -37,7 +57,7 @@
                   class="form-control text-uppercase @error('code') is-invalid @enderror"
                   placeholder="e.g. CSC1101, BIT1201"
                   value="{{ old('code', $courseUnit->code) }}"
-                  required
+                  {{ ! empty($hasMarks) ? 'disabled' : 'required' }}
                 />
                 @error('code')
                   <div class="invalid-feedback">{{ $message }}</div>
@@ -46,7 +66,7 @@
 
               <div class="col-md-6">
                 <label for="department_id" class="form-label fw-bold">Teaching Department <span class="text-danger">*</span></label>
-                <select name="department_id" id="department_id" class="form-select @error('department_id') is-invalid @enderror" required>
+                <select name="department_id" id="department_id" class="form-select @error('department_id') is-invalid @enderror" {{ ! empty($hasMarks) ? 'disabled' : 'required' }}>
                   @foreach ($departments as $dept)
                     <option value="{{ $dept->id }}" {{ (string) old('department_id', $courseUnit->department_id) === (string) $dept->id ? 'selected' : '' }}>
                       {{ $dept->name }} ({{ $dept->code }}) &bull; {{ $dept->faculty->campus->name ?? '' }}
@@ -67,7 +87,7 @@
                   class="form-control @error('name') is-invalid @enderror"
                   placeholder="e.g. Structured Programming in C"
                   value="{{ old('name', $courseUnit->name) }}"
-                  required
+                  {{ ! empty($hasMarks) ? 'disabled' : 'required' }}
                 />
                 @error('name')
                   <div class="invalid-feedback">{{ $message }}</div>
@@ -85,7 +105,7 @@
                   id="credit_units"
                   class="form-control @error('credit_units') is-invalid @enderror"
                   value="{{ old('credit_units', $courseUnit->credit_units) }}"
-                  required
+                  {{ ! empty($hasMarks) ? 'disabled' : 'required' }}
                 />
                 @error('credit_units')
                   <div class="invalid-feedback">{{ $message }}</div>
@@ -94,7 +114,7 @@
 
               <div class="col-md-6">
                 <label for="status" class="form-label fw-bold">Course Status <span class="text-danger">*</span></label>
-                <select name="status" id="status" class="form-select @error('status') is-invalid @enderror" required>
+                <select name="status" id="status" class="form-select @error('status') is-invalid @enderror" {{ ! empty($hasMarks) ? 'disabled' : 'required' }}>
                   <option value="active" {{ old('status', $courseUnit->status) === 'active' ? 'selected' : '' }}>Active (Available for Curriculum)</option>
                   <option value="archived" {{ old('status', $courseUnit->status) === 'archived' ? 'selected' : '' }}>Archived (Deprecated)</option>
                 </select>
@@ -110,6 +130,7 @@
                   id="description"
                   rows="4"
                   class="form-control @error('description') is-invalid @enderror"
+                  {{ ! empty($hasMarks) ? 'disabled' : '' }}
                 >{{ old('description', $courseUnit->description) }}</textarea>
                 @error('description')
                   <div class="invalid-feedback">{{ $message }}</div>
@@ -119,11 +140,27 @@
           </div>
 
           <div class="card-footer clearfix">
+            <div class="float-start">
+              @if (! empty($hasMarks))
+                <span class="badge text-bg-warning text-dark py-2 px-3">
+                  <i class="bi bi-shield-lock-fill me-1"></i> Specifications Locked
+                </span>
+              @endif
+            </div>
             <div class="float-end">
               <a href="{{ route('course.list') }}" class="btn btn-secondary me-2">Cancel</a>
-              <button type="submit" class="btn btn-warning">
-                <i class="bi bi-check-circle me-1"></i> Update Course Unit
-              </button>
+              @if (! empty($hasMarks))
+                <a href="{{ route('course.create', ['department_id' => $courseUnit->department_id]) }}" class="btn btn-primary me-2">
+                  <i class="bi bi-plus-circle me-1"></i> Create New Course Unit Instead
+                </a>
+                <button type="button" class="btn btn-warning" disabled title="Cannot update course with existing assessment marks">
+                  <i class="bi bi-lock-fill me-1"></i> Locked &mdash; Cannot Update
+                </button>
+              @else
+                <button type="submit" class="btn btn-warning">
+                  <i class="bi bi-check-circle me-1"></i> Update Course Unit
+                </button>
+              @endif
             </div>
           </div>
         </form>

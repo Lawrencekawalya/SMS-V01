@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class CourseUnit extends Model
 {
@@ -82,6 +83,28 @@ class CourseUnit extends Model
     public function assessmentSheets(): HasMany
     {
         return $this->hasMany(CourseAssessmentSheet::class);
+    }
+
+    /**
+     * Get all student marks recorded for this course unit through assessment sheets.
+     *
+     * @return HasManyThrough<StudentMark, CourseAssessmentSheet, $this>
+     */
+    public function studentMarks(): HasManyThrough
+    {
+        return $this->hasManyThrough(StudentMark::class, CourseAssessmentSheet::class);
+    }
+
+    /**
+     * Determine if official student assessment marks are attached to this course unit.
+     */
+    public function hasAssessmentMarks(): bool
+    {
+        if (isset($this->attributes['has_assessment_marks'])) {
+            return (bool) $this->attributes['has_assessment_marks'];
+        }
+
+        return $this->assessmentSheets()->whereHas('studentMarks')->exists();
     }
 
     /**

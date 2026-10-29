@@ -132,21 +132,32 @@
                     @else
                       <span class="badge text-bg-secondary">Archived</span>
                     @endif
+                    @if ($course->hasAssessmentMarks())
+                      <span class="badge text-bg-warning text-dark" title="Assessment marks recorded &bull; Specifications immutable">
+                        <i class="bi bi-shield-lock-fill"></i> Locked
+                      </span>
+                    @endif
                   </td>
                   <td class="text-end">
                     <a href="{{ route('course.show', $course) }}" class="btn btn-sm btn-outline-info" title="View Details">
                       <i class="bi bi-eye"></i>
                     </a>
-                    <a href="{{ route('course.edit', $course) }}" class="btn btn-sm btn-outline-warning" title="Edit Course Unit">
-                      <i class="bi bi-pencil"></i>
-                    </a>
-                    <form action="{{ route('course.delete', $course) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete course {{ $course->code }}?');">
-                      @csrf
-                      @method('DELETE')
-                      <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Course Unit">
-                        <i class="bi bi-trash"></i>
-                      </button>
-                    </form>
+                    @if ($course->hasAssessmentMarks())
+                      <a href="{{ route('course.edit', $course) }}" class="btn btn-sm btn-outline-warning" title="View Locked Specification">
+                        <i class="bi bi-shield-lock"></i>
+                      </a>
+                    @else
+                      <a href="{{ route('course.edit', $course) }}" class="btn btn-sm btn-outline-warning" title="Edit Course Unit">
+                        <i class="bi bi-pencil"></i>
+                      </a>
+                      <form action="{{ route('course.delete', $course) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete course {{ $course->code }}?');">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Course Unit">
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </form>
+                    @endif
                   </td>
                 </tr>
               @endforeach
