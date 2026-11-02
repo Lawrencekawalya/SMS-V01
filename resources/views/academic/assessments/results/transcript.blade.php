@@ -212,6 +212,11 @@
                   @if ($mark->registrationItem?->course_type === 'Retake')
                     <span class="badge text-bg-warning text-dark py-0 ms-1" style="font-size: 0.65rem;">Retake</span>
                   @endif
+                  @if ($mark->isSpecialExam())
+                    <span class="badge text-bg-info text-dark py-0 ms-1" style="font-size: 0.65rem;"><i class="bi bi-star-fill me-1"></i>Special Exam</span>
+                  @elseif ($mark->isSupplementaryExam())
+                    <span class="badge text-bg-primary py-0 ms-1" style="font-size: 0.65rem;">Supplementary</span>
+                  @endif
                 </td>
                 <td class="text-center font-monospace">{{ number_format($cu, 1) }}</td>
                 <td class="text-center font-monospace">{{ $mark->final_score !== null ? number_format($mark->final_score, 0) : '-' }}</td>
@@ -219,7 +224,11 @@
                 <td class="text-center font-monospace">{{ $mark->grade_point !== null ? number_format($gp, 1) : '-' }}</td>
                 <td class="text-center font-monospace">{{ number_format($wgp, 1) }}</td>
                 <td class="text-center">
-                  @if ($mark->final_score !== null)
+                  @if ($mark->isMissedWithPermission())
+                    <span class="badge text-bg-warning text-dark" title="Incomplete on approved medical/official grounds">INC</span>
+                  @elseif ($mark->isAbsentWithoutPermission())
+                    <span class="badge text-bg-danger" title="Absent without permission (Automatic Fail / Retake)">ABS</span>
+                  @elseif ($mark->final_score !== null)
                     <span class="badge {{ $isPass ? 'text-bg-success' : 'text-bg-danger' }}">
                       {{ $isPass ? 'P' : 'F' }}
                     </span>

@@ -69,7 +69,10 @@
         <span class="badge text-bg-info">CA: {{ config('academic.assessment_ca_weight', 40) }}%</span>
         <span class="badge text-bg-primary">Exam: {{ config('academic.assessment_exam_weight', 60) }}%</span>
         <span class="badge text-bg-success">Pass Mark: {{ config('academic.assessment_pass_mark', 50) }}%</span>
-        <a href="{{ route('assessment.policy') }}" class="btn btn-sm btn-outline-info ms-2">
+        <a href="{{ route('assessment.special-exams') }}" class="btn btn-sm btn-outline-primary ms-2">
+          <i class="bi bi-star me-1"></i> Special &amp; Supp Exams
+        </a>
+        <a href="{{ route('assessment.policy') }}" class="btn btn-sm btn-outline-info ms-1">
           <i class="bi bi-sliders me-1"></i> Policy &amp; Scale
         </a>
       </div>

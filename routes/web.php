@@ -184,11 +184,14 @@ Route::prefix('academic')->group(function () {
         Route::post('policy/awards/reset', 'resetAwardClassifications')->name('assessment.policy.awards.reset');
 
         Route::get('list', 'index')->name('assessment.list');
+        Route::get('special-exams', 'specialExamsIndex')->name('assessment.special-exams');
         Route::get('show/{sheet}', 'show')->name('assessment.show');
         Route::get('edit/{sheet}', 'edit')->name('assessment.edit');
         Route::get('entry/{sheet}', 'edit')->name('assessment.entry');
         Route::match(['put', 'patch'], 'update/{sheet}', 'update')->name('assessment.update');
         Route::post('submit/{sheet}', 'submitToHod')->name('assessment.submit');
+        Route::get('sheets/{sheet}/special-exams', 'specialExams')->name('assessment.sheet-special-exams');
+        Route::post('marks/{mark}/special-exam', 'recordSpecialExam')->name('assessment.mark-special-exam');
     });
 
     // 17. Departmental & Senate Grade Moderation Workflow

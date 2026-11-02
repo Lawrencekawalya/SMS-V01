@@ -401,12 +401,40 @@ class CourseAssessmentController extends Controller
                 $oldCa = $mark->ca_score !== null ? (float) $mark->ca_score : null;
                 $oldExam = $mark->exam_score !== null ? (float) $mark->exam_score : null;
                 $oldFinal = $mark->final_score !== null ? (float) $mark->final_score : null;
+                $examStatus = $item['exam_status'] ?? 'present';
 
-                if ($caInput !== null && $examInput !== null) {
-                    $computed = $this->gradingEngine->computeMark($caInput, $examInput, $sheet);
+                if ($examStatus === 'missed_permission') {
+                    $computed = $this->gradingEngine->computeMark($caInput, null, $sheet, 'missed_permission');
+                    $mark->update([
+                        'ca_score' => $computed['ca_score'],
+                        'exam_score' => null,
+                        'exam_status' => 'missed_permission',
+                        'final_score' => null,
+                        'grade_letter' => 'INC',
+                        'grade_point' => null,
+                        'is_passed' => false,
+                        'is_retake' => false,
+                        'lecturer_remarks' => $remarks ?? 'Missed examination on approved medical/official grounds. Eligible for Special Examination.',
+                    ]);
+                } elseif ($examStatus === 'absent') {
+                    $computed = $this->gradingEngine->computeMark($caInput, 0.0, $sheet, 'absent');
+                    $mark->update([
+                        'ca_score' => $computed['ca_score'],
+                        'exam_score' => 0.0,
+                        'exam_status' => 'absent',
+                        'final_score' => $computed['final_score'],
+                        'grade_letter' => 'F',
+                        'grade_point' => 0.0,
+                        'is_passed' => false,
+                        'is_retake' => true,
+                        'lecturer_remarks' => $remarks ?? 'Absent from examination without permission. Unexcused absence converts to automatic Fail.',
+                    ]);
+                } elseif ($caInput !== null && $examInput !== null) {
+                    $computed = $this->gradingEngine->computeMark($caInput, $examInput, $sheet, 'present');
                     $mark->update([
                         'ca_score' => $computed['ca_score'],
                         'exam_score' => $computed['exam_score'],
+                        'exam_status' => 'present',
                         'final_score' => $computed['final_score'],
                         'grade_letter' => $computed['grade_letter'],
                         'grade_point' => $computed['grade_point'],
@@ -428,6 +456,7 @@ class CourseAssessmentController extends Controller
                     $mark->update([
                         'ca_score' => $caInput,
                         'exam_score' => $examInput,
+                        'exam_status' => 'present',
                         'final_score' => null,
                         'grade_letter' => null,
                         'grade_point' => null,
@@ -538,5 +567,112 @@ class CourseAssessmentController extends Controller
                 }
             }
         }
+    }
+
+    /**
+     * University-wide Special & Supplementary Examinations Desk.
+     * Displays all students with pending incomplete (INC) papers awaiting special exams
+     * and cleared special/supplementary examination sessions.
+     */
+    public function specialExamsIndex(Request $request): View
+    {
+        $semesters = Semester::with('academicYear')->orderByDesc('start_date')->get();
+        $activeSemester = Semester::where('is_active', true)->first();
+        $selectedSemesterId = $request->query('semester_id', $activeSemester?->id);
+
+        $query = StudentMark::with([
+            'student.programme',
+            'courseAssessmentSheet.courseUnit.department',
+            'courseAssessmentSheet.semester.academicYear',
+            'auditLogs',
+        ])
+            ->where(function ($q): void {
+                $q->where('exam_status', 'missed_permission')
+                    ->orWhereIn('sitting_type', ['special', 'supplementary']);
+            });
+
+        if ($selectedSemesterId) {
+            $query->whereHas('courseAssessmentSheet', function ($q) use ($selectedSemesterId): void {
+                $q->where('semester_id', $selectedSemesterId);
+            });
+        }
+
+        $statusFilter = $request->query('status');
+        if ($statusFilter === 'pending') {
+            $query->where('exam_status', 'missed_permission');
+        } elseif ($statusFilter === 'cleared') {
+            $query->whereIn('sitting_type', ['special', 'supplementary'])->where('exam_status', '!=', 'missed_permission');
+        }
+
+        $specialExamMarks = $query->get();
+
+        $pendingCount = StudentMark::where('exam_status', 'missed_permission')->count();
+        $clearedCount = StudentMark::whereIn('sitting_type', ['special', 'supplementary'])->where('exam_status', '!=', 'missed_permission')->count();
+
+        return view('academic.assessments.special-exams', compact(
+            'specialExamMarks',
+            'semesters',
+            'selectedSemesterId',
+            'statusFilter',
+            'pendingCount',
+            'clearedCount'
+        ));
+    }
+
+    /**
+     * Course-level Special & Supplementary Examination candidates list.
+     */
+    public function specialExams(CourseAssessmentSheet $sheet): View
+    {
+        $sheet->load([
+            'courseUnit.department',
+            'semester.academicYear',
+            'instructor',
+            'studentMarks' => function ($q): void {
+                $q->with(['student.programme', 'auditLogs'])
+                    ->where(function ($sq): void {
+                        $sq->where('exam_status', 'missed_permission')
+                            ->orWhereIn('sitting_type', ['special', 'supplementary']);
+                    });
+            },
+        ]);
+
+        return view('academic.assessments.sheet-special-exams', compact('sheet'));
+    }
+
+    /**
+     * Record a Special or Supplementary Examination score for an individual student.
+     * Recalculates final composite score, updates student standing and semester GPA/CGPA.
+     */
+    public function recordSpecialExam(Request $request, StudentMark $mark): RedirectResponse
+    {
+        $sheet = $mark->courseAssessmentSheet;
+        $maxExam = $sheet ? (float) $sheet->exam_weight : 60.0;
+
+        $validated = $request->validate([
+            'special_exam_score' => ['required', 'numeric', 'min:0', "max:{$maxExam}"],
+            'sitting_type' => ['required', 'string', 'in:special,supplementary'],
+            'special_exam_date' => ['nullable', 'date'],
+            'special_exam_remarks' => ['nullable', 'string', 'max:500'],
+        ], [
+            'special_exam_score.required' => 'Special / Supplementary Examination score is required.',
+            'special_exam_score.max' => "Examination score cannot exceed {$maxExam} marks.",
+            'sitting_type.required' => 'Sitting type must be specified.',
+        ]);
+
+        $user = auth()->user() ?? User::first();
+
+        $updatedMark = $this->gradingEngine->recordSpecialExamMark(
+            $mark,
+            (float) $validated['special_exam_score'],
+            $validated['sitting_type'],
+            $validated['special_exam_date'] ?? now()->toDateString(),
+            $validated['special_exam_remarks'] ?? null,
+            $user
+        );
+
+        $sittingLabel = $validated['sitting_type'] === 'special' ? 'Special Examination' : 'Supplementary Examination';
+
+        return back()->with('success', "{$sittingLabel} mark of {$updatedMark->exam_score}/{$maxExam} successfully recorded for {$mark->student->full_name} ({$mark->student->registration_number}). Final Score: {$updatedMark->final_score}% (Grade {$updatedMark->grade_letter}, {$updatedMark->grade_point} GP). Semester GPA recalculated.");
     }
 }

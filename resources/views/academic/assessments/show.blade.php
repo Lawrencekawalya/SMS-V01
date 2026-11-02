@@ -35,6 +35,9 @@
           <button type="button" class="btn btn-outline-info btn-sm" data-bs-toggle="modal" data-bs-target="#gradingScaleReferenceModal">
             <i class="bi bi-award me-1"></i> Grading Scale Reference
           </button>
+          <a href="{{ route('assessment.sheet-special-exams', $sheet) }}" class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-journal-check me-1"></i> Special Exams
+          </a>
           @if ($sheet->status !== 'draft')
             <a href="{{ route('moderation.show', $sheet) }}" class="btn btn-warning btn-sm text-dark">
               <i class="bi bi-shield-shaded me-1"></i> Moderation Desk
@@ -215,11 +218,25 @@
                 {{ $mark->grade_point !== null ? number_format($mark->grade_point, 2) : '-' }}
               </td>
               <td>
-                @if ($mark->final_score !== null)
+                @if ($mark->isMissedWithPermission())
+                  <span class="badge text-bg-warning text-dark"><i class="bi bi-hospital me-1"></i>INC (Medical)</span>
+                  <div class="mt-1">
+                    <button type="button" class="btn btn-xs btn-outline-primary py-0 px-1" data-bs-toggle="modal" data-bs-target="#specialExamModal{{ $mark->id }}">
+                      <i class="bi bi-pencil-square me-1"></i> Special Exam
+                    </button>
+                  </div>
+                @elseif ($mark->isAbsentWithoutPermission())
+                  <span class="badge text-bg-danger"><i class="bi bi-x-circle me-1"></i>ABS / Retake</span>
+                @elseif ($mark->final_score !== null)
                   @if ($mark->is_passed)
                     <span class="badge text-bg-success">Passed</span>
                   @else
                     <span class="badge text-bg-danger">Failed / Retake</span>
+                  @endif
+                  @if ($mark->isSpecialExam())
+                    <div class="mt-1"><span class="badge text-bg-info text-dark"><i class="bi bi-star-fill me-1"></i>Special Exam</span></div>
+                  @elseif ($mark->isSupplementaryExam())
+                    <div class="mt-1"><span class="badge text-bg-primary"><i class="bi bi-arrow-repeat me-1"></i>Supplementary</span></div>
                   @endif
                 @else
                   <span class="badge text-bg-secondary">Pending</span>
@@ -250,6 +267,7 @@
   </div>
 
   @include('academic.assessments.partials.grading-scale-modal')
+  @include('academic.assessments.partials.special-exam-modal')
 @endsection
 
 @push('scripts')

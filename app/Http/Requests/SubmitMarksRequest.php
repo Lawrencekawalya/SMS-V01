@@ -32,6 +32,7 @@ class SubmitMarksRequest extends FormRequest
             'marks.*.student_mark_id' => ['required', 'integer', 'exists:student_marks,id'],
             'marks.*.ca_score' => ['nullable', 'numeric', 'min:0', "max:{$caMax}"],
             'marks.*.exam_score' => ['nullable', 'numeric', 'min:0', "max:{$examMax}"],
+            'marks.*.exam_status' => ['nullable', 'string', 'in:present,missed_permission,absent'],
             'marks.*.lecturer_remarks' => ['nullable', 'string', 'max:255'],
             'action' => ['nullable', 'string', 'in:save_draft,submit_hod'],
         ];

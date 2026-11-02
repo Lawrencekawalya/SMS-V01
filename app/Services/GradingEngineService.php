@@ -19,25 +19,95 @@ class GradingEngineService
      * Compute final score, letter grade, grade points, and pass/retake status.
      *
      * @return array{
-     *     ca_score: float,
-     *     exam_score: float,
-     *     final_score: float,
-     *     grade_letter: string,
-     *     grade_point: float,
+     *     ca_score: ?float,
+     *     exam_score: ?float,
+     *     final_score: ?float,
+     *     grade_letter: ?string,
+     *     grade_point: ?float,
      *     classification: string,
      *     badge_class: string,
      *     is_passed: bool,
-     *     is_retake: bool
+     *     is_retake: bool,
+     *     exam_status: string,
+     *     sitting_type: string
      * }
      */
-    public function computeMark(float $caScore, float $examScore, ?CourseAssessmentSheet $sheet = null): array
-    {
-        $ca = round(max(0.0, $caScore), 2);
+    public function computeMark(
+        ?float $caScore,
+        ?float $examScore,
+        ?CourseAssessmentSheet $sheet = null,
+        string $examStatus = 'present',
+        string $sittingType = 'main'
+    ): array {
+        $ca = $caScore !== null ? round(max(0.0, $caScore), 2) : null;
+
+        // 1. Approved Absence / Missed Exam with Permission (Medical / Official)
+        if ($examStatus === 'missed_permission') {
+            return [
+                'ca_score' => $ca,
+                'exam_score' => null,
+                'final_score' => null,
+                'grade_letter' => 'INC',
+                'grade_point' => null,
+                'classification' => 'Incomplete (Approved Absence / Medical)',
+                'badge_class' => 'text-bg-warning text-dark',
+                'is_passed' => false,
+                'is_retake' => false,
+                'exam_status' => 'missed_permission',
+                'sitting_type' => $sittingType,
+            ];
+        }
+
+        // 2. Absent without Permission (Unexcused Absence -> Automatic 0 / F / Retake)
+        if ($examStatus === 'absent') {
+            $finalScore = $ca !== null ? $ca : 0.0;
+
+            return [
+                'ca_score' => $ca !== null ? $ca : 0.0,
+                'exam_score' => 0.0,
+                'final_score' => $finalScore,
+                'grade_letter' => 'F',
+                'grade_point' => 0.0,
+                'classification' => 'Absent without Permission (Automatic Fail / Retake)',
+                'badge_class' => 'text-bg-danger',
+                'is_passed' => false,
+                'is_retake' => true,
+                'exam_status' => 'absent',
+                'sitting_type' => $sittingType,
+            ];
+        }
+
+        // 3. Normal / Present Sitting with incomplete entry
+        if ($ca === null || $examScore === null) {
+            return [
+                'ca_score' => $ca,
+                'exam_score' => $examScore !== null ? round(max(0.0, $examScore), 2) : null,
+                'final_score' => null,
+                'grade_letter' => null,
+                'grade_point' => null,
+                'classification' => 'Pending Examination Entry',
+                'badge_class' => 'text-bg-secondary',
+                'is_passed' => false,
+                'is_retake' => false,
+                'exam_status' => 'present',
+                'sitting_type' => $sittingType,
+            ];
+        }
+
+        // 4. Completed sitting (Main, Special, or Supplementary)
         $exam = round(max(0.0, $examScore), 2);
         $finalScore = round($ca + $exam, 2);
 
         $passMark = $sheet ? (float) $sheet->pass_mark : (float) config('academic.assessment_pass_mark', 50.0);
         $gradeDetails = $this->resolveGrade($finalScore);
+
+        // Supplementary examination capping policy (if applicable: capped at Pass / C / 2.0 GP)
+        if ($sittingType === 'supplementary' && $finalScore >= $passMark) {
+            $gradeDetails['grade_letter'] = 'C';
+            $gradeDetails['grade_point'] = 2.0;
+            $gradeDetails['classification'] = 'Pass (Supplementary Sitting)';
+            $gradeDetails['badge_class'] = 'text-bg-info';
+        }
 
         $isPassed = $finalScore >= $passMark && $gradeDetails['grade_point'] > 0.0;
 
@@ -51,6 +121,8 @@ class GradingEngineService
             'badge_class' => $gradeDetails['badge_class'],
             'is_passed' => $isPassed,
             'is_retake' => ! $isPassed,
+            'exam_status' => 'present',
+            'sitting_type' => $sittingType,
         ];
     }
 
@@ -134,6 +206,11 @@ class GradingEngineService
                 continue; // Skip dropped courses
             }
 
+            // Incomplete paper with approved permission (INC) does not penalize GPA divisor
+            if ($mark->isMissedWithPermission() || ($mark->final_score === null && $mark->grade_letter === 'INC')) {
+                continue;
+            }
+
             if ($mark->final_score !== null) {
                 $creditUnitsRegistered += $credits;
                 $weightedGradePoints += ($credits * (float) $mark->grade_point);
@@ -212,7 +289,8 @@ class GradingEngineService
         }
 
         $allMarks = $marksQuery->get()->filter(function ($mark): bool {
-            return ! ($mark->registrationItem && $mark->registrationItem->isDropped());
+            return ! ($mark->registrationItem && $mark->registrationItem->isDropped())
+                && ! ($mark->isMissedWithPermission() || ($mark->final_score === null && $mark->grade_letter === 'INC'));
         });
 
         $cumulativeCreditsRegistered = 0.0;
@@ -383,6 +461,62 @@ class GradingEngineService
             'new_score' => $newScore,
             'reason' => trim($reason),
         ]);
+    }
+
+    /**
+     * Record a Special or Supplementary Examination score for a student mark,
+     * recompute final grade and metrics, log the audit trail, and update semester performance.
+     */
+    public function recordSpecialExamMark(
+        StudentMark $mark,
+        float $specialExamScore,
+        string $sittingType = 'special',
+        ?string $examDate = null,
+        ?string $remarks = null,
+        ?User $user = null
+    ): StudentMark {
+        $sheet = $mark->courseAssessmentSheet;
+        $caScore = $mark->ca_score !== null ? (float) $mark->ca_score : 0.0;
+        $oldExam = $mark->exam_score !== null ? (float) $mark->exam_score : null;
+        $examDate = $examDate ?? now()->toDateString();
+        $user = $user ?? auth()->user() ?? User::first();
+
+        $computed = $this->computeMark(
+            $caScore,
+            $specialExamScore,
+            $sheet,
+            'present',
+            $sittingType
+        );
+
+        $mark->update([
+            'exam_score' => $computed['exam_score'],
+            'special_exam_score' => $computed['exam_score'],
+            'special_exam_date' => $examDate,
+            'special_exam_remarks' => $remarks,
+            'exam_status' => 'present',
+            'sitting_type' => $sittingType,
+            'final_score' => $computed['final_score'],
+            'grade_letter' => $computed['grade_letter'],
+            'grade_point' => $computed['grade_point'],
+            'is_passed' => $computed['is_passed'],
+            'is_retake' => $computed['is_retake'],
+            'lecturer_remarks' => $remarks ?? ($sittingType === 'special' ? 'Cleared on Special Examination' : 'Cleared on Supplementary Examination'),
+        ]);
+
+        // Record audit log
+        if ($user) {
+            $sittingLabel = $sittingType === 'special' ? 'Special Examination' : 'Supplementary Examination';
+            $auditReason = "{$sittingLabel} score recorded ({$specialExamScore}/".($sheet ? number_format($sheet->exam_weight, 0) : '60').'). '.($remarks ?? '');
+            $this->recordGradeAudit($mark, $user, 'exam', $oldExam, (float) $computed['exam_score'], trim($auditReason));
+        }
+
+        // Recompute semester GPA and CGPA for the student
+        if ($sheet && $sheet->semester && $mark->student) {
+            $this->calculateSemesterGpa($mark->student, $sheet->semester);
+        }
+
+        return $mark->fresh();
     }
 
     /**

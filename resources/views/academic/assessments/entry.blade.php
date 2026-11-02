@@ -186,10 +186,11 @@
                   <th style="width: 40px;" class="text-center">#</th>
                   <th style="min-width: 220px;">Student Details</th>
                   <th style="min-width: 150px;">Reg &amp; Student No</th>
-                  <th style="width: 130px;" class="text-end">
+                  <th style="width: 120px;" class="text-end">
                     CA <span class="badge text-bg-info">/{{ number_format($sheet->ca_weight, 0) }}</span>
                   </th>
-                  <th style="width: 130px;" class="text-end">
+                  <th style="width: 170px;" class="text-center">Sitting / Attendance</th>
+                  <th style="width: 120px;" class="text-end">
                     Exam <span class="badge text-bg-primary">/{{ number_format($sheet->exam_weight, 0) }}</span>
                   </th>
                   <th style="width: 100px;" class="text-center">Total (/100)</th>
@@ -240,6 +241,13 @@
                         autocomplete="off"
                       >
                       <div class="invalid-feedback small">Max {{ number_format($sheet->ca_weight, 0) }}</div>
+                    </td>
+                    <td>
+                      <select name="marks[{{ $index }}][exam_status]" class="form-select form-select-sm exam-status-select" data-row="{{ $index }}">
+                        <option value="present" {{ old("marks.{$index}.exam_status", $mark->exam_status ?? 'present') === 'present' ? 'selected' : '' }}>Present</option>
+                        <option value="missed_permission" {{ old("marks.{$index}.exam_status", $mark->exam_status) === 'missed_permission' ? 'selected' : '' }}>Missed (Medical/Permitted)</option>
+                        <option value="absent" {{ old("marks.{$index}.exam_status", $mark->exam_status) === 'absent' ? 'selected' : '' }}>Absent (Unexcused - F)</option>
+                      </select>
                     </td>
                     <td>
                       <input
@@ -379,6 +387,33 @@
         const gradeBadge = row.querySelector('.grade-badge');
         const gpSpan = row.querySelector('.grade-point-display');
         const statusBadge = row.querySelector('.status-badge');
+        const statusSelect = row.querySelector('.exam-status-select');
+        const examStatus = statusSelect ? statusSelect.value : 'present';
+
+        if (examStatus === 'missed_permission') {
+          examInput.value = '';
+          examInput.disabled = true;
+          totalSpan.textContent = '-';
+          gradeBadge.textContent = 'INC';
+          gradeBadge.className = 'badge grade-badge text-bg-warning text-dark';
+          gpSpan.textContent = '-';
+          statusBadge.textContent = 'Special Exam';
+          statusBadge.className = 'badge status-badge text-bg-warning text-dark';
+          return;
+        } else if (examStatus === 'absent') {
+          examInput.value = '0.0';
+          examInput.disabled = true;
+          const caVal = caInput.value.trim() !== '' ? parseFloat(caInput.value) : 0;
+          totalSpan.textContent = caVal.toFixed(1);
+          gradeBadge.textContent = 'F';
+          gradeBadge.className = 'badge grade-badge text-bg-danger';
+          gpSpan.textContent = '0.0 GP';
+          statusBadge.textContent = 'Retake (ABS)';
+          statusBadge.className = 'badge status-badge text-bg-danger';
+          return;
+        } else {
+          examInput.disabled = false;
+        }
 
         const caVal = caInput.value.trim() !== '' ? parseFloat(caInput.value) : null;
         const examVal = examInput.value.trim() !== '' ? parseFloat(examInput.value) : null;
@@ -521,6 +556,17 @@
               caInput.focus();
               caInput.select();
             }
+          }
+        });
+      });
+
+      // Listen for attendance / exam status changes
+      document.querySelectorAll('.exam-status-select').forEach(sel => {
+        sel.addEventListener('change', function () {
+          const row = this.closest('.student-mark-row');
+          if (row) {
+            updateRow(row);
+            updateSummaryTicker();
           }
         });
       });
