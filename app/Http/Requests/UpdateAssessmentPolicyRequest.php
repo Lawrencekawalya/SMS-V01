@@ -27,6 +27,7 @@ class UpdateAssessmentPolicyRequest extends FormRequest
             'ca_weight' => ['required', 'numeric', 'min:0', 'max:100'],
             'exam_weight' => ['required', 'numeric', 'min:0', 'max:100'],
             'pass_mark' => ['required', 'numeric', 'min:0', 'max:100'],
+            'retake_cgpa_policy' => ['nullable', 'string', 'in:replace_fail,accumulate_all'],
         ];
     }
 

@@ -186,9 +186,6 @@ class StudentResultController extends Controller
         }
 
         $transcriptData = [];
-        $totalRegisteredCredits = 0.0;
-        $totalEarnedCredits = 0.0;
-        $totalWeightedPoints = 0.0;
 
         foreach ($performances as $perf) {
             $marks = StudentMark::where('student_id', $student->id)
@@ -198,10 +195,6 @@ class StudentResultController extends Controller
                 ->with(['courseAssessmentSheet.courseUnit', 'registrationItem'])
                 ->get();
 
-            $totalRegisteredCredits += (float) $perf->credit_units_registered;
-            $totalEarnedCredits += (float) $perf->credit_units_earned;
-            $totalWeightedPoints += (float) $perf->weighted_grade_points;
-
             $transcriptData[] = [
                 'performance' => $perf,
                 'semester' => $perf->semester,
@@ -209,17 +202,15 @@ class StudentResultController extends Controller
             ];
         }
 
-        $cumulativeCgpa = $totalRegisteredCredits > 0
-            ? round($totalWeightedPoints / $totalRegisteredCredits, 2)
-            : (float) ($student->cumulative_gpa ?? 0.00);
-
+        $cumulative = $this->gradingEngine->computeCumulativeMetrics($student);
+        $cumulativeCgpa = $cumulative['cgpa'];
         $awardClassification = $this->gradingEngine->resolveAwardClassification($student, $cumulativeCgpa);
-        $academicStanding = $cumulativeCgpa >= 2.00 ? 'Normal Progress' : 'Probation';
+        $academicStanding = $cumulative['academic_standing'];
 
         $summary = [
-            'total_registered_credits' => $totalRegisteredCredits,
-            'total_earned_credits' => $totalEarnedCredits,
-            'cumulative_weighted_points' => $totalWeightedPoints,
+            'total_registered_credits' => $cumulative['cumulative_credits_registered'],
+            'total_earned_credits' => $cumulative['cumulative_credits_earned'],
+            'cumulative_weighted_points' => $cumulative['cumulative_weighted_points'],
             'cumulative_cgpa' => $cumulativeCgpa,
             'academic_standing' => $academicStanding,
             'award_classification' => $awardClassification,

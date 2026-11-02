@@ -177,7 +177,12 @@
             <tr>
               <td class="text-center text-muted">{{ $index + 1 }}</td>
               <td class="font-monospace fw-bold">{{ $mark->courseAssessmentSheet?->courseUnit?->code ?? 'N/A' }}</td>
-              <td>{{ $mark->courseAssessmentSheet?->courseUnit?->name ?? 'Course Unit' }}</td>
+              <td>
+                {{ $mark->courseAssessmentSheet?->courseUnit?->name ?? 'Course Unit' }}
+                @if ($mark->registrationItem?->course_type === 'Retake')
+                  <span class="badge text-bg-warning text-dark py-0 ms-1" style="font-size: 0.65rem;">Retake</span>
+                @endif
+              </td>
               <td class="text-center font-monospace">{{ number_format($cu, 1) }}</td>
               <td class="text-center font-monospace">{{ $mark->ca_score !== null ? number_format($mark->ca_score, 1) : '-' }}</td>
               <td class="text-center font-monospace">{{ $mark->exam_score !== null ? number_format($mark->exam_score, 1) : '-' }}</td>

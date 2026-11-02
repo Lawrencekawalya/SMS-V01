@@ -47,6 +47,22 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Retake Cumulative GPA (CGPA) Policy
+    |--------------------------------------------------------------------------
+    |
+    | Defines how retaken courses impact the Cumulative Grade Point Average (CGPA).
+    | - 'replace_fail' (default, Ugandan NCHE collegiate standard): When a student
+    |   retakes a course, the best attempt replaces the failed attempt in the
+    |   cumulative CGPA divisor and weighted grade points, while preserving the
+    |   historical term GPA on past semester session records.
+    | - 'accumulate_all': All course attempts across all semesters are cumulatively
+    |   summed into the CGPA divisor and weighted grade points.
+    |
+    */
+    'retake_cgpa_policy' => env('RETAKE_CGPA_POLICY', 'replace_fail'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Examination & Continuous Assessment (CA) Weightings
     |--------------------------------------------------------------------------
     |

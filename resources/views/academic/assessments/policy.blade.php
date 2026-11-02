@@ -207,6 +207,24 @@
               @enderror
             </div>
 
+            <div class="mb-4">
+              <label for="retake_cgpa_policy" class="form-label fw-semibold">
+                Retake Cumulative GPA (CGPA) Policy
+              </label>
+              <select name="retake_cgpa_policy" id="retake_cgpa_policy" class="form-select @error('retake_cgpa_policy') is-invalid @enderror">
+                <option value="replace_fail" {{ old('retake_cgpa_policy', $retakeCgpaPolicy) === 'replace_fail' ? 'selected' : '' }}>
+                  Grade Replacement (NCHE Standard &bull; Best attempt replaces failed attempt in CGPA)
+                </option>
+                <option value="accumulate_all" {{ old('retake_cgpa_policy', $retakeCgpaPolicy) === 'accumulate_all' ? 'selected' : '' }}>
+                  Cumulative Accumulation (All attempts sum into CGPA divisor)
+                </option>
+              </select>
+              <small class="text-body-secondary">Under NCHE standard, when a student retakes a course, the better grade replaces the failed attempt in CGPA calculations while historical transcripts retain both term attempts.</small>
+              @error('retake_cgpa_policy')
+                <div class="invalid-feedback d-block">{{ $message }}</div>
+              @enderror
+            </div>
+
             <div class="d-grid">
               <button type="submit" id="save-policy-btn" class="btn btn-primary">
                 <i class="bi bi-save me-1"></i> Save Institutional Policy

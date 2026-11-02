@@ -149,21 +149,8 @@ class GradingEngineService
             ? round($weightedGradePoints / $creditUnitsRegistered, 2)
             : 0.00;
 
-        // Cumulative calculations across all past evaluated semesters
-        $priorPerformances = StudentSemesterPerformance::where('student_id', $student->id)
-            ->where('semester_id', '!=', $semester->id)
-            ->get();
-
-        $cumulativeCreditsRegistered = $creditUnitsRegistered + (float) $priorPerformances->sum('credit_units_registered');
-        $cumulativeCreditsEarned = $creditUnitsEarned + (float) $priorPerformances->sum('credit_units_earned');
-        $cumulativeWeightedPoints = $weightedGradePoints + (float) $priorPerformances->sum('weighted_grade_points');
-
-        $cgpa = $cumulativeCreditsRegistered > 0.0
-            ? round($cumulativeWeightedPoints / $cumulativeCreditsRegistered, 2)
-            : $gpa;
-
-        // Determine Academic Standing (Normal Progress vs. Probation)
-        $standing = $cgpa >= 2.00 ? 'Normal Progress' : 'Probation';
+        // Cumulative calculations evaluated up to this semester (applying institutional retake CGPA policy)
+        $cumulative = $this->computeCumulativeMetrics($student, $semester);
 
         $performance = StudentSemesterPerformance::updateOrCreate(
             [
@@ -176,18 +163,149 @@ class GradingEngineService
                 'credit_units_earned' => $creditUnitsEarned,
                 'weighted_grade_points' => $weightedGradePoints,
                 'gpa' => $gpa,
-                'cumulative_credit_units_registered' => $cumulativeCreditsRegistered,
-                'cumulative_credit_units_earned' => $cumulativeCreditsEarned,
-                'cumulative_weighted_grade_points' => $cumulativeWeightedPoints,
-                'cgpa' => $cgpa,
-                'academic_standing' => $standing,
+                'cumulative_credit_units_registered' => $cumulative['cumulative_credits_registered'],
+                'cumulative_credit_units_earned' => $cumulative['cumulative_credits_earned'],
+                'cumulative_weighted_grade_points' => $cumulative['cumulative_weighted_points'],
+                'cgpa' => $cumulative['cgpa'],
+                'academic_standing' => $cumulative['academic_standing'],
             ]
         );
 
         // Update student record's cached cumulative_gpa
-        $student->update(['cumulative_gpa' => $cgpa]);
+        $student->update(['cumulative_gpa' => $cumulative['cgpa']]);
 
         return $performance;
+    }
+
+    /**
+     * Compute cumulative academic performance metrics for a student up to a given semester.
+     *
+     * @return array{
+     *     cumulative_credits_registered: float,
+     *     cumulative_credits_earned: float,
+     *     cumulative_weighted_points: float,
+     *     cgpa: float,
+     *     academic_standing: string
+     * }
+     */
+    public function computeCumulativeMetrics(Student $student, ?Semester $upToSemester = null): array
+    {
+        $policy = config('academic.retake_cgpa_policy', 'replace_fail');
+
+        $marksQuery = StudentMark::where('student_id', $student->id)
+            ->whereNotNull('final_score')
+            ->whereHas('courseAssessmentSheet')
+            ->with(['courseAssessmentSheet.courseUnit', 'courseAssessmentSheet.semester.academicYear', 'registrationItem']);
+
+        if ($upToSemester) {
+            $upToYear = $upToSemester->academicYear;
+            $marksQuery->whereHas('courseAssessmentSheet.semester', function ($q) use ($upToSemester, $upToYear): void {
+                $q->whereHas('academicYear', function ($yq) use ($upToYear): void {
+                    if ($upToYear) {
+                        $yq->where('start_date', '<', $upToYear->start_date);
+                    }
+                })->orWhere(function ($sq) use ($upToSemester): void {
+                    $sq->where('academic_year_id', $upToSemester->academic_year_id)
+                        ->where('semester_number', '<=', $upToSemester->semester_number);
+                });
+            });
+        }
+
+        $allMarks = $marksQuery->get()->filter(function ($mark): bool {
+            return ! ($mark->registrationItem && $mark->registrationItem->isDropped());
+        });
+
+        $cumulativeCreditsRegistered = 0.0;
+        $cumulativeCreditsEarned = 0.0;
+        $cumulativeWeightedPoints = 0.0;
+
+        if ($policy === 'replace_fail') {
+            // Group by course unit. For each course unit, use the best attempt (highest GP, then highest score).
+            $grouped = $allMarks->groupBy(function ($mark) {
+                return $mark->courseAssessmentSheet?->course_unit_id
+                    ?? $mark->registrationItem?->course_unit_id;
+            });
+
+            foreach ($grouped as $courseMarks) {
+                /** @var StudentMark $bestAttempt */
+                $bestAttempt = $courseMarks->sortByDesc(function ($m): array {
+                    return [
+                        (float) ($m->grade_point ?? 0.0),
+                        (float) ($m->final_score ?? 0.0),
+                    ];
+                })->first();
+
+                $credits = (float) ($bestAttempt->registrationItem?->credit_units
+                    ?? $bestAttempt->courseAssessmentSheet?->courseUnit?->credit_units
+                    ?? 0.0);
+
+                $cumulativeCreditsRegistered += $credits;
+                $cumulativeWeightedPoints += ($credits * (float) $bestAttempt->grade_point);
+
+                if ((bool) $bestAttempt->is_passed) {
+                    $cumulativeCreditsEarned += $credits;
+                }
+            }
+        } else {
+            // accumulate_all: sum every attempt across all semesters
+            foreach ($allMarks as $mark) {
+                $credits = (float) ($mark->registrationItem?->credit_units
+                    ?? $mark->courseAssessmentSheet?->courseUnit?->credit_units
+                    ?? 0.0);
+
+                $cumulativeCreditsRegistered += $credits;
+                $cumulativeWeightedPoints += ($credits * (float) $mark->grade_point);
+
+                if ((bool) $mark->is_passed) {
+                    $cumulativeCreditsEarned += $credits;
+                }
+            }
+        }
+
+        // Incorporate any standalone / legacy StudentSemesterPerformance records for terms without detailed StudentMark rows
+        $semestersWithMarks = $allMarks->map(function ($m) {
+            return $m->courseAssessmentSheet?->semester_id;
+        })->filter()->unique()->toArray();
+
+        $perfQuery = StudentSemesterPerformance::where('student_id', $student->id);
+        if (! empty($semestersWithMarks)) {
+            $perfQuery->whereNotIn('semester_id', $semestersWithMarks);
+        }
+
+        if ($upToSemester) {
+            $upToYear = $upToSemester->academicYear;
+            $perfQuery->whereHas('semester', function ($q) use ($upToSemester, $upToYear): void {
+                $q->whereHas('academicYear', function ($yq) use ($upToYear): void {
+                    if ($upToYear) {
+                        $yq->where('start_date', '<', $upToYear->start_date);
+                    }
+                })->orWhere(function ($sq) use ($upToSemester): void {
+                    $sq->where('academic_year_id', $upToSemester->academic_year_id)
+                        ->where('semester_number', '<=', $upToSemester->semester_number);
+                });
+            });
+        }
+
+        $standalonePerformances = $perfQuery->get();
+        foreach ($standalonePerformances as $perf) {
+            $cumulativeCreditsRegistered += (float) $perf->credit_units_registered;
+            $cumulativeCreditsEarned += (float) $perf->credit_units_earned;
+            $cumulativeWeightedPoints += (float) $perf->weighted_grade_points;
+        }
+
+        $cgpa = $cumulativeCreditsRegistered > 0.0
+            ? round($cumulativeWeightedPoints / $cumulativeCreditsRegistered, 2)
+            : 0.00;
+
+        $standing = $cgpa >= 2.00 ? 'Normal Progress' : 'Probation';
+
+        return [
+            'cumulative_credits_registered' => $cumulativeCreditsRegistered,
+            'cumulative_credits_earned' => $cumulativeCreditsEarned,
+            'cumulative_weighted_points' => $cumulativeWeightedPoints,
+            'cgpa' => $cgpa,
+            'academic_standing' => $standing,
+        ];
     }
 
     /**
@@ -195,23 +313,10 @@ class GradingEngineService
      */
     public function calculateCgpa(Student $student): float
     {
-        $performances = StudentSemesterPerformance::where('student_id', $student->id)->get();
+        $metrics = $this->computeCumulativeMetrics($student);
+        $student->update(['cumulative_gpa' => $metrics['cgpa']]);
 
-        if ($performances->isEmpty()) {
-            return (float) ($student->cumulative_gpa ?? 0.00);
-        }
-
-        $totalRegistered = (float) $performances->sum('credit_units_registered');
-        $totalPoints = (float) $performances->sum('weighted_grade_points');
-
-        if ($totalRegistered <= 0.0) {
-            return 0.00;
-        }
-
-        $cgpa = round($totalPoints / $totalRegistered, 2);
-        $student->update(['cumulative_gpa' => $cgpa]);
-
-        return $cgpa;
+        return $metrics['cgpa'];
     }
 
     /**

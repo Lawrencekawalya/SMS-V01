@@ -428,10 +428,47 @@ class CourseRegistrationController extends Controller
             ->get()
             ->keyBy('course_unit_id');
 
+        // Identify retake course IDs (courses previously attempted or registered in prior sessions and not passed)
+        $passedCourseIds = StudentMark::where('student_id', $student->id)
+            ->where('is_passed', true)
+            ->whereNotNull('final_score')
+            ->whereHas('courseAssessmentSheet')
+            ->with('courseAssessmentSheet')
+            ->get()
+            ->pluck('courseAssessmentSheet.course_unit_id')
+            ->unique()
+            ->toArray();
+
+        $attemptedCourseIds = StudentMark::where('student_id', $student->id)
+            ->whereNotNull('final_score')
+            ->whereHas('courseAssessmentSheet')
+            ->with('courseAssessmentSheet')
+            ->get()
+            ->pluck('courseAssessmentSheet.course_unit_id')
+            ->unique()
+            ->toArray();
+
+        $priorRegisteredCourseIds = CourseRegistrationItem::whereHas('courseRegistration', function ($q) use ($student, $registration): void {
+            $q->where('student_id', $student->id)
+                ->where('status', 'approved')
+                ->where('semester_id', '!=', $registration->semester_id);
+        })
+            ->where('status', '!=', 'dropped')
+            ->pluck('course_unit_id')
+            ->unique()
+            ->toArray();
+
+        $allPriorUnpassedCourseIds = array_diff(
+            array_unique(array_merge($attemptedCourseIds, $priorRegisteredCourseIds)),
+            $passedCourseIds
+        );
+
         // 3. Update existing kept items or create newly selected items
         foreach ($selectedCourses as $courseId => $course) {
             $curriculumCourse = $curriculumCourses->get($courseId);
-            $courseType = $curriculumCourse ? $curriculumCourse->course_type : 'Elective';
+            $defaultCourseType = $curriculumCourse ? $curriculumCourse->course_type : 'Elective';
+            $isRetake = in_array($courseId, $allPriorUnpassedCourseIds, true);
+            $courseType = $isRetake ? 'Retake' : $defaultCourseType;
 
             if ($existingItems->has($courseId)) {
                 $existingItems->get($courseId)->update([

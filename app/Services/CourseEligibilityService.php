@@ -29,9 +29,11 @@ class CourseEligibilityService
      *     stage: array{study_year: int, semester_number: int, curriculum_version: ?string, programme_code: string},
      *     mandatory_core_courses: Collection<int, CourseUnit>,
      *     available_electives: Collection<int, CourseUnit>,
+     *     retake_courses: Collection<int, CourseUnit>,
      *     blocked_courses: Collection<int, array{course: CourseUnit, reason: string, stage_string: string}>,
      *     summary: array{
      *         core_credits: float,
+     *         retake_credits: float,
      *         min_credits: float,
      *         max_credits: float,
      *         is_student_active: bool,
@@ -48,8 +50,45 @@ class CourseEligibilityService
         $studyYear = $student->current_study_year;
         $semesterNumber = $student->current_semester;
 
-        // Retrieve course units previously completed or enrolled in approved registrations
-        $completedRegistrationCourseIds = CourseRegistrationItem::whereHas('courseRegistration', function ($q) use ($student, $semester) {
+        // 1. Retrieve all course units officially passed in published/recorded marks
+        $passedCourseUnitIds = StudentMark::where('student_id', $student->id)
+            ->where('is_passed', true)
+            ->whereNotNull('final_score')
+            ->whereHas('courseAssessmentSheet')
+            ->with('courseAssessmentSheet')
+            ->get()
+            ->pluck('courseAssessmentSheet.course_unit_id')
+            ->unique()
+            ->toArray();
+
+        // 2. Identify all unpassed/failed courses eligible for Retake / Carryover
+        $attemptedMarks = StudentMark::where('student_id', $student->id)
+            ->whereNotNull('final_score')
+            ->whereHas('courseAssessmentSheet')
+            ->with(['courseAssessmentSheet.courseUnit.department', 'courseAssessmentSheet.semester'])
+            ->get()
+            ->groupBy(fn ($m) => $m->courseAssessmentSheet?->course_unit_id);
+
+        $retakeCourses = collect();
+        foreach ($attemptedMarks as $cuId => $marksGroup) {
+            if (! $cuId || in_array($cuId, $passedCourseUnitIds, true)) {
+                continue; // Passed courses are completed and not retakes
+            }
+
+            $latestMark = $marksGroup->sortByDesc(fn ($m) => $m->created_at)->first();
+            $courseUnit = $latestMark->courseAssessmentSheet?->courseUnit;
+
+            if ($courseUnit && $courseUnit->status === 'active') {
+                $courseUnit->retake_attempts_count = $marksGroup->count();
+                $courseUnit->last_grade_letter = $latestMark->grade_letter ?? 'F';
+                $courseUnit->last_final_score = $latestMark->final_score;
+                $courseUnit->is_retake = true;
+                $retakeCourses->push($courseUnit);
+            }
+        }
+
+        // Also check approved past registrations that were never passed/graded
+        $unpassedPriorRegistrations = CourseRegistrationItem::whereHas('courseRegistration', function ($q) use ($student, $semester): void {
             $q->where('student_id', $student->id)
                 ->where('status', 'approved');
             if ($semester) {
@@ -57,19 +96,24 @@ class CourseEligibilityService
             }
         })
             ->where('status', '!=', 'dropped')
-            ->pluck('course_unit_id')
-            ->toArray();
+            ->whereNotIn('course_unit_id', $passedCourseUnitIds)
+            ->whereNotIn('course_unit_id', $retakeCourses->pluck('id')->toArray())
+            ->with('courseUnit.department')
+            ->get();
 
-        // Also retrieve any course units officially passed in published marks
-        $passedCourseUnitIds = StudentMark::where('student_id', $student->id)
-            ->where('is_passed', true)
-            ->whereHas('courseAssessmentSheet')
-            ->with('courseAssessmentSheet')
-            ->get()
-            ->pluck('courseAssessmentSheet.course_unit_id')
-            ->toArray();
+        foreach ($unpassedPriorRegistrations as $unpassedItem) {
+            $cu = $unpassedItem->courseUnit;
+            if ($cu && $cu->status === 'active') {
+                $cu->retake_attempts_count = 1;
+                $cu->last_grade_letter = 'INC';
+                $cu->last_final_score = null;
+                $cu->is_retake = true;
+                $retakeCourses->push($cu);
+            }
+        }
 
-        $completedCourseUnitIds = array_unique(array_merge($completedRegistrationCourseIds, $passedCourseUnitIds));
+        // Only truly passed courses count as completed for skipping and satisfying prerequisites
+        $completedCourseUnitIds = $passedCourseUnitIds;
 
         // Check if student already has a registration slip for this semester
         $existingRegistration = null;
@@ -89,9 +133,16 @@ class CourseEligibilityService
                 ->where('curriculum_id', $curriculum->id)
                 ->get();
 
+            $retakeCourseIds = $retakeCourses->pluck('id')->toArray();
+
             foreach ($curriculumCourses as $cc) {
                 $course = $cc->courseUnit;
                 if (! $course || $course->status !== 'active') {
+                    continue;
+                }
+
+                // If this course is an uncleared retake, it belongs to the Retake section
+                if (in_array($course->id, $retakeCourseIds, true)) {
                     continue;
                 }
 
@@ -142,7 +193,7 @@ class CourseEligibilityService
                     }
                 }
 
-                // 3. Skip already completed courses from prior approved registrations
+                // 3. Skip already completed (passed) courses from prior approved registrations
                 if (in_array($course->id, $completedCourseUnitIds, true)) {
                     continue;
                 }
@@ -174,9 +225,11 @@ class CourseEligibilityService
             ],
             'mandatory_core_courses' => $mandatoryCoreCourses,
             'available_electives' => $availableElectives,
+            'retake_courses' => $retakeCourses,
             'blocked_courses' => $blockedCourses,
             'summary' => [
                 'core_credits' => $coreCredits,
+                'retake_credits' => (float) $retakeCourses->sum('credit_units'),
                 'min_credits' => $stageMin,
                 'max_credits' => $stageMax,
                 'is_student_active' => $student->status === 'active',

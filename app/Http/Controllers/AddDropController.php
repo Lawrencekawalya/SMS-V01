@@ -7,6 +7,8 @@ use App\Http\Requests\DropCourseRequest;
 use App\Models\CourseRegistration;
 use App\Models\CourseRegistrationItem;
 use App\Models\CourseUnit;
+use App\Models\CurriculumCourse;
+use App\Models\StudentMark;
 use App\Models\User;
 use App\Services\CourseEligibilityService;
 use Illuminate\Http\RedirectResponse;
@@ -233,9 +235,32 @@ class AddDropController extends Controller
         $requiresApproval = (bool) config('academic.require_registration_approval', false);
         $itemStatus = $requiresApproval ? 'registered' : 'approved';
 
+        $curriculumCourse = CurriculumCourse::where('curriculum_id', $registration->student->curriculum_id)
+            ->where('course_unit_id', $courseUnit->id)
+            ->first();
+
+        $isPassed = StudentMark::where('student_id', $registration->student_id)
+            ->where('is_passed', true)
+            ->whereNotNull('final_score')
+            ->whereHas('courseAssessmentSheet', fn ($q) => $q->where('course_unit_id', $courseUnit->id))
+            ->exists();
+
+        $wasAttemptedOrPriorRegistered = StudentMark::where('student_id', $registration->student_id)
+            ->whereNotNull('final_score')
+            ->whereHas('courseAssessmentSheet', fn ($q) => $q->where('course_unit_id', $courseUnit->id))
+            ->exists() || CourseRegistrationItem::whereHas('courseRegistration', function ($q) use ($registration): void {
+                $q->where('student_id', $registration->student_id)
+                    ->where('status', 'approved')
+                    ->where('semester_id', '!=', $registration->semester_id);
+            })->where('course_unit_id', $courseUnit->id)->where('status', '!=', 'dropped')->exists();
+
+        $isRetake = $wasAttemptedOrPriorRegistered && ! $isPassed;
+        $courseType = $isRetake ? 'Retake' : ($curriculumCourse ? $curriculumCourse->course_type : 'Elective');
+
         // Create or reactivate item
         if ($existingItem) {
             $existingItem->update([
+                'course_type' => $courseType,
                 'status' => $itemStatus,
                 'credit_units' => $courseUnit->credit_units,
                 'dropped_at' => null,
@@ -244,7 +269,7 @@ class AddDropController extends Controller
         } else {
             $registration->items()->create([
                 'course_unit_id' => $courseUnit->id,
-                'course_type' => 'Elective',
+                'course_type' => $courseType,
                 'credit_units' => $courseUnit->credit_units,
                 'status' => $itemStatus,
             ]);

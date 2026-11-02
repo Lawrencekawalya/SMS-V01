@@ -223,6 +223,76 @@
       </div>
     </div>
 
+    @if ($eligibility['retake_courses']->isNotEmpty())
+      <!-- Retake / Carryover Courses Card -->
+      <div class="card card-outline card-warning mb-4 shadow-sm">
+        <div class="card-header">
+          <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 w-100">
+            <h3 class="card-title mb-0">
+              <i class="bi bi-arrow-repeat me-1 text-warning"></i> Retake / Carryover Courses (Failed or Uncleared Units)
+            </h3>
+            <span class="badge text-bg-warning text-dark">
+              {{ $eligibility['retake_courses']->count() }} Units Available for Retake
+            </span>
+          </div>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover table-striped align-middle mb-0">
+              <thead class="bg-body-secondary border-bottom">
+                <tr>
+                  <th style="width: 40px;" class="text-center">Select</th>
+                  <th style="width: 50px;">#</th>
+                  <th>Course Code</th>
+                  <th>Course Title</th>
+                  <th>Teaching Department</th>
+                  <th class="text-center">Credit Units</th>
+                  <th>Previous Result</th>
+                  <th>Type</th>
+                </tr>
+              </thead>
+              <tbody>
+                @foreach ($eligibility['retake_courses'] as $course)
+                  <tr>
+                    <td class="text-center">
+                      <input type="checkbox"
+                             class="form-check-input elective-checkbox"
+                             id="retake-{{ $course->id }}"
+                             data-credits="{{ (float) $course->credit_units }}"
+                             data-code="{{ $course->code }}">
+                    </td>
+                    <td>{{ $loop->iteration }}</td>
+                    <td>
+                      <label for="retake-{{ $course->id }}" class="fw-bold font-monospace text-warning-emphasis mb-0 cursor-pointer">
+                        {{ $course->code }}
+                      </label>
+                    </td>
+                    <td>
+                      <label for="retake-{{ $course->id }}" class="fw-semibold text-body-emphasis mb-0 cursor-pointer">
+                        {{ $course->name }}
+                      </label>
+                    </td>
+                    <td>{{ $course->department->name ?? '' }}</td>
+                    <td class="text-center fw-bold">{{ number_format($course->credit_units, 1) }} CU</td>
+                    <td>
+                      <span class="badge bg-danger-subtle text-danger border border-danger-subtle">
+                        Grade {{ $course->last_grade_letter ?? 'F' }} {{ $course->last_final_score !== null ? '(' . number_format($course->last_final_score, 0) . '%)' : '' }}
+                      </span>
+                    </td>
+                    <td>
+                      <span class="badge text-bg-warning text-dark">
+                        <i class="bi bi-arrow-repeat me-1"></i> Retake
+                      </span>
+                    </td>
+                  </tr>
+                @endforeach
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    @endif
+
     <!-- Available Electives Pool Card -->
     <div class="card card-outline card-info mb-4 shadow-sm">
       <div class="card-header">

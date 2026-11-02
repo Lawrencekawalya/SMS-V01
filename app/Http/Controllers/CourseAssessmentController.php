@@ -37,6 +37,7 @@ class CourseAssessmentController extends Controller
         $caWeight = (float) config('academic.assessment_ca_weight', 40.0);
         $examWeight = (float) config('academic.assessment_exam_weight', 60.0);
         $passMark = (float) config('academic.assessment_pass_mark', 50.0);
+        $retakeCgpaPolicy = config('academic.retake_cgpa_policy', 'replace_fail');
 
         // Ensure database records exist; fallback to defaults if empty
         if (GradingScaleTier::count() === 0) {
@@ -62,6 +63,7 @@ class CourseAssessmentController extends Controller
             'caWeight',
             'examWeight',
             'passMark',
+            'retakeCgpaPolicy',
             'gradingScale',
             'degreeClassifications',
             'diplomaClassifications',
@@ -78,6 +80,7 @@ class CourseAssessmentController extends Controller
         $ca = (float) $request->input('ca_weight');
         $exam = (float) $request->input('exam_weight');
         $pass = (float) $request->input('pass_mark');
+        $retakePolicy = $request->input('retake_cgpa_policy', config('academic.retake_cgpa_policy', 'replace_fail'));
 
         // Update environment file if writable and not running automated tests
         if (! app()->environment('testing')) {
@@ -89,6 +92,7 @@ class CourseAssessmentController extends Controller
                     'ASSESSMENT_CA_WEIGHT' => $ca,
                     'ASSESSMENT_EXAM_WEIGHT' => $exam,
                     'ASSESSMENT_PASS_MARK' => $pass,
+                    'RETAKE_CGPA_POLICY' => $retakePolicy,
                 ];
 
                 foreach ($replacements as $key => $value) {
@@ -107,6 +111,7 @@ class CourseAssessmentController extends Controller
             'academic.assessment_ca_weight' => $ca,
             'academic.assessment_exam_weight' => $exam,
             'academic.assessment_pass_mark' => $pass,
+            'academic.retake_cgpa_policy' => $retakePolicy,
         ]);
 
         return redirect()
