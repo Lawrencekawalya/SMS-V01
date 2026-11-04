@@ -396,4 +396,164 @@ class GradeModerationWorkflowTest extends TestCase
         $response->assertRedirect(route('assessment.show', $this->sheet));
         $response->assertSessionHas('warning');
     }
+
+    public function test_senate_can_reopen_published_mark_sheet_for_grade_amendment(): void
+    {
+        $this->sheet->update([
+            'status' => 'published',
+            'published_at' => now(),
+            'published_by_id' => $this->hodUser->id,
+        ]);
+
+        $this->actingAs($this->hodUser);
+
+        $response = $this->post(route('moderation.reopen', $this->sheet), [
+            'senate_approval_reference' => 'SEN/MIN/2026/04/12',
+            'reopen_justification' => 'Student Bob appeal #AP-2026-09 upheld: clerical addition error on Section B (+15 marks approved by Faculty Board).',
+            'confirm_authorization' => '1',
+        ]);
+
+        $response->assertRedirect(route('moderation.show', $this->sheet));
+        $response->assertSessionHas('success');
+
+        $this->sheet->refresh();
+        $this->assertEquals('reopened_for_amendment', $this->sheet->status);
+        $this->assertEquals('SEN/MIN/2026/04/12', $this->sheet->senate_approval_reference);
+        $this->assertStringContainsString('clerical addition error', $this->sheet->reopen_justification);
+        $this->assertEquals(1, $this->sheet->revision_cycle);
+        $this->assertNotNull($this->sheet->reopened_at);
+        $this->assertEquals($this->hodUser->id, $this->sheet->reopened_by_id);
+        $this->assertTrue($this->sheet->canBeEdited());
+    }
+
+    public function test_reopening_requires_mandatory_senate_minute_reference_and_justification(): void
+    {
+        $this->sheet->update([
+            'status' => 'published',
+            'published_at' => now(),
+        ]);
+
+        $this->actingAs($this->hodUser);
+
+        $response = $this->post(route('moderation.reopen', $this->sheet), [
+            'senate_approval_reference' => '',
+            'reopen_justification' => 'Too short',
+            // confirm_authorization missing
+        ]);
+
+        $response->assertSessionHasErrors(['senate_approval_reference', 'reopen_justification', 'confirm_authorization']);
+
+        $this->sheet->refresh();
+        $this->assertEquals('published', $this->sheet->status);
+    }
+
+    public function test_lecturer_can_edit_reopened_sheet_and_score_adjustments_are_logged_in_audit_trail(): void
+    {
+        $this->sheet->update([
+            'status' => 'reopened_for_amendment',
+            'senate_approval_reference' => 'SEN/MIN/2026/04/12',
+            'reopen_justification' => 'Student Bob grade revision approved by Senate.',
+            'revision_cycle' => 1,
+            'reopened_at' => now(),
+            'reopened_by_id' => $this->hodUser->id,
+        ]);
+
+        $this->actingAs($this->lecturer);
+
+        // Lecturer can access edit page
+        $this->get(route('assessment.edit', $this->sheet))
+            ->assertOk()
+            ->assertViewIs('academic.assessments.entry');
+
+        $bobMark = StudentMark::where('course_assessment_sheet_id', $this->sheet->id)
+            ->where('student_id', $this->student2->id)
+            ->firstOrFail();
+
+        $aliceMark = StudentMark::where('course_assessment_sheet_id', $this->sheet->id)
+            ->where('student_id', $this->student1->id)
+            ->firstOrFail();
+
+        // Update Bob's exam score from 24.0 to 39.0 (making total 18 + 39 = 57, Grade D+, Pass)
+        $updatePayload = [
+            'marks' => [
+                [
+                    'student_mark_id' => $aliceMark->id,
+                    'ca_score' => 35.0,
+                    'exam_score' => 50.0,
+                    'exam_status' => 'present',
+                    'lecturer_remarks' => null,
+                ],
+                [
+                    'student_mark_id' => $bobMark->id,
+                    'ca_score' => 18.0,
+                    'exam_score' => 39.0,
+                    'exam_status' => 'present',
+                    'lecturer_remarks' => 'Section B score adjusted per Senate Minute',
+                ],
+            ],
+        ];
+
+        $response = $this->put(route('assessment.update', $this->sheet), $updatePayload);
+        $response->assertRedirect(route('assessment.edit', $this->sheet));
+
+        $bobMark->refresh();
+        $this->assertEquals(57.0, (float) $bobMark->final_score);
+        $this->assertEquals('D+', $bobMark->grade_letter);
+        $this->assertEquals(2.5, (float) $bobMark->grade_point);
+        $this->assertTrue((bool) $bobMark->is_passed);
+        $this->assertFalse((bool) $bobMark->is_retake);
+
+        // Verify permanent grade audit log
+        $this->assertDatabaseHas('grade_audit_logs', [
+            'student_mark_id' => $bobMark->id,
+            'score_type' => 'exam',
+            'old_score' => 24.0,
+            'new_score' => 39.0,
+        ]);
+    }
+
+    public function test_reopened_sheet_can_be_republished_and_recalculates_gpa_for_amended_student(): void
+    {
+        $this->sheet->update([
+            'status' => 'reopened_for_amendment',
+            'senate_approval_reference' => 'SEN/MIN/2026/04/12',
+            'reopen_justification' => 'Bob grade revision approved by Senate.',
+            'revision_cycle' => 1,
+        ]);
+
+        // Alice is 85% (5.0 GP), Bob's score has been amended to 57% (2.5 GP)
+        $bobMark = StudentMark::where('course_assessment_sheet_id', $this->sheet->id)
+            ->where('student_id', $this->student2->id)
+            ->firstOrFail();
+
+        $bobMark->update([
+            'exam_score' => 39.0,
+            'final_score' => 57.0,
+            'grade_letter' => 'D+',
+            'grade_point' => 2.5,
+            'is_passed' => true,
+            'is_retake' => false,
+        ]);
+
+        $this->actingAs($this->hodUser);
+
+        // Senate republishes
+        $response = $this->post(route('moderation.publish', $this->sheet));
+        $response->assertRedirect(route('moderation.show', $this->sheet));
+
+        $this->sheet->refresh();
+        $this->assertEquals('published', $this->sheet->status);
+
+        // Verify Bob's GPA was recalculated and is now 2.50 with Normal Progress (passed 4 CU)
+        $bobPerformance = StudentSemesterPerformance::where('student_id', $this->student2->id)
+            ->where('semester_id', $this->semester->id)
+            ->first();
+
+        $this->assertNotNull($bobPerformance);
+        $this->assertEquals(4.0, (float) $bobPerformance->credit_units_registered);
+        $this->assertEquals(4.0, (float) $bobPerformance->credit_units_earned);
+        $this->assertEquals(2.50, (float) $bobPerformance->gpa);
+        $this->assertEquals(2.50, (float) $bobPerformance->cgpa);
+        $this->assertEquals('Normal Progress', $bobPerformance->academic_standing);
+    }
 }

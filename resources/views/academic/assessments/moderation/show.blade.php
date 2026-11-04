@@ -79,10 +79,23 @@
             <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#endorseModal">
               <i class="bi bi-shield-check me-1"></i> Endorse Mark Sheet
             </button>
+          @elseif ($sheet->status === 'reopened_for_amendment')
+            <a href="{{ route('assessment.edit', $sheet) }}" class="btn btn-primary btn-sm">
+              <i class="bi bi-pencil-square me-1"></i> Amend Marks
+            </a>
+            <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#endorseModal">
+              <i class="bi bi-shield-check me-1"></i> Re-endorse Sheet
+            </button>
+            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#publishModal">
+              <i class="bi bi-patch-check-fill me-1"></i> Senate Re-publish
+            </button>
           @elseif ($sheet->status === 'published')
-            <span class="badge text-bg-success px-3 py-2 fs-7">
+            <span class="badge text-bg-success px-3 py-2 fs-7 me-1">
               <i class="bi bi-lock-fill me-1"></i> Officially Published &amp; Locked
             </span>
+            <button type="button" class="btn btn-outline-warning btn-sm shadow-sm" data-bs-toggle="modal" data-bs-target="#reopenModal">
+              <i class="bi bi-unlock-fill me-1"></i> Reopen for Senate Amendment
+            </button>
           @endif
 
           <a href="{{ route('moderation.list') }}" class="btn btn-outline-secondary btn-sm">
@@ -154,6 +167,28 @@
       </div>
     </div>
   </div>
+
+  {{-- Senate Grade Amendment Callout --}}
+  @if ($sheet->senate_approval_reference)
+    <div class="callout callout-warning shadow-sm mb-4">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-1">
+        <h6 class="fw-bold mb-0 text-warning-emphasis">
+          <i class="bi bi-shield-exclamation text-warning me-2"></i>
+          Senate Grade Amendment (Revision Cycle #{{ $sheet->revision_cycle }})
+        </h6>
+        <span class="badge text-bg-warning text-dark font-monospace">
+          Minute: {{ $sheet->senate_approval_reference }}
+        </span>
+      </div>
+      <p class="mb-1 text-body">
+        <strong>Justification:</strong> {{ $sheet->reopen_justification }}
+      </p>
+      <div class="small text-muted">
+        Authorized on {{ $sheet->reopened_at?->format('M d, Y H:i') }}
+        @if ($sheet->reopenedBy) by <strong>{{ $sheet->reopenedBy->name }}</strong> @endif
+      </div>
+    </div>
+  @endif
 
   {{-- Moderation Remarks Callout --}}
   @if ($sheet->moderation_remarks)
@@ -586,6 +621,89 @@
             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
             <button type="submit" class="btn btn-primary">
               <i class="bi bi-patch-check-fill me-1"></i> Officially Publish Results
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action Modal: Reopen for Senate Grade Amendment -->
+  <div class="modal fade" id="reopenModal" tabindex="-1" aria-labelledby="reopenModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form action="{{ route('moderation.reopen', $sheet) }}" method="POST">
+          @csrf
+          <div class="modal-header bg-warning text-dark">
+            <h5 class="modal-title fw-bold" id="reopenModalLabel">
+              <i class="bi bi-unlock-fill me-2"></i> Reopen Mark Sheet for Senate Amendment
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="alert alert-warning small mb-3">
+              <div class="d-flex">
+                <i class="bi bi-shield-lock-fill fs-4 me-2"></i>
+                <div>
+                  <strong>Academic Governance Safeguard:</strong>
+                  Reopening published results unlocks student marks for official grade revisions (e.g. following an approved student appeal or remarked script).
+                  This action requires statutory Senate Committee authorization and will be permanently tracked in the grade audit trail.
+                </div>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="senate_approval_reference" class="form-label fw-semibold">
+                Senate Approval Reference / Minute Number <span class="text-danger">*</span>
+              </label>
+              <input
+                type="text"
+                name="senate_approval_reference"
+                id="senate_approval_reference"
+                class="form-control font-monospace @error('senate_approval_reference') is-invalid @enderror"
+                placeholder="e.g. SEN/MIN/2026/04/12 or FAC/EXAM/REV/2026-08"
+                value="{{ old('senate_approval_reference') }}"
+                required
+                minlength="3"
+                maxlength="100"
+              >
+              <div class="form-text small">Enter the formal Senate or Academic Board minute approving this grade alteration.</div>
+              @error('senate_approval_reference')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+
+            <div class="mb-3">
+              <label for="reopen_justification" class="form-label fw-semibold">
+                Mandatory Academic Justification &amp; Appeal Summary <span class="text-danger">*</span>
+              </label>
+              <textarea
+                name="reopen_justification"
+                id="reopen_justification"
+                rows="3"
+                class="form-control @error('reopen_justification') is-invalid @enderror"
+                required
+                minlength="10"
+                maxlength="1000"
+                placeholder="Detail the grounds for grade adjustment (e.g., Student appeal #AP-4091 upheld: clerical addition error on Section B Question 4, +9 marks approved)..."
+              >{{ old('reopen_justification') }}</textarea>
+              <div class="form-text small">Minimum 10 characters required. Maximum 1000 characters.</div>
+              @error('reopen_justification')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+
+            <div class="form-check p-3 bg-body-secondary rounded border">
+              <input class="form-check-input" type="checkbox" name="confirm_authorization" id="confirm_reopen_auth" value="1" required>
+              <label class="form-check-label small fw-semibold" for="confirm_reopen_auth">
+                I certify that this reopening is officially sanctioned by the University Senate / Academic Registrar and all amendments adhere to NCHE academic standards.
+              </label>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-warning text-dark fw-bold">
+              <i class="bi bi-unlock-fill me-1"></i> Authorize &amp; Reopen Sheet
             </button>
           </div>
         </form>

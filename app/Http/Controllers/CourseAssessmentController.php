@@ -366,6 +366,7 @@ class CourseAssessmentController extends Controller
             'moderated' => CourseAssessmentSheet::where('status', 'department_moderated')->count(),
             'published' => CourseAssessmentSheet::where('status', 'published')->count(),
             'returned' => CourseAssessmentSheet::where('status', 'returned_for_revision')->count(),
+            'reopened' => CourseAssessmentSheet::where('status', 'reopened_for_amendment')->count(),
             'total_graded_marks' => StudentMark::whereNotNull('final_score')->count(),
         ];
 
@@ -410,7 +411,7 @@ class CourseAssessmentController extends Controller
      */
     public function edit(CourseAssessmentSheet $sheet): View|RedirectResponse
     {
-        if (! in_array($sheet->status, ['draft', 'returned_for_revision'], true)) {
+        if (! $sheet->canBeEdited()) {
             return redirect()
                 ->route('assessment.show', $sheet)
                 ->with('warning', "Mark sheet for {$sheet->courseUnit->code} is currently '{$sheet->status_label}' and is locked against modifications.");
@@ -463,7 +464,7 @@ class CourseAssessmentController extends Controller
      */
     public function update(SubmitMarksRequest $request, CourseAssessmentSheet $sheet): RedirectResponse
     {
-        if (! in_array($sheet->status, ['draft', 'returned_for_revision'], true)) {
+        if (! $sheet->canBeEdited()) {
             return redirect()
                 ->route('assessment.show', $sheet)
                 ->with('error', "Mark sheet cannot be updated because it is currently '{$sheet->status_label}'.");
@@ -472,6 +473,10 @@ class CourseAssessmentController extends Controller
         DB::transaction(function () use ($request, $sheet) {
             $user = auth()->user() ?? User::first();
             $marksData = $request->input('marks', []);
+
+            $auditPrefix = $sheet->isReopenedForAmendment() && $sheet->senate_approval_reference
+                ? "[Senate Min: {$sheet->senate_approval_reference}] "
+                : '';
 
             foreach ($marksData as $item) {
                 /** @var StudentMark $mark */
@@ -535,10 +540,12 @@ class CourseAssessmentController extends Controller
                     // Audit logs if scores were changed from previous recorded final score
                     if ($oldFinal !== null && $user && ($oldCa !== $computed['ca_score'] || $oldExam !== $computed['exam_score'])) {
                         if ($oldCa !== null && $oldCa !== $computed['ca_score']) {
-                            $this->gradingEngine->recordGradeAudit($mark, $user, 'ca', $oldCa, $computed['ca_score'], $remarks ?? 'Coursework score revised by instructor.');
+                            $caReason = $auditPrefix.($remarks ?? 'Coursework score revised upon academic review.');
+                            $this->gradingEngine->recordGradeAudit($mark, $user, 'ca', $oldCa, $computed['ca_score'], $caReason);
                         }
                         if ($oldExam !== null && $oldExam !== $computed['exam_score']) {
-                            $this->gradingEngine->recordGradeAudit($mark, $user, 'exam', $oldExam, $computed['exam_score'], $remarks ?? 'Examination score revised by instructor.');
+                            $examReason = $auditPrefix.($remarks ?? 'Examination score revised upon academic review.');
+                            $this->gradingEngine->recordGradeAudit($mark, $user, 'exam', $oldExam, $computed['exam_score'], $examReason);
                         }
                     }
                 } else {
@@ -580,10 +587,10 @@ class CourseAssessmentController extends Controller
      */
     public function submitToHod(CourseAssessmentSheet $sheet): RedirectResponse
     {
-        if (! in_array($sheet->status, ['draft', 'returned_for_revision'], true)) {
+        if (! in_array($sheet->status, ['draft', 'returned_for_revision', 'reopened_for_amendment'], true)) {
             return redirect()
                 ->route('assessment.show', $sheet)
-                ->with('warning', "Only draft or returned mark sheets can be submitted to the HoD. Current status: {$sheet->status_label}.");
+                ->with('warning', "Only draft, returned, or amendment mark sheets can be submitted to the HoD. Current status: {$sheet->status_label}.");
         }
 
         $sheet->update([

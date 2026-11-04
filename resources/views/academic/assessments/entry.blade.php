@@ -39,6 +39,26 @@
     </div>
   @endif
 
+  @if ($sheet->isReopenedForAmendment())
+    <div class="callout callout-warning shadow-sm mb-4 border-start border-4 border-warning bg-warning-subtle p-3 rounded">
+      <div class="d-flex align-items-start">
+        <i class="bi bi-shield-exclamation text-warning-emphasis fs-3 me-3"></i>
+        <div>
+          <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+            <h5 class="fw-bold text-warning-emphasis mb-0">Senate Grade Amendment Mode (Revision Cycle #{{ $sheet->revision_cycle }})</h5>
+            <span class="badge text-bg-warning text-dark font-monospace">Minute: {{ $sheet->senate_approval_reference }}</span>
+          </div>
+          <p class="mb-1 text-dark"><strong>Authorized Justification:</strong> {{ $sheet->reopen_justification }}</p>
+          <small class="text-muted d-block">
+            Unlocked on {{ $sheet->reopened_at?->format('M d, Y H:i') }}
+            @if ($sheet->reopenedBy) by <strong>{{ $sheet->reopenedBy->name }}</strong> @endif.
+            All score alterations are automatically logged in the permanent <code>grade_audit_logs</code> table with this Senate minute reference.
+          </small>
+        </div>
+      </div>
+    </div>
+  @endif
+
   @if ($sheet->status === 'returned_for_revision' && $sheet->moderation_remarks)
     <div class="callout callout-danger shadow-sm mb-4 border-start border-4 border-danger bg-danger-subtle p-3 rounded">
       <div class="d-flex align-items-start">

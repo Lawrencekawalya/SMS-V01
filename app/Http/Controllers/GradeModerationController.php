@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ReopenMarkSheetRequest;
 use App\Http\Requests\ReturnMarkSheetRequest;
 use App\Models\AcademicYear;
 use App\Models\CourseAssessmentSheet;
@@ -78,6 +79,7 @@ class GradeModerationController extends Controller
             'moderated' => CourseAssessmentSheet::where('status', 'department_moderated')->count(),
             'published' => CourseAssessmentSheet::where('status', 'published')->count(),
             'returned' => CourseAssessmentSheet::where('status', 'returned_for_revision')->count(),
+            'reopened' => CourseAssessmentSheet::where('status', 'reopened_for_amendment')->count(),
         ];
 
         return view('academic.assessments.moderation.index', compact(
@@ -124,7 +126,7 @@ class GradeModerationController extends Controller
      */
     public function endorse(Request $request, CourseAssessmentSheet $sheet): RedirectResponse
     {
-        if (! in_array($sheet->status, ['submitted_to_hod', 'returned_for_revision'], true)) {
+        if (! in_array($sheet->status, ['submitted_to_hod', 'returned_for_revision', 'reopened_for_amendment'], true)) {
             return redirect()
                 ->route('moderation.show', $sheet)
                 ->with('warning', "Mark sheet cannot be endorsed because its current status is '{$sheet->status_label}'.");
@@ -173,6 +175,36 @@ class GradeModerationController extends Controller
     }
 
     /**
+     * Senate / Academic Registrar authorizes reopening of a published mark sheet for grade amendment / appeal.
+     * Requires formal Senate Approval Reference and mandatory academic justification.
+     */
+    public function reopenForAmendment(ReopenMarkSheetRequest $request, CourseAssessmentSheet $sheet): RedirectResponse
+    {
+        if ($sheet->status !== 'published') {
+            return redirect()
+                ->route('moderation.show', $sheet)
+                ->with('warning', "Only officially published mark sheets can be reopened for Senate grade amendments. Current status: {$sheet->status_label}.");
+        }
+
+        $user = auth()->user() ?? User::first();
+        $senateRef = trim($request->validated('senate_approval_reference'));
+        $justification = trim($request->validated('reopen_justification'));
+
+        $sheet->update([
+            'status' => 'reopened_for_amendment',
+            'reopened_at' => now(),
+            'reopened_by_id' => $user?->id,
+            'senate_approval_reference' => $senateRef,
+            'reopen_justification' => $justification,
+            'revision_cycle' => $sheet->revision_cycle + 1,
+        ]);
+
+        return redirect()
+            ->route('moderation.show', $sheet)
+            ->with('success', "Mark sheet for {$sheet->courseUnit->code} has been officially unlocked for Senate Grade Amendment (Cycle #{$sheet->revision_cycle}) under Senate Minute '{$senateRef}'. Authorized instructors may now amend the affected scores.");
+    }
+
+    /**
      * Senate / Academic Registrar officially approves and publishes the marks.
      * This triggers automatic calculation of semester GPAs and cumulative CGPAs.
      */
@@ -184,7 +216,7 @@ class GradeModerationController extends Controller
                 ->with('info', "Mark sheet for {$sheet->courseUnit->code} is already officially published.");
         }
 
-        if (! in_array($sheet->status, ['department_moderated', 'submitted_to_hod'], true)) {
+        if (! in_array($sheet->status, ['department_moderated', 'submitted_to_hod', 'reopened_for_amendment'], true)) {
             return redirect()
                 ->route('moderation.show', $sheet)
                 ->with('error', "Mark sheet cannot be published directly from status '{$sheet->status_label}'.");

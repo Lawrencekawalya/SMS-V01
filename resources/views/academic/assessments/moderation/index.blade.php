@@ -103,6 +103,12 @@
            class="btn {{ $status === 'returned_for_revision' ? 'btn-danger fw-bold' : 'btn-outline-danger' }}">
           Returned ({{ $stats['returned'] }})
         </a>
+        @if ($stats['reopened'] > 0)
+          <a href="{{ route('moderation.list', array_merge(request()->except('status'), ['status' => 'reopened_for_amendment'])) }}"
+             class="btn {{ $status === 'reopened_for_amendment' ? 'btn-warning text-dark fw-bold' : 'btn-outline-warning' }}">
+            Reopened ({{ $stats['reopened'] }})
+          </a>
+        @endif
       </div>
     </div>
     <div class="card-body">

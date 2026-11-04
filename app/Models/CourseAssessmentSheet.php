@@ -34,6 +34,11 @@ class CourseAssessmentSheet extends Model
         'published_at',
         'published_by_id',
         'moderation_remarks',
+        'reopened_at',
+        'reopened_by_id',
+        'senate_approval_reference',
+        'reopen_justification',
+        'revision_cycle',
     ];
 
     /**
@@ -50,6 +55,8 @@ class CourseAssessmentSheet extends Model
             'submitted_at' => 'datetime',
             'moderated_at' => 'datetime',
             'published_at' => 'datetime',
+            'reopened_at' => 'datetime',
+            'revision_cycle' => 'integer',
         ];
     }
 
@@ -114,6 +121,16 @@ class CourseAssessmentSheet extends Model
     }
 
     /**
+     * Get the Senate official or Academic Registrar who reopened the mark sheet.
+     *
+     * @return BelongsTo<User, $this>
+     */
+    public function reopenedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'reopened_by_id');
+    }
+
+    /**
      * Get individual student mark entries on this assessment sheet.
      *
      * @return HasMany<StudentMark, $this>
@@ -128,7 +145,7 @@ class CourseAssessmentSheet extends Model
      */
     public function canBeEdited(): bool
     {
-        return in_array($this->status, ['draft', 'returned_for_revision'], true);
+        return in_array($this->status, ['draft', 'returned_for_revision', 'reopened_for_amendment'], true);
     }
 
     /**
@@ -148,6 +165,14 @@ class CourseAssessmentSheet extends Model
     }
 
     /**
+     * Check if mark sheet is reopened for Senate grade amendment.
+     */
+    public function isReopenedForAmendment(): bool
+    {
+        return $this->status === 'reopened_for_amendment';
+    }
+
+    /**
      * Get Bootstrap 5 badge class for this assessment sheet status.
      */
     public function getStatusBadgeClassAttribute(): string
@@ -158,6 +183,7 @@ class CourseAssessmentSheet extends Model
             'department_moderated' => 'text-bg-info',
             'published' => 'text-bg-success',
             'returned_for_revision' => 'text-bg-danger',
+            'reopened_for_amendment' => 'text-bg-warning text-dark',
             default => 'text-bg-light border',
         };
     }
@@ -173,6 +199,7 @@ class CourseAssessmentSheet extends Model
             'department_moderated' => 'Department Moderated',
             'published' => 'Senate Published',
             'returned_for_revision' => 'Returned for Revision',
+            'reopened_for_amendment' => 'Reopened for Senate Amendment',
             default => ucfirst(str_replace('_', ' ', $this->status)),
         };
     }

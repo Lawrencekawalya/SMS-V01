@@ -200,6 +200,7 @@ Route::prefix('academic')->group(function () {
         Route::get('show/{sheet}', 'show')->name('moderation.show');
         Route::post('endorse/{sheet}', 'endorse')->name('moderation.endorse');
         Route::post('return/{sheet}', 'returnToLecturer')->name('moderation.return');
+        Route::post('reopen/{sheet}', 'reopenForAmendment')->name('moderation.reopen');
         Route::post('publish/{sheet}', 'publish')->name('moderation.publish');
     });
 

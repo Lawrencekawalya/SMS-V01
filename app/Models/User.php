@@ -62,6 +62,16 @@ class User extends Authenticatable
     }
 
     /**
+     * Get assessment sheets reopened for Senate amendment by this user.
+     *
+     * @return HasMany<CourseAssessmentSheet, $this>
+     */
+    public function reopenedSheets(): HasMany
+    {
+        return $this->hasMany(CourseAssessmentSheet::class, 'reopened_by_id');
+    }
+
+    /**
      * Get grade audit logs performed by this user.
      *
      * @return HasMany<GradeAuditLog, $this>

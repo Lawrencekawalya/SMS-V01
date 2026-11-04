@@ -21,9 +21,9 @@
           <h4 class="mb-0 mt-2 fw-bold">{{ $sheet->courseUnit->name }}</h4>
         </div>
         <div class="d-flex gap-2 align-items-center flex-wrap">
-          @if (in_array($sheet->status, ['draft', 'returned_for_revision']))
+          @if ($sheet->canBeEdited())
             <a href="{{ route('assessment.edit', $sheet) }}" class="btn btn-primary btn-sm">
-              <i class="bi bi-pencil-square me-1"></i> Enter / Edit Marks
+              <i class="bi bi-pencil-square me-1"></i> {{ $sheet->isReopenedForAmendment() ? 'Amend Marks' : 'Enter / Edit Marks' }}
             </a>
             <form action="{{ route('assessment.submit', $sheet) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to submit this mark sheet to the Head of Department for moderation?');">
               @csrf
@@ -123,6 +123,28 @@
       </div>
     </div>
   </div>
+
+  {{-- Senate Grade Amendment Callout --}}
+  @if ($sheet->senate_approval_reference)
+    <div class="callout callout-warning shadow-sm mb-4">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-1">
+        <h6 class="fw-bold mb-0 text-warning-emphasis">
+          <i class="bi bi-shield-exclamation text-warning me-2"></i>
+          Senate Grade Amendment (Revision Cycle #{{ $sheet->revision_cycle }})
+        </h6>
+        <span class="badge text-bg-warning text-dark font-monospace">
+          Minute: {{ $sheet->senate_approval_reference }}
+        </span>
+      </div>
+      <p class="mb-1 text-body">
+        <strong>Justification:</strong> {{ $sheet->reopen_justification }}
+      </p>
+      <div class="small text-muted">
+        Authorized on {{ $sheet->reopened_at?->format('M d, Y H:i') }}
+        @if ($sheet->reopenedBy) by <strong>{{ $sheet->reopenedBy->name }}</strong> @endif
+      </div>
+    </div>
+  @endif
 
   @if ($sheet->moderation_remarks)
     <div class="alert alert-info shadow-sm mb-4">
