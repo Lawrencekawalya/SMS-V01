@@ -125,13 +125,17 @@ class GraduationService
         $latestPerf = $student->semesterPerformances()->orderByDesc('created_at')->first();
         $cgpa = (float) ($latestPerf?->cgpa ?? ($student->cumulative_gpa ?? 0.0));
 
-        if ($cgpa < 2.00) {
-            $deficiencies[] = "CGPA {$cgpa} is below the minimum graduation threshold of 2.00.";
+        $awardType = strtolower($student->programme?->award_type ?? 'bachelors');
+        $isPostgrad = str_contains($awardType, 'postgraduate') || str_contains($awardType, 'master') || str_contains($awardType, 'phd') || str_contains($awardType, 'doctor');
+        $minGradCgpa = $isPostgrad ? 3.00 : 2.00;
+
+        if ($cgpa < $minGradCgpa) {
+            $deficiencies[] = "CGPA {$cgpa} is below the minimum graduation threshold of ".number_format($minGradCgpa, 2).'.';
         }
 
         // 7. Resolve Award Classification
-        $awardType = strtolower($student->programme?->award_type ?? 'bachelors');
         $awardLevel = match (true) {
+            $isPostgrad => 'postgraduate',
             str_contains($awardType, 'diploma') => 'diploma',
             str_contains($awardType, 'certificate') => 'certificate',
             default => 'degree',
@@ -143,9 +147,9 @@ class GraduationService
             ->first();
 
         $classificationName = $classification?->name ?? $this->resolveFallbackAwardName($cgpa, $awardLevel);
-        $badgeClass = $classification?->badge_class ?? ($cgpa >= 3.60 ? 'text-bg-success' : ($cgpa >= 2.00 ? 'text-bg-info' : 'text-bg-danger'));
+        $badgeClass = $classification?->badge_class ?? ($cgpa >= 3.60 ? 'text-bg-success' : ($cgpa >= $minGradCgpa ? 'text-bg-info' : 'text-bg-danger'));
 
-        $isCleared = empty($deficiencies) && $cgpa >= 2.00 && ($requiredCredits <= 0 || $earnedCredits >= $requiredCredits);
+        $isCleared = empty($deficiencies) && $cgpa >= $minGradCgpa && ($requiredCredits <= 0 || $earnedCredits >= $requiredCredits);
         $status = $isCleared ? 'Cleared for Graduation' : 'Academic Deficiencies / Pending';
 
         return [
@@ -172,6 +176,20 @@ class GraduationService
      */
     protected function resolveFallbackAwardName(float $cgpa, string $awardLevel): string
     {
+        if ($awardLevel === 'postgraduate') {
+            if ($cgpa >= 4.40) {
+                return 'Distinction';
+            }
+            if ($cgpa >= 3.60) {
+                return 'Credit';
+            }
+            if ($cgpa >= 3.00) {
+                return 'Pass';
+            }
+
+            return 'Fail / Ineligible';
+        }
+
         if ($awardLevel === 'diploma') {
             if ($cgpa >= 4.40) {
                 return 'Class I (Distinction)';

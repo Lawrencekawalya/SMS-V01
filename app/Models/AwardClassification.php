@@ -47,7 +47,7 @@ class AwardClassification extends Model
     public static function defaultClassifications(): array
     {
         return [
-            // 1. Bachelor's & Postgraduate Degrees (Standard Honours Scale)
+            // 1. Undergraduate Bachelor's Degrees (Standard Honours Scale)
             [
                 'award_level' => 'degree',
                 'name' => 'First Class Honours',
@@ -94,7 +94,45 @@ class AwardClassification extends Model
                 'sort_order' => 5,
             ],
 
-            // 2. Undergraduate Diplomas (Class I, II, III Scale)
+            // 2. Postgraduate Degrees & Diplomas (Master's, PGD, PhD Scale)
+            [
+                'award_level' => 'postgraduate',
+                'name' => 'Distinction',
+                'min_cgpa' => 4.40,
+                'max_cgpa' => 5.00,
+                'badge_class' => 'text-bg-success',
+                'academic_standing' => 'Normal Progress',
+                'sort_order' => 1,
+            ],
+            [
+                'award_level' => 'postgraduate',
+                'name' => 'Credit',
+                'min_cgpa' => 3.60,
+                'max_cgpa' => 4.39,
+                'badge_class' => 'text-bg-primary',
+                'academic_standing' => 'Normal Progress',
+                'sort_order' => 2,
+            ],
+            [
+                'award_level' => 'postgraduate',
+                'name' => 'Pass',
+                'min_cgpa' => 3.00,
+                'max_cgpa' => 3.59,
+                'badge_class' => 'text-bg-info',
+                'academic_standing' => 'Normal Progress',
+                'sort_order' => 3,
+            ],
+            [
+                'award_level' => 'postgraduate',
+                'name' => 'Fail / Ineligible',
+                'min_cgpa' => 0.00,
+                'max_cgpa' => 2.99,
+                'badge_class' => 'text-bg-danger',
+                'academic_standing' => 'Probation',
+                'sort_order' => 4,
+            ],
+
+            // 3. Undergraduate Diplomas (Class I, II, III Scale)
             [
                 'award_level' => 'diploma',
                 'name' => 'Class I (Distinction)',
@@ -132,7 +170,7 @@ class AwardClassification extends Model
                 'sort_order' => 4,
             ],
 
-            // 3. Certificates (Distinction, Credit, Pass Scale)
+            // 4. Certificates (Distinction, Credit, Pass Scale)
             [
                 'award_level' => 'certificate',
                 'name' => 'Distinction',

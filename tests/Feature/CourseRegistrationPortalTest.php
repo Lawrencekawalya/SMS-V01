@@ -324,7 +324,7 @@ class CourseRegistrationPortalTest extends TestCase
         $response = $this->get(route('registration.print', $registration));
 
         $response->assertStatus(200);
-        $response->assertSee($this->university->name, false);
+        $response->assertSee($this->university->name);
         $response->assertSee('Official Semester Course Registration Slip', false);
         $response->assertSee($this->student->full_name);
         $response->assertSee($this->student->registration_number);

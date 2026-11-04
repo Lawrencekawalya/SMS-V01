@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\AcademicYear;
+use App\Models\AssessmentPolicy;
 use App\Models\AwardClassification;
 use App\Models\Campus;
 use App\Models\CourseAssessmentSheet;
@@ -564,8 +565,12 @@ class AssessmentDataArchitectureTest extends TestCase
         $response->assertSee('Marginal Pass');
         $response->assertSee('Pass (Minimum Passing Grade)');
         $response->assertSee('Fail (Requires Retake)');
+        $response->assertSee('Undergraduate');
+        $response->assertSee('Postgraduate');
         $response->assertSee('First Class Honours');
         $response->assertSee('Second Class Honours (Upper Division)');
+        $response->assertSee('Distinction');
+        $response->assertSee('Credit');
         $response->assertSee('Course Mark Sheets Directory');
     }
 
@@ -588,6 +593,7 @@ class AssessmentDataArchitectureTest extends TestCase
             'ca_weight' => 30.0,
             'exam_weight' => 70.0,
             'pass_mark' => 50.0,
+            'postgrad_pass_mark' => 60.0,
         ]);
 
         $response->assertRedirect(route('assessment.policy'));
@@ -596,12 +602,14 @@ class AssessmentDataArchitectureTest extends TestCase
         $this->assertEquals(30.0, config('academic.assessment_ca_weight'));
         $this->assertEquals(70.0, config('academic.assessment_exam_weight'));
         $this->assertEquals(50.0, config('academic.assessment_pass_mark'));
+        $this->assertEquals(60.0, config('academic.assessment_postgrad_pass_mark'));
 
         // Reset to standard 40 / 60
         config([
             'academic.assessment_ca_weight' => 40.0,
             'academic.assessment_exam_weight' => 60.0,
             'academic.assessment_pass_mark' => 50.0,
+            'academic.assessment_postgrad_pass_mark' => 60.0,
         ]);
     }
 
@@ -646,7 +654,7 @@ class AssessmentDataArchitectureTest extends TestCase
             ->where('name', 'First Class Honours')
             ->firstOrFail();
 
-        // Update First Class Honours threshold
+        // Update First Class Honours threshold and Diploma assessment policy
         $response = $this->put(route('assessment.policy.awards.update'), [
             'awards' => [
                 [
@@ -657,6 +665,14 @@ class AssessmentDataArchitectureTest extends TestCase
                     'academic_standing' => 'Normal Progress',
                 ],
             ],
+            'policies' => [
+                'diploma' => [
+                    'ca_weight' => 50.0,
+                    'exam_weight' => 50.0,
+                    'pass_mark' => 50.0,
+                    'retake_cgpa_policy' => 'accumulate_all',
+                ],
+            ],
         ]);
 
         $response->assertRedirect(route('assessment.policy'));
@@ -665,7 +681,13 @@ class AssessmentDataArchitectureTest extends TestCase
         $this->assertEquals(4.50, $degreeFirst->fresh()->min_cgpa);
         $this->assertEquals('First Class Honours (Dean\'s List)', $degreeFirst->fresh()->name);
 
-        // Verify diploma and certificate classifications exist
+        $diplomaPolicy = AssessmentPolicy::forLevel('diploma');
+        $this->assertEquals(50.0, $diplomaPolicy->ca_weight);
+        $this->assertEquals(50.0, $diplomaPolicy->exam_weight);
+        $this->assertEquals('accumulate_all', $diplomaPolicy->retake_cgpa_policy);
+
+        // Verify postgraduate, diploma and certificate classifications exist
+        $this->assertTrue(AwardClassification::where('award_level', 'postgraduate')->exists());
         $this->assertTrue(AwardClassification::where('award_level', 'diploma')->exists());
         $this->assertTrue(AwardClassification::where('award_level', 'certificate')->exists());
 

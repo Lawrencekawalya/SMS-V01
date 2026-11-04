@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\AssessmentPolicy;
 use App\Models\AwardClassification;
 use App\Models\GradingScaleTier;
 use Illuminate\Database\Seeder;
@@ -15,5 +16,6 @@ class GradingPolicySeeder extends Seeder
     {
         GradingScaleTier::seedDefaults();
         AwardClassification::seedDefaults();
+        AssessmentPolicy::seedDefaults();
     }
 }

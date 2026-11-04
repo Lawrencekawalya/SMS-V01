@@ -420,13 +420,17 @@ class GradingEngineService
     }
 
     /**
-     * Helper to map student programme to statutory award level (degree, diploma, certificate).
+     * Helper to map student programme to statutory award level (degree, postgraduate, diploma, certificate).
      */
     public function resolveAwardLevel(Student $student): string
     {
         $awardType = strtolower($student->programme?->award_type ?? 'bachelors');
 
-        if (str_contains($awardType, 'diploma') && ! str_contains($awardType, 'postgraduate')) {
+        if (str_contains($awardType, 'postgraduate') || str_contains($awardType, 'master') || str_contains($awardType, 'phd') || str_contains($awardType, 'doctor')) {
+            return 'postgraduate';
+        }
+
+        if (str_contains($awardType, 'diploma')) {
             return 'diploma';
         }
 
@@ -434,7 +438,7 @@ class GradingEngineService
             return 'certificate';
         }
 
-        // Default to degree level for Bachelors, Postgraduate Diplomas, Masters, Doctorates
+        // Default to undergraduate bachelor's degree level
         return 'degree';
     }
 

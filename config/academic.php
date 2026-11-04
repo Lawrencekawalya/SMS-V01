@@ -81,11 +81,13 @@ return [
     |--------------------------------------------------------------------------
     |
     | The minimum final percentage score required to pass a course unit.
-    | In Uganda and NCHE standards, the standard undergraduate pass mark is 50.0%.
-    | Scores below this threshold result in an 'F' grade and require a retake.
+    | In Uganda and NCHE standards, the standard undergraduate pass mark is 50.0%,
+    | whereas postgraduate programmes (Master's, PGD, PhD) enforce a 60.0% threshold.
+    | Scores below these thresholds result in an 'F' grade and require a retake.
     |
     */
     'assessment_pass_mark' => (float) env('ASSESSMENT_PASS_MARK', 50.0),
+    'assessment_postgrad_pass_mark' => (float) env('ASSESSMENT_POSTGRAD_PASS_MARK', 60.0),
 
     /*
     |--------------------------------------------------------------------------
@@ -205,6 +207,46 @@ return [
             'min_cgpa' => 0.00,
             'max_cgpa' => 1.99,
             'name' => 'Fail / Academic Probation',
+            'badge_class' => 'text-bg-danger',
+            'academic_standing' => 'Probation',
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Uganda NCHE Postgraduate Classifications (CGPA Ranges)
+    |--------------------------------------------------------------------------
+    |
+    | Official postgraduate degree & diploma awards classifications
+    | (Master's, Postgraduate Diplomas, PhDs) based on cumulative CGPA.
+    |
+    */
+    'postgraduate_classifications' => [
+        [
+            'min_cgpa' => 4.40,
+            'max_cgpa' => 5.00,
+            'name' => 'Distinction',
+            'badge_class' => 'text-bg-success',
+            'academic_standing' => 'Normal Progress',
+        ],
+        [
+            'min_cgpa' => 3.60,
+            'max_cgpa' => 4.39,
+            'name' => 'Credit',
+            'badge_class' => 'text-bg-primary',
+            'academic_standing' => 'Normal Progress',
+        ],
+        [
+            'min_cgpa' => 3.00,
+            'max_cgpa' => 3.59,
+            'name' => 'Pass',
+            'badge_class' => 'text-bg-info',
+            'academic_standing' => 'Normal Progress',
+        ],
+        [
+            'min_cgpa' => 0.00,
+            'max_cgpa' => 2.99,
+            'name' => 'Fail / Ineligible',
             'badge_class' => 'text-bg-danger',
             'academic_standing' => 'Probation',
         ],

@@ -314,4 +314,39 @@ class GraduationClearanceTest extends TestCase
         // Patience should NOT appear in the honors roll because of deficiencies
         $response->assertDontSee('Patience');
     }
+
+    public function test_postgraduate_clearance_audit_enforces_higher_cgpa_threshold_and_postgrad_awards(): void
+    {
+        $mscProgramme = Programme::factory()->create([
+            'name' => 'Master of Science in Information Systems',
+            'code' => 'MSIS',
+            'award_type' => 'Masters',
+        ]);
+
+        $mscCurriculum = Curriculum::factory()->create([
+            'programme_id' => $mscProgramme->id,
+            'min_graduation_credits' => 4,
+            'is_active' => true,
+        ]);
+
+        $postgradStudent = Student::factory()->create([
+            'programme_id' => $mscProgramme->id,
+            'cumulative_gpa' => 4.60,
+        ]);
+
+        $service = app(GraduationService::class);
+        $auditResult = $service->auditClearance($postgradStudent);
+
+        $this->assertEquals('Distinction', $auditResult['award_classification']);
+
+        // Test with CGPA 2.50 (passes undergraduate threshold 2.00, but fails postgraduate threshold 3.00)
+        $postgradStudent->update(['cumulative_gpa' => 2.50]);
+        $auditFailing = $service->auditClearance($postgradStudent);
+
+        $this->assertEquals('Fail / Ineligible', $auditFailing['award_classification']);
+        $this->assertFalse($auditFailing['is_cleared']);
+        $this->assertTrue(collect($auditFailing['deficiencies'])->contains(function ($def) {
+            return str_contains($def, 'minimum graduation threshold of 3.00');
+        }));
+    }
 }

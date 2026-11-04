@@ -404,6 +404,32 @@ class GradingEngineServiceTest extends TestCase
         $this->assertEquals('Pass', $pass->name);
     }
 
+    public function test_award_classification_resolution_for_postgraduate_programmes(): void
+    {
+        $programme = Programme::factory()->create(['award_type' => 'Masters']);
+        $student = Student::factory()->create(['programme_id' => $programme->id, 'cumulative_gpa' => 4.50]);
+
+        $this->assertEquals('postgraduate', $this->service->resolveAwardLevel($student));
+
+        $distinction = $this->service->resolveAwardClassification($student, 4.50);
+        $this->assertNotNull($distinction);
+        $this->assertEquals('Distinction', $distinction->name);
+        $this->assertEquals('Normal Progress', $distinction->academic_standing);
+
+        $credit = $this->service->resolveAwardClassification($student, 3.80);
+        $this->assertNotNull($credit);
+        $this->assertEquals('Credit', $credit->name);
+
+        $pass = $this->service->resolveAwardClassification($student, 3.20);
+        $this->assertNotNull($pass);
+        $this->assertEquals('Pass', $pass->name);
+
+        $fail = $this->service->resolveAwardClassification($student, 2.50);
+        $this->assertNotNull($fail);
+        $this->assertEquals('Fail / Ineligible', $fail->name);
+        $this->assertEquals('Probation', $fail->academic_standing);
+    }
+
     public function test_record_grade_audit_creates_valid_audit_log(): void
     {
         $user = User::factory()->create(['name' => 'Dr. Jane Mugabi']);

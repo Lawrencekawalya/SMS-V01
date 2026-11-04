@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\SubmitMarksRequest;
 use App\Http\Requests\UpdateAssessmentPolicyRequest;
 use App\Models\AcademicYear;
+use App\Models\AssessmentPolicy;
 use App\Models\AwardClassification;
 use App\Models\CourseAssessmentSheet;
 use App\Models\CourseRegistrationItem;
@@ -34,21 +35,32 @@ class CourseAssessmentController extends Controller
      */
     public function policy(): View
     {
-        $caWeight = (float) config('academic.assessment_ca_weight', 40.0);
-        $examWeight = (float) config('academic.assessment_exam_weight', 60.0);
-        $passMark = (float) config('academic.assessment_pass_mark', 50.0);
-        $retakeCgpaPolicy = config('academic.retake_cgpa_policy', 'replace_fail');
-
         // Ensure database records exist; fallback to defaults if empty
         if (GradingScaleTier::count() === 0) {
             GradingScaleTier::seedDefaults();
         }
-        if (AwardClassification::count() === 0) {
+        if (AwardClassification::count() === 0 || ! AwardClassification::where('award_level', 'postgraduate')->exists()) {
             AwardClassification::seedDefaults();
         }
+        if (AssessmentPolicy::count() === 0) {
+            AssessmentPolicy::seedDefaults();
+        }
+
+        $policies = AssessmentPolicy::all()->keyBy('award_level');
+        $degreePolicy = $policies->get('degree') ?? AssessmentPolicy::forLevel('degree');
+        $postgradPolicy = $policies->get('postgraduate') ?? AssessmentPolicy::forLevel('postgraduate');
+        $diplomaPolicy = $policies->get('diploma') ?? AssessmentPolicy::forLevel('diploma');
+        $certificatePolicy = $policies->get('certificate') ?? AssessmentPolicy::forLevel('certificate');
+
+        $caWeight = (float) $degreePolicy->ca_weight;
+        $examWeight = (float) $degreePolicy->exam_weight;
+        $passMark = (float) $degreePolicy->pass_mark;
+        $postgradPassMark = (float) $postgradPolicy->pass_mark;
+        $retakeCgpaPolicy = $degreePolicy->retake_cgpa_policy;
 
         $gradingScale = GradingScaleTier::ordered()->get();
         $degreeClassifications = AwardClassification::forLevel('degree')->get();
+        $postgraduateClassifications = AwardClassification::forLevel('postgraduate')->get();
         $diplomaClassifications = AwardClassification::forLevel('diploma')->get();
         $certificateClassifications = AwardClassification::forLevel('certificate')->get();
 
@@ -63,9 +75,16 @@ class CourseAssessmentController extends Controller
             'caWeight',
             'examWeight',
             'passMark',
+            'postgradPassMark',
             'retakeCgpaPolicy',
+            'policies',
+            'degreePolicy',
+            'postgradPolicy',
+            'diplomaPolicy',
+            'certificatePolicy',
             'gradingScale',
             'degreeClassifications',
+            'postgraduateClassifications',
             'diplomaClassifications',
             'certificateClassifications',
             'stats'
@@ -80,7 +99,22 @@ class CourseAssessmentController extends Controller
         $ca = (float) $request->input('ca_weight');
         $exam = (float) $request->input('exam_weight');
         $pass = (float) $request->input('pass_mark');
+        $postgradPass = (float) $request->input('postgrad_pass_mark', config('academic.assessment_postgrad_pass_mark', 60.0));
         $retakePolicy = $request->input('retake_cgpa_policy', config('academic.retake_cgpa_policy', 'replace_fail'));
+
+        // Update database assessment policy records
+        $degreePolicy = AssessmentPolicy::forLevel('degree');
+        $degreePolicy->update([
+            'ca_weight' => $ca,
+            'exam_weight' => $exam,
+            'pass_mark' => $pass,
+            'retake_cgpa_policy' => $retakePolicy,
+        ]);
+
+        $postgradPolicy = AssessmentPolicy::forLevel('postgraduate');
+        $postgradPolicy->update([
+            'pass_mark' => $postgradPass,
+        ]);
 
         // Update environment file if writable and not running automated tests
         if (! app()->environment('testing')) {
@@ -92,6 +126,7 @@ class CourseAssessmentController extends Controller
                     'ASSESSMENT_CA_WEIGHT' => $ca,
                     'ASSESSMENT_EXAM_WEIGHT' => $exam,
                     'ASSESSMENT_PASS_MARK' => $pass,
+                    'ASSESSMENT_POSTGRAD_PASS_MARK' => $postgradPass,
                     'RETAKE_CGPA_POLICY' => $retakePolicy,
                 ];
 
@@ -111,12 +146,14 @@ class CourseAssessmentController extends Controller
             'academic.assessment_ca_weight' => $ca,
             'academic.assessment_exam_weight' => $exam,
             'academic.assessment_pass_mark' => $pass,
+            'academic.assessment_postgrad_pass_mark' => $postgradPass,
             'academic.retake_cgpa_policy' => $retakePolicy,
         ]);
 
         return redirect()
             ->route('assessment.policy')
-            ->with('success', 'Institutional assessment weighting and minimum pass threshold updated successfully.');
+            ->with('success', 'Institutional assessment weighting and minimum pass threshold updated successfully.')
+            ->with('active_tab', 'configuration');
     }
 
     /**
@@ -175,39 +212,89 @@ class CourseAssessmentController extends Controller
     }
 
     /**
-     * Update degree, diploma, or certificate award classifications.
+     * Update degree, diploma, or certificate award classifications and their level assessment policies.
      */
     public function updateAwardClassifications(Request $request): RedirectResponse
     {
         $request->validate([
-            'awards' => ['required', 'array'],
+            'awards' => ['sometimes', 'array'],
             'awards.*.id' => ['required', 'exists:award_classifications,id'],
             'awards.*.name' => ['required', 'string', 'max:100'],
             'awards.*.min_cgpa' => ['required', 'numeric', 'min:0', 'max:5'],
             'awards.*.max_cgpa' => ['required', 'numeric', 'min:0', 'max:5'],
             'awards.*.academic_standing' => ['required', 'string', 'max:40'],
+            'policies' => ['sometimes', 'array'],
+            'policies.*.ca_weight' => ['required_with:policies', 'numeric', 'min:0', 'max:100'],
+            'policies.*.exam_weight' => ['required_with:policies', 'numeric', 'min:0', 'max:100'],
+            'policies.*.pass_mark' => ['required_with:policies', 'numeric', 'min:0', 'max:100'],
+            'policies.*.retake_cgpa_policy' => ['required_with:policies', 'string', 'in:replace_fail,accumulate_all'],
         ]);
 
-        foreach ($request->input('awards') as $awardData) {
-            $award = AwardClassification::findOrFail($awardData['id']);
-            $badgeClass = match ($awardData['academic_standing']) {
-                'Normal Progress' => ((float) $awardData['min_cgpa'] >= 4.0 ? 'text-bg-success' : 'text-bg-primary'),
-                'Probation' => 'text-bg-danger',
-                default => 'text-bg-info',
-            };
+        if ($request->has('policies')) {
+            foreach ($request->input('policies') as $level => $pData) {
+                $ca = (float) ($pData['ca_weight'] ?? 40.0);
+                $exam = (float) ($pData['exam_weight'] ?? 60.0);
 
-            $award->update([
-                'name' => trim($awardData['name']),
-                'min_cgpa' => (float) $awardData['min_cgpa'],
-                'max_cgpa' => (float) $awardData['max_cgpa'],
-                'academic_standing' => trim($awardData['academic_standing']),
-                'badge_class' => $badgeClass,
-            ]);
+                if (round($ca + $exam, 2) !== 100.0) {
+                    return redirect()
+                        ->to(route('assessment.policy'))
+                        ->withErrors(['policies' => 'For '.ucfirst($level).', Continuous Assessment ('.$ca.'%) and Final Exam ('.$exam.'%) must equal 100.0%.'])
+                        ->with('active_tab', 'configuration');
+                }
+
+                AssessmentPolicy::updateOrCreate(
+                    ['award_level' => $level],
+                    [
+                        'ca_weight' => $ca,
+                        'exam_weight' => $exam,
+                        'pass_mark' => (float) ($pData['pass_mark'] ?? 50.0),
+                        'retake_cgpa_policy' => $pData['retake_cgpa_policy'] ?? 'replace_fail',
+                    ]
+                );
+
+                if ($level === 'degree') {
+                    config([
+                        'academic.assessment_ca_weight' => $ca,
+                        'academic.assessment_exam_weight' => $exam,
+                        'academic.assessment_pass_mark' => (float) ($pData['pass_mark'] ?? 50.0),
+                        'academic.retake_cgpa_policy' => $pData['retake_cgpa_policy'] ?? 'replace_fail',
+                    ]);
+                } elseif ($level === 'postgraduate') {
+                    config([
+                        'academic.assessment_postgrad_pass_mark' => (float) ($pData['pass_mark'] ?? 60.0),
+                    ]);
+                }
+            }
+        }
+
+        if ($request->has('awards')) {
+            foreach ($request->input('awards') as $awardData) {
+                $award = AwardClassification::findOrFail($awardData['id']);
+                $badgeClass = match ($awardData['academic_standing']) {
+                    'Normal Progress' => match (true) {
+                        (float) $awardData['min_cgpa'] >= 4.40 => 'text-bg-success',
+                        (float) $awardData['min_cgpa'] >= 3.60 => 'text-bg-primary',
+                        (float) $awardData['min_cgpa'] >= 2.80 => 'text-bg-info',
+                        default => 'text-bg-warning',
+                    },
+                    'Probation' => 'text-bg-danger',
+                    default => 'text-bg-info',
+                };
+
+                $award->update([
+                    'name' => trim($awardData['name']),
+                    'min_cgpa' => (float) $awardData['min_cgpa'],
+                    'max_cgpa' => (float) $awardData['max_cgpa'],
+                    'academic_standing' => trim($awardData['academic_standing']),
+                    'badge_class' => $badgeClass,
+                ]);
+            }
         }
 
         return redirect()
             ->route('assessment.policy')
-            ->with('success', 'Academic award classifications updated successfully.');
+            ->with('success', 'Academic assessment policies and award classifications updated successfully.')
+            ->with('active_tab', 'configuration');
     }
 
     /**
@@ -216,10 +303,12 @@ class CourseAssessmentController extends Controller
     public function resetAwardClassifications(): RedirectResponse
     {
         AwardClassification::seedDefaults();
+        AssessmentPolicy::seedDefaults();
 
         return redirect()
             ->route('assessment.policy')
-            ->with('success', 'Award classifications reset to standard collegiate defaults.');
+            ->with('success', 'Award classifications and assessment policies reset to standard collegiate defaults.')
+            ->with('active_tab', 'configuration');
     }
 
     /**

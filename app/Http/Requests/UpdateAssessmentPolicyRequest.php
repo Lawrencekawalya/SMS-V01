@@ -27,6 +27,7 @@ class UpdateAssessmentPolicyRequest extends FormRequest
             'ca_weight' => ['required', 'numeric', 'min:0', 'max:100'],
             'exam_weight' => ['required', 'numeric', 'min:0', 'max:100'],
             'pass_mark' => ['required', 'numeric', 'min:0', 'max:100'],
+            'postgrad_pass_mark' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'retake_cgpa_policy' => ['nullable', 'string', 'in:replace_fail,accumulate_all'],
         ];
     }
@@ -41,7 +42,8 @@ class UpdateAssessmentPolicyRequest extends FormRequest
         return [
             'ca_weight' => 'Continuous Assessment (CA) weight',
             'exam_weight' => 'Final Examination weight',
-            'pass_mark' => 'Minimum Pass Mark',
+            'pass_mark' => 'Undergraduate Minimum Pass Mark',
+            'postgrad_pass_mark' => 'Postgraduate Minimum Pass Mark',
         ];
     }
 
