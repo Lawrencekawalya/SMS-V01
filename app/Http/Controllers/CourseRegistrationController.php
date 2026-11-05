@@ -105,17 +105,29 @@ class CourseRegistrationController extends Controller
         $selectedSemesterId = $request->query('semester_id');
         if ($selectedSemesterId) {
             $activeSemester = $allSemesters->firstWhere('id', (int) $selectedSemesterId) ?? $allSemesters->first();
-        } elseif ($selectedStudent && $selectedStudent->current_semester === 2) {
-            $activeSemester = $allSemesters->first(fn ($s) => $s->semester_number === 2 && $s->isRegistrationOpen())
-                ?? $allSemesters->firstWhere('semester_number', 2)
-                ?? (Semester::where('is_active', true)->with('academicYear')->first() ?? Semester::with('academicYear')->first());
         } else {
-            $activeSemester = Semester::where('is_active', true)->with('academicYear')->first()
-                ?? Semester::with('academicYear')->first();
+            $activeSemester = $allSemesters->firstWhere('is_active', true)
+                ?? Semester::where('is_active', true)->with('academicYear')->first()
+                ?? $allSemesters->first();
         }
 
         $eligibility = null;
+        $existingRegistration = null;
+        $registeredCourseUnitIds = [];
+
         if ($selectedStudent && $activeSemester) {
+            $existingRegistration = CourseRegistration::with(['items.courseUnit', 'semester.academicYear'])
+                ->where('student_id', $selectedStudent->id)
+                ->where('semester_id', $activeSemester->id)
+                ->first();
+
+            if ($existingRegistration) {
+                $registeredCourseUnitIds = $existingRegistration->items
+                    ->where('status', '!=', 'dropped')
+                    ->pluck('course_unit_id')
+                    ->all();
+            }
+
             $eligibility = $eligibilityService->getEligibleCoursesForStudent($selectedStudent, $activeSemester);
         }
 
@@ -124,7 +136,9 @@ class CourseRegistrationController extends Controller
             'selectedStudent',
             'allSemesters',
             'activeSemester',
-            'eligibility'
+            'eligibility',
+            'existingRegistration',
+            'registeredCourseUnitIds'
         ));
     }
 

@@ -121,19 +121,14 @@ class GraduationService
             $deficiencies[] = "Credit Shortfall: Earned {$earnedCredits} CU of {$requiredCredits} required CU (Deficit: {$shortfall} CU).";
         }
 
-        // 6. Cumulative CGPA Check
+        // 6. Cumulative CGPA Check & Minimum Graduation Threshold
         $latestPerf = $student->semesterPerformances()->orderByDesc('created_at')->first();
         $cgpa = (float) ($latestPerf?->cgpa ?? ($student->cumulative_gpa ?? 0.0));
 
         $awardType = strtolower($student->programme?->award_type ?? 'bachelors');
         $isPostgrad = str_contains($awardType, 'postgraduate') || str_contains($awardType, 'master') || str_contains($awardType, 'phd') || str_contains($awardType, 'doctor');
-        $minGradCgpa = $isPostgrad ? 3.00 : 2.00;
 
-        if ($cgpa < $minGradCgpa) {
-            $deficiencies[] = "CGPA {$cgpa} is below the minimum graduation threshold of ".number_format($minGradCgpa, 2).'.';
-        }
-
-        // 7. Resolve Award Classification
+        // Resolve statutory award tier level (degree, postgraduate, diploma, certificate)
         $awardLevel = match (true) {
             $isPostgrad => 'postgraduate',
             str_contains($awardType, 'diploma') => 'diploma',
@@ -141,9 +136,26 @@ class GraduationService
             default => 'degree',
         };
 
+        // Dynamically resolve minimum graduation CGPA threshold from configured award classifications:
+        // The minimum CGPA required to graduate is the lowest min_cgpa among passing tiers (Normal Progress)
+        $lowestPassingAward = AwardClassification::where('award_level', $awardLevel)
+            ->where('academic_standing', 'Normal Progress')
+            ->orderBy('min_cgpa', 'asc')
+            ->first();
+
+        $minGradCgpa = $lowestPassingAward !== null
+            ? (float) $lowestPassingAward->min_cgpa
+            : ($isPostgrad ? 3.00 : 2.00);
+
+        if ($cgpa < $minGradCgpa) {
+            $deficiencies[] = "CGPA {$cgpa} is below the minimum graduation threshold of ".number_format($minGradCgpa, 2).'.';
+        }
+
+        // 7. Resolve Award Classification
         $classification = AwardClassification::where('award_level', $awardLevel)
             ->where('min_cgpa', '<=', $cgpa)
             ->where('max_cgpa', '>=', $cgpa)
+            ->orderByDesc('min_cgpa')
             ->first();
 
         $classificationName = $classification?->name ?? $this->resolveFallbackAwardName($cgpa, $awardLevel);
@@ -156,10 +168,12 @@ class GraduationService
             'student' => $student,
             'curriculum' => $curriculum,
             'programme' => $student->programme,
+            'award_level' => $awardLevel,
             'required_credits' => $requiredCredits,
             'earned_credits' => $earnedCredits,
             'credit_deficit' => max(0, $requiredCredits - $earnedCredits),
             'cgpa' => $cgpa,
+            'min_grad_cgpa' => $minGradCgpa,
             'award_classification' => $classificationName,
             'badge_class' => $badgeClass,
             'is_cleared' => $isCleared,

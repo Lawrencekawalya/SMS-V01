@@ -132,6 +132,62 @@ class CourseRegistrationPortalTest extends TestCase
         $response->assertSee('Confirm & Complete Registration', false);
     }
 
+    public function test_target_registration_semester_defaults_to_active_semester_even_for_semester_2_student(): void
+    {
+        Semester::factory()->create([
+            'academic_year_id' => $this->activeSemester->academic_year_id,
+            'semester_number' => 2,
+            'is_active' => false,
+            'registration_start_date' => now()->addMonths(3),
+            'registration_end_date' => now()->addMonths(4),
+        ]);
+
+        $this->student->update(['current_semester' => 2]);
+
+        $response = $this->get(route('registration.create', ['student_id' => $this->student->id]));
+
+        $response->assertStatus(200);
+        $response->assertViewHas('activeSemester', fn (Semester $sem) => $sem->id === $this->activeSemester->id && $sem->is_active);
+    }
+
+    public function test_registration_workspace_displays_locked_state_when_student_has_approved_slip(): void
+    {
+        $existing = CourseRegistration::factory()->create([
+            'student_id' => $this->student->id,
+            'semester_id' => $this->activeSemester->id,
+            'academic_year_id' => $this->activeSemester->academic_year_id,
+            'status' => 'approved',
+        ]);
+
+        $response = $this->get(route('registration.create', ['student_id' => $this->student->id]));
+
+        $response->assertStatus(200);
+        $response->assertSee('Active Registration Slip:');
+        $response->assertSee("#REG-{$existing->id}");
+        $response->assertSee('Course selection is locked to prevent duplicate registrations');
+        $response->assertSee("View Official Slip (#REG-{$existing->id})");
+        $response->assertSee('Print Slip (PDF)');
+        $response->assertDontSee('Confirm & Complete Registration');
+    }
+
+    public function test_registration_workspace_displays_resume_draft_state_when_student_has_draft_slip(): void
+    {
+        $existing = CourseRegistration::factory()->create([
+            'student_id' => $this->student->id,
+            'semester_id' => $this->activeSemester->id,
+            'academic_year_id' => $this->activeSemester->academic_year_id,
+            'status' => 'draft',
+        ]);
+
+        $response = $this->get(route('registration.create', ['student_id' => $this->student->id]));
+
+        $response->assertStatus(200);
+        $response->assertSee('Resuming saved Draft Slip:');
+        $response->assertSee("#REG-{$existing->id}");
+        $response->assertSee('Confirm & Update Registration', false);
+        $response->assertSee('Save Draft Changes');
+    }
+
     public function test_registration_workspace_displays_advisor_approval_button_when_policy_enabled(): void
     {
         config(['academic.require_registration_approval' => true]);

@@ -29,7 +29,7 @@ class CurriculumSeeder extends Seeder
                 [
                     'start_academic_year' => 2024,
                     'end_academic_year' => 2027,
-                    'min_graduation_credits' => 110,
+                    'min_graduation_credits' => 57,
                     'is_active' => true,
                 ]
             );
@@ -173,7 +173,7 @@ class CurriculumSeeder extends Seeder
                 [
                     'start_academic_year' => 2025,
                     'end_academic_year' => 2027,
-                    'min_graduation_credits' => 60,
+                    'min_graduation_credits' => 57,
                     'is_active' => true,
                 ]
             );

@@ -58,10 +58,10 @@
       </h3>
     </div>
     <div class="card-body">
-      <form action="{{ route('registration.create') }}" method="GET" class="row g-3 align-items-center">
+      <form action="{{ route('registration.create') }}" method="GET" class="row g-3 align-items-end">
         <div class="col-12 col-md-5">
           <label for="student_id_select" class="form-label small fw-semibold">Select Student to Register:</label>
-          <select name="student_id" id="student_id_select" class="form-select" onchange="const semSelect = document.getElementById('semester_id_select'); if (semSelect) semSelect.value = ''; this.form.submit();">
+          <select name="student_id" id="student_id_select" class="form-select" onchange="this.form.submit();">
             @foreach ($students as $s)
               <option value="{{ $s->id }}" {{ $selectedStudent && $selectedStudent->id === $s->id ? 'selected' : '' }}>
                 {{ $s->registration_number }} &mdash; {{ $s->full_name }} ({{ $s->programme->code }}, Year {{ $s->current_study_year }} Sem {{ $s->current_semester }})
@@ -79,7 +79,8 @@
             @endforeach
           </select>
         </div>
-        <div class="col-12 col-md-3 d-flex align-items-end">
+        <div class="col-12 col-md-3">
+          <label class="form-label small fw-semibold d-none d-md-block invisible">&nbsp;</label>
           <button type="submit" class="btn btn-outline-primary w-100">
             <i class="bi bi-arrow-repeat me-1"></i> Load Registration
           </button>
@@ -89,11 +90,77 @@
   </div>
 
   @if ($selectedStudent && $eligibility)
-    <form action="{{ route('registration.store') }}" method="POST" id="course-registration-form">
+    @php
+      $isLocked = $existingRegistration && ! $existingRegistration->canBeEdited();
+      $isDraftOrRejected = $existingRegistration && $existingRegistration->canBeEdited();
+    @endphp
+
+    @if ($existingRegistration)
+      @if ($isLocked)
+        <!-- Proactive Status Callout: Registration Slip Locked -->
+        <div class="callout callout-info mb-4 shadow-sm bg-body border-start border-4 border-info">
+          <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+            <div class="d-flex align-items-start gap-3">
+              <div class="fs-2 text-info">
+                <i class="bi bi-shield-check"></i>
+              </div>
+              <div>
+                <h5 class="fw-bold mb-1 text-body-emphasis">
+                  Active Registration Slip: <span class="text-primary font-monospace">#REG-{{ $existingRegistration->id }}</span>
+                  <span class="badge {{ $existingRegistration->status_badge_class }} ms-2 text-uppercase">{{ $existingRegistration->status }}</span>
+                </h5>
+                <p class="mb-0 text-body-secondary small">
+                  <strong>{{ $selectedStudent->full_name }}</strong> already has an active registration slip (<strong>#REG-{{ $existingRegistration->id }}</strong>) for <strong>{{ $activeSemester->name }}</strong> ({{ $activeSemester->academicYear->name }}) in <strong>{{ ucfirst($existingRegistration->status) }}</strong> state.
+                  Course selection is locked to prevent duplicate registrations.
+                </p>
+              </div>
+            </div>
+            <div class="d-flex flex-wrap align-items-center gap-2">
+              <a href="{{ route('registration.show', $existingRegistration) }}" class="btn btn-sm btn-primary">
+                <i class="bi bi-eye me-1"></i> View Official Slip (#REG-{{ $existingRegistration->id }})
+              </a>
+              <a href="{{ route('registration.print', $existingRegistration) }}" target="_blank" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-printer me-1"></i> Print Slip (PDF)
+              </a>
+              @if ($existingRegistration->canAddDrop())
+                <a href="{{ route('registration.add-drop.edit', $existingRegistration) }}" class="btn btn-sm btn-warning">
+                  <i class="bi bi-arrow-left-right me-1"></i> Apply for Course Add/Drop
+                </a>
+              @endif
+            </div>
+          </div>
+        </div>
+      @else
+        <!-- Proactive Status Callout: Resuming Draft / Revising Rejected Slip -->
+        <div class="callout callout-warning mb-4 shadow-sm bg-body border-start border-4 border-warning">
+          <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+            <div class="d-flex align-items-start gap-3">
+              <div class="fs-2 text-warning">
+                <i class="bi bi-pencil-square"></i>
+              </div>
+              <div>
+                <h5 class="fw-bold mb-1 text-body-emphasis">
+                  Resuming saved {{ ucfirst($existingRegistration->status) }} Slip: <span class="text-warning-emphasis font-monospace">#REG-{{ $existingRegistration->id }}</span>
+                </h5>
+                <p class="mb-0 text-body-secondary small">
+                  You are editing an existing {{ $existingRegistration->status }} registration slip for <strong>{{ $selectedStudent->full_name }}</strong> in <strong>{{ $activeSemester->name }}</strong>.
+                  Pre-selected courses from your saved slip are loaded below. You may update your courses and confirm registration.
+                </p>
+              </div>
+            </div>
+            <a href="{{ route('registration.show', $existingRegistration) }}" class="btn btn-sm btn-outline-secondary">
+              <i class="bi bi-file-earmark-text me-1"></i> View Saved Slip
+            </a>
+          </div>
+        </div>
+      @endif
+    @endif
+
+    <form action="{{ route('registration.store') }}" method="POST" id="course-registration-form" {!! $isLocked ? 'onsubmit="return false;"' : '' !!}>
       @csrf
       <input type="hidden" name="student_id" value="{{ $selectedStudent->id }}">
       <input type="hidden" name="semester_id" value="{{ $activeSemester->id }}">
-      <input type="hidden" name="total_credits" id="form-total-credits" value="{{ old('total_credits', $eligibility ? (float) $eligibility['summary']['core_credits'] : 0.0) }}">
+      <input type="hidden" name="total_credits" id="form-total-credits" value="{{ old('total_credits', $existingRegistration ? (float) $existingRegistration->total_credits : ($eligibility ? (float) $eligibility['summary']['core_credits'] : 0.0)) }}">
       <input type="hidden" name="action_status" id="form-action-status" value="submitted">
 
       <div class="row">
@@ -148,7 +215,9 @@
                       <tr>
                         <td class="text-center">
                           <input type="checkbox" checked disabled class="form-check-input bg-primary border-primary">
-                          <input type="hidden" name="course_unit_ids[]" value="{{ $course->id }}">
+                          @if (! $isLocked)
+                            <input type="hidden" name="course_unit_ids[]" value="{{ $course->id }}">
+                          @endif
                         </td>
                         <td>{{ $loop->iteration }}</td>
                         <td>
@@ -208,7 +277,7 @@
                     <tbody>
                       @foreach ($eligibility['retake_courses'] as $course)
                         @php
-                          $isSelected = in_array($course->id, old('course_unit_ids', []));
+                          $isSelected = in_array($course->id, old('course_unit_ids', $registeredCourseUnitIds));
                         @endphp
                         <tr>
                           <td class="text-center">
@@ -218,16 +287,17 @@
                                    id="retake-{{ $course->id }}"
                                    class="form-check-input retake-checkbox"
                                    data-credits="{{ (float) $course->credit_units }}"
-                                   {{ $isSelected ? 'checked' : '' }}>
+                                   {{ $isSelected ? 'checked' : '' }}
+                                   {{ $isLocked ? 'disabled' : '' }}>
                           </td>
                           <td>{{ $loop->iteration }}</td>
                           <td>
-                            <label for="retake-{{ $course->id }}" class="fw-bold font-monospace text-warning-emphasis mb-0 cursor-pointer">
+                            <label for="retake-{{ $course->id }}" class="fw-bold font-monospace text-warning-emphasis mb-0 {{ $isLocked ? '' : 'cursor-pointer' }}">
                               {{ $course->code }}
                             </label>
                           </td>
                           <td>
-                            <label for="retake-{{ $course->id }}" class="fw-semibold text-body-emphasis mb-0 cursor-pointer">
+                            <label for="retake-{{ $course->id }}" class="fw-semibold text-body-emphasis mb-0 {{ $isLocked ? '' : 'cursor-pointer' }}">
                               {{ $course->name }}
                             </label>
                             <small class="text-body-secondary d-block">{{ $course->department->name ?? '' }}</small>
@@ -244,9 +314,21 @@
                             @endif
                           </td>
                           <td>
-                            <span class="badge text-bg-warning text-dark">
-                              <i class="bi bi-arrow-repeat me-1"></i> Retake
-                            </span>
+                            @if ($isLocked)
+                              @if ($isSelected)
+                                <span class="badge text-bg-success">
+                                  <i class="bi bi-check-circle me-1"></i> Registered Retake
+                                </span>
+                              @else
+                                <span class="badge text-bg-secondary">
+                                  <i class="bi bi-dash-circle me-1"></i> Not Enrolled
+                                </span>
+                              @endif
+                            @else
+                              <span class="badge text-bg-warning text-dark">
+                                <i class="bi bi-arrow-repeat me-1"></i> Retake
+                              </span>
+                            @endif
                           </td>
                         </tr>
                       @endforeach
@@ -285,6 +367,9 @@
                     </thead>
                     <tbody>
                       @foreach ($eligibility['available_electives'] as $course)
+                        @php
+                          $isElectiveSelected = in_array($course->id, old('course_unit_ids', $registeredCourseUnitIds));
+                        @endphp
                         <tr>
                           <td class="text-center">
                             <input type="checkbox"
@@ -292,16 +377,18 @@
                                    value="{{ $course->id }}"
                                    id="elective-{{ $course->id }}"
                                    class="form-check-input elective-checkbox"
-                                   data-credits="{{ (float) $course->credit_units }}">
+                                   data-credits="{{ (float) $course->credit_units }}"
+                                   {{ $isElectiveSelected ? 'checked' : '' }}
+                                   {{ $isLocked ? 'disabled' : '' }}>
                           </td>
                           <td>{{ $loop->iteration }}</td>
                           <td>
-                            <label for="elective-{{ $course->id }}" class="fw-bold font-monospace text-primary mb-0 cursor-pointer">
+                            <label for="elective-{{ $course->id }}" class="fw-bold font-monospace text-primary mb-0 {{ $isLocked ? '' : 'cursor-pointer' }}">
                               {{ $course->code }}
                             </label>
                           </td>
                           <td>
-                            <label for="elective-{{ $course->id }}" class="fw-semibold text-body-emphasis mb-0 cursor-pointer">
+                            <label for="elective-{{ $course->id }}" class="fw-semibold text-body-emphasis mb-0 {{ $isLocked ? '' : 'cursor-pointer' }}">
                               {{ $course->name }}
                             </label>
                             <small class="text-body-secondary d-block">{{ $course->department->name ?? '' }}</small>
@@ -310,9 +397,21 @@
                             {{ number_format($course->credit_units, 1) }} CU
                           </td>
                           <td>
-                            <span class="badge text-bg-success">
-                              <i class="bi bi-check-circle me-1"></i> Satisfied
-                            </span>
+                            @if ($isLocked)
+                              @if ($isElectiveSelected)
+                                <span class="badge text-bg-success">
+                                  <i class="bi bi-check-circle me-1"></i> Registered Elective
+                                </span>
+                              @else
+                                <span class="badge text-bg-secondary">
+                                  <i class="bi bi-dash-circle me-1"></i> Not Enrolled
+                                </span>
+                              @endif
+                            @else
+                              <span class="badge text-bg-success">
+                                <i class="bi bi-check-circle me-1"></i> Satisfied
+                              </span>
+                            @endif
                           </td>
                         </tr>
                       @endforeach
@@ -339,9 +438,13 @@
             </div>
             <div class="card-body">
               <div class="mb-3 text-center p-3 rounded bg-body-secondary border border-secondary-subtle">
-                <span class="small text-body-secondary fw-semibold d-block">TOTAL ENROLLED LOAD</span>
-                <span class="fs-1 fw-bold text-success" id="meter-total-credits">{{ number_format($eligibility['summary']['core_credits'], 1) }} CU</span>
-                @if (config('academic.enforce_credit_limits', false))
+                <span class="small text-body-secondary fw-semibold d-block">{{ $isLocked ? 'OFFICIAL REGISTERED LOAD' : 'TOTAL ENROLLED LOAD' }}</span>
+                <span class="fs-1 fw-bold text-success" id="meter-total-credits">{{ number_format($existingRegistration ? (float) $existingRegistration->total_credits : (float) $eligibility['summary']['core_credits'], 1) }} CU</span>
+                @if ($isLocked)
+                  <small class="text-success d-block mt-1 fw-semibold">
+                    <i class="bi bi-shield-check me-1"></i> Slip #REG-{{ $existingRegistration->id }} ({{ ucfirst($existingRegistration->status) }})
+                  </small>
+                @elseif (config('academic.enforce_credit_limits', false))
                   <small class="text-body-secondary d-block mt-1" id="meter-status-note">Evaluating credit bounds...</small>
                 @endif
               </div>
@@ -382,7 +485,31 @@
               </ul>
 
               <!-- Submission Action Buttons -->
-              @if ($activeSemester->isRegistrationOpen())
+              @if ($isLocked)
+                <div class="d-grid gap-2">
+                  <div class="alert alert-secondary text-center py-2 mb-2 small">
+                    <i class="bi bi-lock-fill text-muted me-1"></i> Registration finalized & locked
+                  </div>
+
+                  <a href="{{ route('registration.show', $existingRegistration) }}" class="btn btn-primary py-2 fw-semibold">
+                    <i class="bi bi-eye me-1"></i> View Official Slip (#REG-{{ $existingRegistration->id }})
+                  </a>
+
+                  <a href="{{ route('registration.print', $existingRegistration) }}" target="_blank" class="btn btn-outline-secondary">
+                    <i class="bi bi-printer me-1"></i> Print Slip (PDF)
+                  </a>
+
+                  @if ($existingRegistration->canAddDrop())
+                    <a href="{{ route('registration.add-drop.edit', $existingRegistration) }}" class="btn btn-warning py-2 fw-semibold">
+                      <i class="bi bi-arrow-left-right me-1"></i> Apply for Course Add/Drop
+                    </a>
+                  @else
+                    <small class="text-body-secondary text-center d-block">
+                      Add/Drop window is closed for this semester.
+                    </small>
+                  @endif
+                </div>
+              @elseif ($activeSemester->isRegistrationOpen())
                 <div class="d-grid gap-2">
                   <button type="submit"
                           onclick="document.getElementById('form-action-status').value = 'submitted';"
@@ -390,6 +517,8 @@
                           class="btn btn-success py-2 fw-semibold">
                     @if (config('academic.require_registration_approval', false))
                       <i class="bi bi-send-check me-1"></i> Submit for Advisor Approval
+                    @elseif ($isDraftOrRejected)
+                      <i class="bi bi-check-circle-fill me-1"></i> Confirm & Update Registration
                     @else
                       <i class="bi bi-check-circle-fill me-1"></i> Confirm & Complete Registration
                     @endif
@@ -398,7 +527,7 @@
                   <button type="submit"
                           onclick="document.getElementById('form-action-status').value = 'draft';"
                           class="btn btn-outline-secondary">
-                    <i class="bi bi-save me-1"></i> Save as Draft
+                    <i class="bi bi-save me-1"></i> {{ $isDraftOrRejected ? 'Save Draft Changes' : 'Save as Draft' }}
                   </button>
                 </div>
               @else
@@ -418,6 +547,8 @@
   <script>
     document.addEventListener('DOMContentLoaded', function () {
       const enforceCreditLimits = {{ config('academic.enforce_credit_limits', false) ? 'true' : 'false' }};
+      const isLocked = {{ ($isLocked ?? false) ? 'true' : 'false' }};
+      const lockedTotalCredits = {{ $existingRegistration ? (float) $existingRegistration->total_credits : 0.0 }};
       const baseCoreCredits = {{ $eligibility ? (float) $eligibility['summary']['core_credits'] : 0.0 }};
       const minCredits = {{ $eligibility ? (float) ($eligibility['summary']['min_credits'] ?? \App\Services\CourseEligibilityService::MIN_SEMESTER_CREDITS) : \App\Services\CourseEligibilityService::MIN_SEMESTER_CREDITS }};
       const maxCredits = {{ $eligibility ? (float) ($eligibility['summary']['max_credits'] ?? \App\Services\CourseEligibilityService::MAX_SEMESTER_CREDITS) : \App\Services\CourseEligibilityService::MAX_SEMESTER_CREDITS }};
@@ -439,7 +570,11 @@
           }
         });
 
-        const totalCredits = baseCoreCredits + selectedElectiveCredits;
+        let totalCredits = baseCoreCredits + selectedElectiveCredits;
+        if (isLocked && lockedTotalCredits > 0) {
+          totalCredits = lockedTotalCredits;
+        }
+
         if (meterTotalEl) {
           meterTotalEl.textContent = totalCredits.toFixed(1) + ' CU';
         }

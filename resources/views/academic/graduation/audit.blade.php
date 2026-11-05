@@ -88,6 +88,7 @@
             </div>
             <div class="text-muted small">
               Cumulative CGPA: <strong class="fs-6 text-dark">{{ number_format($audit['cgpa'], 2) }}</strong>
+              <span class="text-muted small">(Pass Min: {{ number_format($audit['min_grad_cgpa'] ?? 2.0, 2) }})</span>
             </div>
           </div>
         </div>

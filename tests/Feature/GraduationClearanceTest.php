@@ -349,4 +349,69 @@ class GraduationClearanceTest extends TestCase
             return str_contains($def, 'minimum graduation threshold of 3.00');
         }));
     }
+
+    public function test_clearance_audit_dynamically_adapts_when_senate_updates_cgpa_thresholds(): void
+    {
+        $service = app(GraduationService::class);
+
+        // 1. Bachelor's Degree: Update Pass Degree min_cgpa from 2.00 to 2.20
+        AwardClassification::where('award_level', 'degree')
+            ->where('name', 'Pass Degree')
+            ->update(['min_cgpa' => 2.20]);
+
+        $ugProgramme = Programme::factory()->create([
+            'award_type' => 'bachelors',
+        ]);
+        $ugCurriculum = Curriculum::factory()->create([
+            'programme_id' => $ugProgramme->id,
+            'min_graduation_credits' => 0,
+        ]);
+        $ugStudent = Student::factory()->create([
+            'programme_id' => $ugProgramme->id,
+            'curriculum_id' => $ugCurriculum->id,
+            'admission_academic_year_id' => $this->academicYear->id,
+            'cumulative_gpa' => 2.15,
+        ]);
+
+        $ugAudit = $service->auditClearance($ugStudent);
+        $this->assertEquals(2.20, $ugAudit['min_grad_cgpa']);
+        $this->assertFalse($ugAudit['is_cleared']);
+        $this->assertTrue(collect($ugAudit['deficiencies'])->contains(function ($def) {
+            return str_contains($def, 'minimum graduation threshold of 2.20');
+        }));
+
+        // Now give student 2.25 CGPA -> should be cleared
+        $ugStudent->update(['cumulative_gpa' => 2.25]);
+        $ugAuditPassing = $service->auditClearance($ugStudent);
+        $this->assertTrue($ugAuditPassing['is_cleared']);
+        $this->assertEquals('Pass Degree', $ugAuditPassing['award_classification']);
+
+        // 2. Postgraduate: Update Pass tier min_cgpa from 3.00 down to 2.80
+        AwardClassification::where('award_level', 'postgraduate')
+            ->where('name', 'Pass')
+            ->update(['min_cgpa' => 2.80]);
+
+        AwardClassification::where('award_level', 'postgraduate')
+            ->where('name', 'Fail / Ineligible')
+            ->update(['max_cgpa' => 2.79]);
+
+        $pgProgramme = Programme::factory()->create([
+            'award_type' => 'Masters',
+        ]);
+        $pgCurriculum = Curriculum::factory()->create([
+            'programme_id' => $pgProgramme->id,
+            'min_graduation_credits' => 0,
+        ]);
+        $pgStudent = Student::factory()->create([
+            'programme_id' => $pgProgramme->id,
+            'curriculum_id' => $pgCurriculum->id,
+            'admission_academic_year_id' => $this->academicYear->id,
+            'cumulative_gpa' => 2.85,
+        ]);
+
+        $pgAudit = $service->auditClearance($pgStudent);
+        $this->assertEquals(2.80, $pgAudit['min_grad_cgpa']);
+        $this->assertTrue($pgAudit['is_cleared']);
+        $this->assertEquals('Pass', $pgAudit['award_classification']);
+    }
 }

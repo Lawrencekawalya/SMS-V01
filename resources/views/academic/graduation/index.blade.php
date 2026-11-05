@@ -26,7 +26,22 @@
       <div class="info-box shadow-sm">
         <span class="info-box-icon text-bg-success shadow-sm"><i class="bi bi-check-circle-fill"></i></span>
         <div class="info-box-content">
-          <span class="info-box-text">Cleared for Graduation</span>
+          <div class="d-flex align-items-center justify-content-between">
+            <span class="info-box-text mb-0">Cleared for Graduation</span>
+            <span
+              class="text-success cursor-pointer ms-1"
+              tabindex="0"
+              role="button"
+              data-bs-toggle="tooltip"
+              data-bs-html="true"
+              data-bs-placement="top"
+              data-bs-custom-class="clearance-tooltip"
+              title="&lt;div class=&#039;text-start&#039;&gt;&lt;div class=&#039;fw-bold border-bottom pb-1 mb-2 text-black&#039;&gt;We consider a student clear when they have all these 100%:&lt;/div&gt;&lt;ul class=&#039;ps-3 mb-0&#039; style=&#039;font-size: 0.82rem; line-height: 1.55;&#039;&gt;&lt;li&gt;&bull; Academic Core Courses&lt;/li&gt;&lt;li&gt;&bull; Retakes &amp;amp; Incompletes&lt;/li&gt;&lt;li&gt;&bull; Credit Units &amp;amp; CGPA&lt;/li&gt;&lt;li&gt;&bull; Degree Classification&lt;/li&gt;&lt;li&gt;&bull; Official Senate Gazette&lt;/li&gt;&lt;li class=&#039;text-muted&#039;&gt;&bull; Finance / Fees Clearance &lt;em&gt;[coming soon]&lt;/em&gt;&lt;/li&gt;&lt;li class=&#039;text-muted&#039;&gt;&bull; Library Clearance &lt;em&gt;[coming soon]&lt;/em&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;"
+              aria-label="Graduation clearance criteria details"
+            >
+              <i class="bi bi-info-circle fs-6"></i>
+            </span>
+          </div>
           <span class="info-box-number fs-4">{{ $stats['total_cleared'] }}</span>
           <span class="progress-description text-muted small">All requirements satisfied</span>
         </div>
@@ -162,7 +177,7 @@
                   </div>
                 </td>
                 <td class="text-center">
-                  <span class="badge {{ $candidate['cgpa'] >= 3.6 ? 'bg-success' : ($candidate['cgpa'] >= 2.0 ? 'bg-info' : 'bg-danger') }} fs-6">
+                  <span class="badge {{ $candidate['cgpa'] >= 3.6 ? 'bg-success' : ($candidate['cgpa'] >= ($candidate['min_grad_cgpa'] ?? 2.0) ? 'bg-info' : 'bg-danger') }} fs-6">
                     {{ number_format($candidate['cgpa'], 2) }}
                   </span>
                 </td>
@@ -208,3 +223,24 @@
     </div>
   </div>
 @endsection
+
+@push('scripts')
+  <style>
+    .clearance-tooltip .tooltip-inner {
+      max-width: 380px;
+      text-align: left;
+      padding: 12px 14px;
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+    .cursor-pointer {
+      cursor: pointer;
+    }
+  </style>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+      [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+    });
+  </script>
+@endpush
