@@ -161,7 +161,7 @@ class MissedPaperAndSpecialExamTest extends TestCase
 
         // Course 2: Missed Exam with Permission (Medical grounds)
         $computed = $this->gradingEngine->computeMark(32.0, null, $this->sheet2, 'missed_permission');
-        $this->assertEquals('INC', $computed['grade_letter']);
+        $this->assertEquals('MP', $computed['grade_letter']);
         $this->assertNull($computed['final_score']);
         $this->assertNull($computed['grade_point']);
         $this->assertFalse($computed['is_retake']);
@@ -173,7 +173,7 @@ class MissedPaperAndSpecialExamTest extends TestCase
             'ca_score' => $computed['ca_score'],
             'exam_score' => null,
             'final_score' => null,
-            'grade_letter' => 'INC',
+            'grade_letter' => 'MP',
             'grade_point' => null,
             'is_passed' => false,
             'is_retake' => false,
@@ -182,7 +182,7 @@ class MissedPaperAndSpecialExamTest extends TestCase
 
         $perf = $this->gradingEngine->calculateSemesterGpa($this->student, $this->semester);
 
-        // Course 2 is an approved incomplete; only Course 1 (4 CU) counts in registered divisor
+        // Course 2 is an approved missed paper; only Course 1 (4 CU) counts in registered divisor
         $this->assertEquals(4.0, $perf->credit_units_registered);
         $this->assertEquals(4.0, $perf->credit_units_earned);
         $this->assertEquals(5.00, $perf->gpa);
@@ -287,7 +287,7 @@ class MissedPaperAndSpecialExamTest extends TestCase
             'ca_score' => 32.0,
             'exam_score' => null,
             'final_score' => null,
-            'grade_letter' => 'INC',
+            'grade_letter' => 'MP',
             'grade_point' => null,
             'is_passed' => false,
             'is_retake' => false,
@@ -405,7 +405,7 @@ class MissedPaperAndSpecialExamTest extends TestCase
             'ca_score' => 32.0,
             'exam_score' => null,
             'final_score' => null,
-            'grade_letter' => 'INC',
+            'grade_letter' => 'MP',
             'grade_point' => null,
             'is_passed' => false,
             'is_retake' => false,
@@ -450,7 +450,7 @@ class MissedPaperAndSpecialExamTest extends TestCase
         $this->seed(GradingPolicySeeder::class);
         $this->seed(DemoMissedPaperStudentsSeeder::class);
 
-        // Kevin Mugisha (Missed with permission / Medical -> INC)
+        // Kevin Mugisha (Missed with permission / Medical -> MP)
         $kevin = Student::where('registration_number', '25/BSU/BSCS/088')->first();
         $this->assertNotNull($kevin);
         $this->assertEquals('Kevin', $kevin->first_name);
@@ -461,11 +461,11 @@ class MissedPaperAndSpecialExamTest extends TestCase
 
         $this->assertNotNull($kevinMark);
         $this->assertEquals('missed_permission', $kevinMark->exam_status);
-        $this->assertEquals('INC', $kevinMark->grade_letter);
+        $this->assertEquals('MP', $kevinMark->grade_letter);
         $this->assertNull($kevinMark->final_score);
 
         $kevinPerf = $kevin->semesterPerformances()->first();
-        $this->assertEquals(10.0, $kevinPerf->credit_units_registered); // 10 CU (4 CU INC skipped)
+        $this->assertEquals(10.0, $kevinPerf->credit_units_registered); // 10 CU (4 CU MP skipped)
         $this->assertEquals(4.05, $kevinPerf->gpa);
 
         // Brenda Atuhaire (Absent without permission -> ABS / F)

@@ -232,4 +232,12 @@ class Student extends Model
     {
         return $this->status === 'active';
     }
+
+    /**
+     * Check if the student has officially graduated and had their degree conferred.
+     */
+    public function isGraduated(): bool
+    {
+        return $this->status === 'graduated';
+    }
 }

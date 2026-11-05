@@ -97,7 +97,7 @@ class StudentMarkFactory extends Factory
             'ca_score' => $ca,
             'exam_score' => null,
             'final_score' => null,
-            'grade_letter' => 'INC',
+            'grade_letter' => 'MP',
             'grade_point' => null,
             'is_passed' => false,
             'is_retake' => false,

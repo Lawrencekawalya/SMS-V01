@@ -241,7 +241,7 @@
               </td>
               <td>
                 @if ($mark->isMissedWithPermission())
-                  <span class="badge text-bg-warning text-dark"><i class="bi bi-hospital me-1"></i>INC (Medical)</span>
+                  <span class="badge text-bg-warning text-dark"><i class="bi bi-hospital me-1"></i>MP (Medical)</span>
                   <div class="mt-1">
                     <button type="button" class="btn btn-xs btn-outline-primary py-0 px-1" data-bs-toggle="modal" data-bs-target="#specialExamModal{{ $mark->id }}">
                       <i class="bi bi-pencil-square me-1"></i> Special Exam

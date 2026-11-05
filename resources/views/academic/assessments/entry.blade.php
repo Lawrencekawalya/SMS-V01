@@ -42,17 +42,19 @@
   @if ($sheet->isReopenedForAmendment())
     <div class="callout callout-warning shadow-sm mb-4 border-start border-4 border-warning bg-warning-subtle p-3 rounded">
       <div class="d-flex align-items-start">
-        <i class="bi bi-shield-exclamation text-warning-emphasis fs-3 me-3"></i>
+        <i class="bi bi-arrow-repeat text-warning-emphasis fs-3 me-3"></i>
         <div>
           <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
-            <h5 class="fw-bold text-warning-emphasis mb-0">Senate Grade Amendment Mode (Revision Cycle #{{ $sheet->revision_cycle }})</h5>
-            <span class="badge text-bg-warning text-dark font-monospace">Minute: {{ $sheet->senate_approval_reference }}</span>
+            <h5 class="fw-bold text-warning-emphasis mb-0">Post-Publication Re-Moderation Mode (Cycle #{{ $sheet->revision_cycle }})</h5>
+            @if ($sheet->senate_approval_reference)
+              <span class="badge text-bg-warning text-dark font-monospace">Senate Minute: {{ $sheet->senate_approval_reference }}</span>
+            @endif
           </div>
-          <p class="mb-1 text-dark"><strong>Authorized Justification:</strong> {{ $sheet->reopen_justification }}</p>
+          <p class="mb-1 text-dark"><strong>Departmental Justification:</strong> {{ $sheet->reopen_justification }}</p>
           <small class="text-muted d-block">
-            Unlocked on {{ $sheet->reopened_at?->format('M d, Y H:i') }}
+            Initiated on {{ $sheet->reopened_at?->format('M d, Y H:i') }}
             @if ($sheet->reopenedBy) by <strong>{{ $sheet->reopenedBy->name }}</strong> @endif.
-            All score alterations are automatically logged in the permanent <code>grade_audit_logs</code> table with this Senate minute reference.
+            <strong>Notice:</strong> Conferred graduands are permanently locked against alterations. Once finished, submit this sheet to Senate for final re-publication.
           </small>
         </div>
       </div>
@@ -224,9 +226,10 @@
                 @foreach ($studentMarks as $index => $mark)
                   @php
                     $student = $mark->student;
+                    $isGraduated = $student && $student->isGraduated();
                     $studentInitials = strtoupper(substr($student->first_name ?? 'S', 0, 1) . substr($student->last_name ?? 'M', 0, 1));
                   @endphp
-                  <tr class="student-mark-row" data-index="{{ $index }}">
+                  <tr class="student-mark-row {{ $isGraduated ? 'table-secondary opacity-75' : '' }}" data-index="{{ $index }}">
                     <td class="text-center text-muted small fw-bold">
                       {{ $index + 1 }}
                       <input type="hidden" name="marks[{{ $index }}][student_mark_id]" value="{{ $mark->id }}">
@@ -238,13 +241,23 @@
                         </div>
                         <div>
                           <div class="fw-bold student-name-text">{{ $student->full_name }}</div>
-                          <small class="text-muted">{{ $student->programme->code ?? 'N/A' }}</small>
+                          <div class="d-flex align-items-center gap-1 flex-wrap">
+                            <small class="text-muted">{{ $student->programme->code ?? 'N/A' }}</small>
+                            @if ($isGraduated)
+                              <span class="badge text-bg-secondary" title="Award Conferred - Permanently Locked">
+                                <i class="bi bi-mortarboard-fill me-1"></i> Graduated (Locked)
+                              </span>
+                            @endif
+                          </div>
                         </div>
                       </div>
                     </td>
                     <td>
                       <div class="fw-semibold font-monospace small student-reg-text">{{ $student->registration_number }}</div>
                       <small class="text-muted font-monospace">{{ $student->student_number }}</small>
+                      @if ($isGraduated)
+                        <small class="text-danger d-block fst-italic">Conferred Degree &bull; Immutable</small>
+                      @endif
                     </td>
                     <td>
                       <input
@@ -254,16 +267,17 @@
                         min="0"
                         max="{{ $sheet->ca_weight }}"
                         value="{{ old("marks.{$index}.ca_score", $mark->ca_score !== null ? number_format($mark->ca_score, 1, '.', '') : '') }}"
-                        class="form-control form-control-sm text-end score-input ca-input"
+                        class="form-control form-control-sm text-end score-input ca-input {{ $isGraduated ? 'bg-secondary-subtle border-0' : '' }}"
                         placeholder="0.0"
                         data-row="{{ $index }}"
                         data-field="ca"
                         autocomplete="off"
+                        {{ $isGraduated ? 'disabled readonly' : '' }}
                       >
                       <div class="invalid-feedback small">Max {{ number_format($sheet->ca_weight, 0) }}</div>
                     </td>
                     <td>
-                      <select name="marks[{{ $index }}][exam_status]" class="form-select form-select-sm exam-status-select" data-row="{{ $index }}">
+                      <select name="marks[{{ $index }}][exam_status]" class="form-select form-select-sm exam-status-select {{ $isGraduated ? 'bg-secondary-subtle border-0' : '' }}" data-row="{{ $index }}" {{ $isGraduated ? 'disabled' : '' }}>
                         <option value="present" {{ old("marks.{$index}.exam_status", $mark->exam_status ?? 'present') === 'present' ? 'selected' : '' }}>Present</option>
                         <option value="missed_permission" {{ old("marks.{$index}.exam_status", $mark->exam_status) === 'missed_permission' ? 'selected' : '' }}>Missed (Medical/Permitted)</option>
                         <option value="absent" {{ old("marks.{$index}.exam_status", $mark->exam_status) === 'absent' ? 'selected' : '' }}>Absent (Unexcused - F)</option>
@@ -277,11 +291,12 @@
                         min="0"
                         max="{{ $sheet->exam_weight }}"
                         value="{{ old("marks.{$index}.exam_score", $mark->exam_score !== null ? number_format($mark->exam_score, 1, '.', '') : '') }}"
-                        class="form-control form-control-sm text-end score-input exam-input"
+                        class="form-control form-control-sm text-end score-input exam-input {{ $isGraduated ? 'bg-secondary-subtle border-0' : '' }}"
                         placeholder="0.0"
                         data-row="{{ $index }}"
                         data-field="exam"
                         autocomplete="off"
+                        {{ $isGraduated ? 'disabled' : '' }}
                       >
                       <div class="invalid-feedback small">Max {{ number_format($sheet->exam_weight, 0) }}</div>
                     </td>
@@ -310,9 +325,10 @@
                         type="text"
                         name="marks[{{ $index }}][lecturer_remarks]"
                         value="{{ old("marks.{$index}.lecturer_remarks", $mark->lecturer_remarks) }}"
-                        class="form-control form-control-sm"
-                        placeholder="Optional remarks..."
+                        class="form-control form-control-sm {{ $isGraduated ? 'bg-secondary-subtle border-0' : '' }}"
+                        placeholder="{{ $isGraduated ? 'Conferred - Immutable' : 'Optional remarks / revision reason...' }}"
                         maxlength="255"
+                        {{ $isGraduated ? 'disabled readonly' : '' }}
                       >
                     </td>
                   </tr>
@@ -335,11 +351,17 @@
         </div>
         <div class="d-flex align-items-center gap-2">
           <button type="button" class="btn btn-outline-primary px-3" id="btn-save-draft">
-            <i class="bi bi-save me-1"></i> Save as Draft
+            <i class="bi bi-save me-1"></i> {{ $sheet->isReopenedForAmendment() ? 'Save Draft Amendments' : 'Save as Draft' }}
           </button>
-          <button type="button" class="btn btn-primary px-4" id="btn-submit-hod">
-            <i class="bi bi-send-check me-1"></i> Submit to Head of Department
-          </button>
+          @if ($sheet->isReopenedForAmendment())
+            <button type="button" class="btn btn-success px-4" id="btn-submit-senate" onclick="document.getElementById('form-action-input').value = 'submit_senate'; document.getElementById('mark-entry-form').submit();">
+              <i class="bi bi-send-check me-1"></i> Submit Re-Moderated Sheet to Senate
+            </button>
+          @else
+            <button type="button" class="btn btn-primary px-4" id="btn-submit-hod">
+              <i class="bi bi-send-check me-1"></i> Submit to Head of Department
+            </button>
+          @endif
         </div>
       </div>
     </div>
@@ -414,7 +436,7 @@
           examInput.value = '';
           examInput.disabled = true;
           totalSpan.textContent = '-';
-          gradeBadge.textContent = 'INC';
+          gradeBadge.textContent = 'MP';
           gradeBadge.className = 'badge grade-badge text-bg-warning text-dark';
           gpSpan.textContent = '-';
           statusBadge.textContent = 'Special Exam';

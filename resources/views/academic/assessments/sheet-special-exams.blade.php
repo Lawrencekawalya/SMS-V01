@@ -122,7 +122,7 @@
                 </td>
                 <td class="text-center">
                   @if ($mark->isMissedWithPermission())
-                    <span class="badge text-bg-warning text-dark"><i class="bi bi-hospital me-1"></i>INC (Medical/Permitted)</span>
+                    <span class="badge text-bg-warning text-dark"><i class="bi bi-hospital me-1"></i>MP (Medical/Permitted)</span>
                   @elseif ($mark->isSpecialExam())
                     <span class="badge text-bg-info text-dark"><i class="bi bi-star-fill me-1"></i>Special Exam</span>
                   @elseif ($mark->isSupplementaryExam())
@@ -153,7 +153,7 @@
               <tr>
                 <td colspan="9" class="text-center py-4 text-muted">
                   <i class="bi bi-check-circle fs-2 d-block mb-2 text-success"></i>
-                  No students in this course unit have pending incomplete papers or special examination sittings.
+                  No students in this course unit have pending missed papers or special examination sittings.
                 </td>
               </tr>
             @endforelse

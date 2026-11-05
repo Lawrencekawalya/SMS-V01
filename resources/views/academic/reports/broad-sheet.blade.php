@@ -13,19 +13,21 @@
 @section('content')
   <!-- Filter & Action Card -->
   <div class="card card-outline card-primary mb-4 shadow-sm no-print">
-    <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
-      <h3 class="card-title m-0">
-        <i class="bi bi-table me-1 text-primary"></i> Cohort &amp; Session Filter
-      </h3>
-      <div class="d-flex gap-2">
-        @if ($selectedProgramme && $selectedSemester)
-          <a href="{{ route('broad-sheet.export', request()->query()) }}" class="btn btn-sm btn-outline-success">
-            <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export CSV
-          </a>
-          <button type="button" onclick="window.print()" class="btn btn-sm btn-outline-secondary">
-            <i class="bi bi-printer me-1"></i> Print Ledger
-          </button>
-        @endif
+    <div class="card-header">
+      <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+        <h3 class="card-title mb-0">
+          <i class="bi bi-table me-1 text-primary"></i> Cohort &amp; Session Filter
+        </h3>
+        <div class="card-tools d-flex gap-2 me-0 ms-auto">
+          @if ($selectedProgramme && $selectedSemester)
+            <a href="{{ route('broad-sheet.export', request()->query()) }}" class="btn btn-sm btn-outline-success">
+              <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export CSV
+            </a>
+            <button type="button" onclick="window.print()" class="btn btn-sm btn-outline-secondary">
+              <i class="bi bi-printer me-1"></i> Print Ledger
+            </button>
+          @endif
+        </div>
       </div>
     </div>
     <div class="card-body">
@@ -53,17 +55,6 @@
           </select>
         </div>
 
-        <div class="col-12 col-md-3">
-          <label for="semester_id" class="form-label small fw-semibold">Semester</label>
-          <select name="semester_id" id="semester_id" class="form-select form-select-sm">
-            @foreach ($semesters as $sem)
-              <option value="{{ $sem->id }}" {{ (string) ($selectedSemester?->id ?? '') === (string) $sem->id ? 'selected' : '' }}>
-                {{ $sem->name }} ({{ $sem->academicYear->name ?? '' }})
-              </option>
-            @endforeach
-          </select>
-        </div>
-
         <div class="col-12 col-md-2">
           <label for="study_year" class="form-label small fw-semibold">Study Year</label>
           <select name="study_year" id="study_year" class="form-select form-select-sm">
@@ -72,6 +63,17 @@
                 Year {{ $y }}
               </option>
             @endfor
+          </select>
+        </div>
+
+        <div class="col-12 col-md-3">
+          <label for="semester_id" class="form-label small fw-semibold">Semester</label>
+          <select name="semester_id" id="semester_id" class="form-select form-select-sm">
+            @foreach ($semesters as $sem)
+              <option value="{{ $sem->id }}" {{ (string) ($selectedSemester?->id ?? '') === (string) $sem->id ? 'selected' : '' }}>
+                {{ $sem->name }} ({{ $sem->academicYear->name ?? '' }})
+              </option>
+            @endforeach
           </select>
         </div>
 
@@ -85,8 +87,8 @@
   </div>
 
   @if ($selectedProgramme && $selectedSemester)
-    <!-- Broad-Sheet Official Header (Visible on print & screen) -->
-    <div class="text-center mb-4">
+    <!-- Broad-Sheet Official Header (Printed PDF Only) -->
+    <div class="d-none d-print-block text-center mb-4">
       <h4 class="fw-bold mb-1 text-uppercase">{{ $university->name ?? 'BISHOP STUART UNIVERSITY' }}</h4>
       <h6 class="text-secondary mb-1">OFFICE OF THE ACADEMIC REGISTRAR &bull; SENATE EXAMINATION BOARD</h6>
       <h5 class="fw-bold text-primary mb-1">MASTER SENATE BROAD-SHEET (RESULTS GAZETTE)</h5>
@@ -269,8 +271,8 @@
       </div>
     </div>
 
-    <!-- Official Senate Signature Endorsement Block (Visible on print & screen bottom) -->
-    <div class="mt-4 pt-3 border-top page-break-inside-avoid">
+    <!-- Official Senate Signature Endorsement Block (Printed PDF Only) -->
+    <div class="d-none d-print-block mt-4 pt-3 border-top page-break-inside-avoid">
       <div class="row text-center mt-3 g-4">
         <div class="col-4">
           <div class="border-bottom border-dark pb-4 mb-2 mx-auto" style="width: 80%;"></div>

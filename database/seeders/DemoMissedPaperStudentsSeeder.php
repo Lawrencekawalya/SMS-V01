@@ -114,7 +114,7 @@ class DemoMissedPaperStudentsSeeder extends Seeder
             ['code' => 'CSC1101', 'ca' => 30.0, 'exam' => 46.0, 'status' => 'present', 'type' => 'Core'], // 76.0 (B+, 4.5 GP, Passed)
             ['code' => 'BIT1101', 'ca' => 28.0, 'exam' => 44.0, 'status' => 'present', 'type' => 'Core'], // 72.0 (B+, 4.5 GP, Passed)
             ['code' => 'AFN1102', 'ca' => 26.0, 'exam' => 42.0, 'status' => 'present', 'type' => 'Elective'], // 68.0 (B, 4.0 GP, Passed)
-            ['code' => 'CSC1102', 'ca' => 32.0, 'exam' => null, 'status' => 'missed_permission', 'type' => 'Core'], // INC (Medical - Eligible for Special Exam)
+            ['code' => 'CSC1102', 'ca' => 32.0, 'exam' => null, 'status' => 'missed_permission', 'type' => 'Core'], // MP (Medical - Eligible for Special Exam)
         ];
 
         foreach ($kevinCourses as $item) {
@@ -166,7 +166,7 @@ class DemoMissedPaperStudentsSeeder extends Seeder
                         'exam_status' => 'missed_permission',
                         'sitting_type' => 'main',
                         'final_score' => null,
-                        'grade_letter' => 'INC',
+                        'grade_letter' => 'MP',
                         'grade_point' => null,
                         'is_passed' => false,
                         'is_retake' => false,
@@ -201,7 +201,7 @@ class DemoMissedPaperStudentsSeeder extends Seeder
         $perf1 = $gradingEngine->calculateSemesterGpa($student1, $semester1);
         $student1->update(['cumulative_gpa' => $perf1->cgpa]);
 
-        $this->command?->info("Seeded Demo Student 1 (Missed with Permission / INC): {$student1->full_name} ({$student1->registration_number}) - Y1S1 GPA: {$perf1->gpa} (No penalty for INC paper)");
+        $this->command?->info("Seeded Demo Student 1 (Missed with Permission / MP): {$student1->full_name} ({$student1->registration_number}) - Y1S1 GPA: {$perf1->gpa} (No penalty for MP paper)");
 
         // =========================================================================
         // DEMO STUDENT 2: Brenda Atuhaire (Absent Without Permission - ABS / Automatic F / Retake)

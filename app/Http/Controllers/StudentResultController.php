@@ -149,58 +149,7 @@ class StudentResultController extends Controller
             'admissionAcademicYear',
         ]);
 
-        // Retrieve all semester performances for the student chronologically
-        $performances = StudentSemesterPerformance::with(['semester.academicYear'])
-            ->where('student_id', $student->id)
-            ->join('semesters', 'student_semester_performances.semester_id', '=', 'semesters.id')
-            ->join('academic_years', 'semesters.academic_year_id', '=', 'academic_years.id')
-            ->orderBy('academic_years.start_date')
-            ->orderBy('semesters.semester_number')
-            ->select('student_semester_performances.*')
-            ->get();
-
-        // If performances is empty, attempt to check all distinct semesters where marks exist
-        if ($performances->isEmpty()) {
-            $distinctSemesterIds = StudentMark::where('student_id', $student->id)
-                ->whereHas('courseAssessmentSheet')
-                ->with('courseAssessmentSheet')
-                ->get()
-                ->pluck('courseAssessmentSheet.semester_id')
-                ->unique();
-
-            foreach ($distinctSemesterIds as $semId) {
-                $sem = Semester::find($semId);
-                if ($sem) {
-                    $this->gradingEngine->calculateSemesterGpa($student, $sem);
-                }
-            }
-
-            $performances = StudentSemesterPerformance::with(['semester.academicYear'])
-                ->where('student_id', $student->id)
-                ->join('semesters', 'student_semester_performances.semester_id', '=', 'semesters.id')
-                ->join('academic_years', 'semesters.academic_year_id', '=', 'academic_years.id')
-                ->orderBy('academic_years.start_date')
-                ->orderBy('semesters.semester_number')
-                ->select('student_semester_performances.*')
-                ->get();
-        }
-
-        $transcriptData = [];
-
-        foreach ($performances as $perf) {
-            $marks = StudentMark::where('student_id', $student->id)
-                ->whereHas('courseAssessmentSheet', function ($q) use ($perf) {
-                    $q->where('semester_id', $perf->semester_id);
-                })
-                ->with(['courseAssessmentSheet.courseUnit', 'registrationItem'])
-                ->get();
-
-            $transcriptData[] = [
-                'performance' => $perf,
-                'semester' => $perf->semester,
-                'marks' => $marks,
-            ];
-        }
+        $transcriptData = $this->gradingEngine->buildTranscriptData($student);
 
         $cumulative = $this->gradingEngine->computeCumulativeMetrics($student);
         $cumulativeCgpa = $cumulative['cgpa'];

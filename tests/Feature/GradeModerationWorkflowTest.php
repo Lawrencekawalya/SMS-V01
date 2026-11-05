@@ -556,4 +556,108 @@ class GradeModerationWorkflowTest extends TestCase
         $this->assertEquals(2.50, (float) $bobPerformance->cgpa);
         $this->assertEquals('Normal Progress', $bobPerformance->academic_standing);
     }
+
+    public function test_hod_can_initiate_post_publication_re_moderation_directly(): void
+    {
+        $this->sheet->update([
+            'status' => 'published',
+            'published_at' => now(),
+            'published_by_id' => $this->hodUser->id,
+            'revision_cycle' => 0,
+        ]);
+
+        $response = $this->post(route('moderation.initiate-re-moderation', $this->sheet), [
+            'justification' => 'Departmental board upheld remarking appeal for Question 3.',
+        ]);
+
+        $response->assertRedirect(route('assessment.edit', $this->sheet));
+        $response->assertSessionHas('success');
+
+        $this->sheet->refresh();
+        $this->assertEquals('reopened_for_amendment', $this->sheet->status);
+        $this->assertEquals(1, $this->sheet->revision_cycle);
+        $this->assertEquals('Departmental board upheld remarking appeal for Question 3.', $this->sheet->reopen_justification);
+    }
+
+    public function test_graduated_student_marks_cannot_be_altered_during_re_moderation(): void
+    {
+        $this->student1->update(['status' => 'graduated']);
+
+        $this->sheet->update([
+            'status' => 'reopened_for_amendment',
+            'revision_cycle' => 1,
+            'reopened_at' => now(),
+        ]);
+
+        $aliceMark = StudentMark::where('course_assessment_sheet_id', $this->sheet->id)
+            ->where('student_id', $this->student1->id)
+            ->firstOrFail();
+
+        $originalFinal = $aliceMark->final_score;
+
+        $response = $this->put(route('assessment.update', $this->sheet), [
+            'action' => 'save_draft',
+            'marks' => [
+                [
+                    'student_mark_id' => $aliceMark->id,
+                    'ca_score' => 40.0, // altered from original
+                    'exam_score' => 60.0, // altered from original
+                    'exam_status' => 'present',
+                ],
+            ],
+        ]);
+
+        $response->assertSessionHas('error');
+        $this->assertStringContainsString('Security Violation: Mark alteration blocked', session('error'));
+
+        $aliceMark->refresh();
+        $this->assertEquals($originalFinal, $aliceMark->final_score);
+    }
+
+    public function test_senate_visual_delta_diff_isolates_only_amended_students(): void
+    {
+        $this->sheet->update([
+            'status' => 'reopened_for_amendment',
+            'revision_cycle' => 1,
+            'reopened_at' => now(),
+        ]);
+
+        $bobMark = StudentMark::where('course_assessment_sheet_id', $this->sheet->id)
+            ->where('student_id', $this->student2->id)
+            ->firstOrFail();
+
+        // Amend Bob's mark (Alice remains untouched)
+        $this->put(route('assessment.update', $this->sheet), [
+            'action' => 'submit_senate',
+            'marks' => [
+                [
+                    'student_mark_id' => $bobMark->id,
+                    'ca_score' => 18.0,
+                    'exam_score' => 42.0, // raised from 24.0 -> final becomes 60.0 (C)
+                    'exam_status' => 'present',
+                    'lecturer_remarks' => 'Clerical recount of Question 2 script',
+                ],
+            ],
+        ]);
+
+        $this->sheet->refresh();
+        $this->assertEquals('department_moderated', $this->sheet->status);
+
+        $diffs = $this->sheet->getAmendedMarksDiff();
+        $this->assertCount(1, $diffs);
+
+        $bobDiff = $diffs->first();
+        $this->assertEquals($this->student2->id, $bobDiff['student']->id);
+        $this->assertEquals(42.0, (float) $bobDiff['previous_final']);
+        $this->assertEquals(60.0, (float) $bobDiff['new_final']);
+        $this->assertEquals(18.0, (float) $bobDiff['delta']);
+        $this->assertStringContainsString('Clerical recount', $bobDiff['reason']);
+
+        // Inspect moderation show view
+        $viewResponse = $this->get(route('moderation.show', $this->sheet));
+        $viewResponse->assertOk();
+        $viewResponse->assertSee('Senate Visual Delta Review: Re-Moderated Marks');
+        $viewResponse->assertSee($this->student2->full_name);
+        $viewResponse->assertSee('+18.0%');
+    }
 }

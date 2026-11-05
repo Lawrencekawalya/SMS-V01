@@ -347,4 +347,150 @@ class AcademicPerformanceAnalyticsTest extends TestCase
         // Grade distribution should contain A (1), B+ (1), B (1), F (2)
         $response->assertSee('Grade Distribution');
     }
+
+    public function test_senate_program_standing_aggregates_normal_progress_retakes_and_missed_papers(): void
+    {
+        $response = $this->actingAs($this->adminUser)
+            ->get(route('analytics.list', [
+                'semester_id' => $this->semester->id,
+            ]));
+
+        $response->assertOk();
+        $response->assertSee('Programme Academic Standing Ledger');
+        $response->assertSee('Normal Progress (Clear)');
+        $response->assertSee('Active Retakes (RTK)');
+        $response->assertSee('Missed Papers (MP)');
+        $response->assertSee('Bachelor of Information Technology');
+        $response->assertSee('Bachelor of Business Administration');
+
+        // Check view data
+        $standingData = $response->viewData('standingData');
+        $this->assertNotEmpty($standingData['rows']);
+        $this->assertArrayHasKey('totals', $standingData);
+        $this->assertEquals(5, $standingData['totals']['total_students']);
+    }
+
+    public function test_senate_honours_classification_aggregates_nche_tiers(): void
+    {
+        $response = $this->actingAs($this->adminUser)
+            ->get(route('analytics.list', [
+                'semester_id' => $this->semester->id,
+            ]));
+
+        $response->assertOk();
+        $response->assertSee('University-Wide Honours Classification Performance Distribution');
+        $response->assertSee('Degree Honours Classification Performance by Programme');
+        $response->assertSee('First Class');
+        $response->assertSee('2nd Upper');
+        $response->assertSee('2nd Lower');
+        $response->assertSee('Pass Degree');
+
+        $honoursData = $response->viewData('honoursData');
+        $this->assertNotEmpty($honoursData['rows']);
+        $this->assertEquals(5, $honoursData['totals']['total_students']);
+    }
+
+    public function test_export_program_standing_streams_csv_report(): void
+    {
+        $response = $this->actingAs($this->adminUser)
+            ->get(route('analytics.export.program-standing', [
+                'semester_id' => $this->semester->id,
+            ]));
+
+        $response->assertOk();
+        $this->assertTrue(str_contains((string) $response->headers->get('content-type'), 'text/csv'));
+        $this->assertTrue(str_contains((string) $response->headers->get('content-disposition'), 'senate_program_standing_'));
+
+        ob_start();
+        $response->sendContent();
+        $csv = ob_get_clean();
+
+        $this->assertStringContainsString('OFFICIAL SENATE ACADEMIC STANDING REPORT BY PROGRAMME', $csv);
+        $this->assertStringContainsString('Programme Code', $csv);
+        $this->assertStringContainsString('Retakes (RTK) Count', $csv);
+        $this->assertStringContainsString('Missed Papers (MP) Count', $csv);
+        $this->assertStringContainsString('BIT', $csv);
+        $this->assertStringContainsString('BBA', $csv);
+    }
+
+    public function test_export_honours_performance_streams_csv_report(): void
+    {
+        $response = $this->actingAs($this->adminUser)
+            ->get(route('analytics.export.honours-performance', [
+                'semester_id' => $this->semester->id,
+            ]));
+
+        $response->assertOk();
+        $this->assertTrue(str_contains((string) $response->headers->get('content-type'), 'text/csv'));
+        $this->assertTrue(str_contains((string) $response->headers->get('content-disposition'), 'senate_honours_performance_'));
+
+        ob_start();
+        $response->sendContent();
+        $csv = ob_get_clean();
+
+        $this->assertStringContainsString('OFFICIAL SENATE DEGREE HONOURS CLASSIFICATION PERFORMANCE REPORT', $csv);
+        $this->assertStringContainsString('Statutory Grading Standard', $csv);
+        $this->assertStringContainsString('First Class (4.40 - 5.00) Count', $csv);
+        $this->assertStringContainsString('BIT', $csv);
+        $this->assertStringContainsString('BBA', $csv);
+    }
+
+    public function test_academic_analytics_dashboard_defaults_to_active_semester_when_no_parameters_passed(): void
+    {
+        // Visiting without any query parameters
+        $response = $this->actingAs($this->adminUser)
+            ->get(route('analytics.list'));
+
+        $response->assertOk();
+        $response->assertViewHas('selectedSemester', function ($sem) {
+            return $sem->id === $this->semester->id && $sem->is_active === true;
+        });
+        $response->assertViewHas('selectedAcademicYear', function ($year) {
+            return $year->id === $this->academicYear->id;
+        });
+
+        // The active semester is marked in the dropdown
+        $response->assertSee('Active Session');
+    }
+
+    public function test_academic_analytics_reconciles_mismatched_academic_year_and_semester_to_active_semester(): void
+    {
+        // Create another future academic year with its own semester
+        $futureYear = AcademicYear::factory()->create([
+            'name' => '2027/2028',
+            'is_current' => false,
+            'start_date' => '2027-08-01',
+        ]);
+        $futureSemester = Semester::factory()->create([
+            'academic_year_id' => $futureYear->id,
+            'name' => 'Semester 2',
+            'semester_number' => 2,
+            'is_active' => false,
+        ]);
+
+        // Simulating the user screenshot: academic_year_id = current year, but semester_id = future semester
+        $response = $this->actingAs($this->adminUser)
+            ->get(route('analytics.list', [
+                'academic_year_id' => $this->academicYear->id,
+                'semester_id' => $futureSemester->id,
+            ]));
+
+        $response->assertOk();
+        // Controller must reconcile mismatch and select the active semester of the selected academic year
+        $response->assertViewHas('selectedSemester', function ($sem) {
+            return $sem->id === $this->semester->id;
+        });
+        $response->assertViewHas('selectedAcademicYear', function ($year) {
+            return $year->id === $this->academicYear->id;
+        });
+    }
+
+    public function test_academic_analytics_export_defaults_to_active_semester_when_no_semester_param_is_passed(): void
+    {
+        $response = $this->actingAs($this->adminUser)
+            ->get(route('analytics.export.program-standing'));
+
+        $response->assertOk();
+        $this->assertTrue(str_contains((string) $response->headers->get('content-type'), 'text/csv'));
+    }
 }

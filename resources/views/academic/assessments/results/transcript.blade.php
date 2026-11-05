@@ -209,8 +209,8 @@
                 <td class="font-monospace fw-semibold">{{ $mark->courseAssessmentSheet?->courseUnit?->code ?? 'N/A' }}</td>
                 <td>
                   {{ $mark->courseAssessmentSheet?->courseUnit?->name ?? 'Course Unit' }}
-                  @if ($mark->registrationItem?->course_type === 'Retake')
-                    <span class="badge text-bg-warning text-dark py-0 ms-1" style="font-size: 0.65rem;">Retake</span>
+                  @if (!empty($mark->is_retake_display) || $mark->registrationItem?->course_type === 'Retake' || $mark->is_retake)
+                    <span class="badge text-bg-warning text-dark py-0 ms-1" style="font-size: 0.65rem;" title="Retaken Course Unit">RTK</span>
                   @endif
                   @if ($mark->isSpecialExam())
                     <span class="badge text-bg-info text-dark py-0 ms-1" style="font-size: 0.65rem;"><i class="bi bi-star-fill me-1"></i>Special Exam</span>
@@ -225,7 +225,7 @@
                 <td class="text-center font-monospace">{{ number_format($wgp, 1) }}</td>
                 <td class="text-center">
                   @if ($mark->isMissedWithPermission())
-                    <span class="badge text-bg-warning text-dark" title="Incomplete on approved medical/official grounds">INC</span>
+                    <span class="badge text-bg-warning text-dark" title="Missed paper on approved medical/official grounds">MP</span>
                   @elseif ($mark->isAbsentWithoutPermission())
                     <span class="badge text-bg-danger" title="Absent without permission (Automatic Fail / Retake)">ABS</span>
                   @elseif ($mark->final_score !== null)
@@ -233,7 +233,7 @@
                       {{ $isPass ? 'P' : 'F' }}
                     </span>
                   @else
-                    <span class="badge text-bg-secondary">INC</span>
+                    <span class="badge text-bg-secondary">MP</span>
                   @endif
                 </td>
               </tr>

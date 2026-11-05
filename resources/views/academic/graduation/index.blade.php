@@ -36,7 +36,7 @@
               data-bs-html="true"
               data-bs-placement="top"
               data-bs-custom-class="clearance-tooltip"
-              title="&lt;div class=&#039;text-start&#039;&gt;&lt;div class=&#039;fw-bold border-bottom pb-1 mb-2 text-black&#039;&gt;We consider a student clear when they have all these 100%:&lt;/div&gt;&lt;ul class=&#039;ps-3 mb-0&#039; style=&#039;font-size: 0.82rem; line-height: 1.55;&#039;&gt;&lt;li&gt;&bull; Academic Core Courses&lt;/li&gt;&lt;li&gt;&bull; Retakes &amp;amp; Incompletes&lt;/li&gt;&lt;li&gt;&bull; Credit Units &amp;amp; CGPA&lt;/li&gt;&lt;li&gt;&bull; Degree Classification&lt;/li&gt;&lt;li&gt;&bull; Official Senate Gazette&lt;/li&gt;&lt;li class=&#039;text-muted&#039;&gt;&bull; Finance / Fees Clearance &lt;em&gt;[coming soon]&lt;/em&gt;&lt;/li&gt;&lt;li class=&#039;text-muted&#039;&gt;&bull; Library Clearance &lt;em&gt;[coming soon]&lt;/em&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;"
+              title="&lt;div class=&#039;text-start&#039;&gt;&lt;div class=&#039;fw-bold border-bottom pb-1 mb-2 text-body&#039;&gt;&lt;i class=&#039;bi bi-shield-check text-success me-1&#039;&gt;&lt;/i&gt;Clearance Requirements (100% Required):&lt;/div&gt;&lt;ul class=&#039;list-unstyled mb-0&#039; style=&#039;font-size: 0.82rem; line-height: 1.6;&#039;&gt;&lt;li class=&#039;mb-1&#039;&gt;&lt;i class=&#039;bi bi-check2-circle text-success me-1&#039;&gt;&lt;/i&gt; Academic Core Courses&lt;/li&gt;&lt;li class=&#039;mb-1&#039;&gt;&lt;i class=&#039;bi bi-check2-circle text-success me-1&#039;&gt;&lt;/i&gt; Retakes &amp;amp; Missed Papers (MP) Cleared&lt;/li&gt;&lt;li class=&#039;mb-1&#039;&gt;&lt;i class=&#039;bi bi-check2-circle text-success me-1&#039;&gt;&lt;/i&gt; Minimum Credit Units &amp;amp; CGPA Met&lt;/li&gt;&lt;li class=&#039;mb-1&#039;&gt;&lt;i class=&#039;bi bi-check2-circle text-success me-1&#039;&gt;&lt;/i&gt; Degree Honours Classification Assigned&lt;/li&gt;&lt;li class=&#039;mb-1&#039;&gt;&lt;i class=&#039;bi bi-check2-circle text-success me-1&#039;&gt;&lt;/i&gt; Official Senate Gazette Approved&lt;/li&gt;&lt;li class=&#039;text-body-secondary mt-2 pt-1 border-top border-secondary-subtle&#039;&gt;&lt;i class=&#039;bi bi-clock-history me-1&#039;&gt;&lt;/i&gt; Finance / Fees Clearance &lt;em class=&#039;small text-body-tertiary&#039;&gt;[coming soon]&lt;/em&gt;&lt;/li&gt;&lt;li class=&#039;text-body-secondary&#039;&gt;&lt;i class=&#039;bi bi-clock-history me-1&#039;&gt;&lt;/i&gt; Library Clearance &lt;em class=&#039;small text-body-tertiary&#039;&gt;[coming soon]&lt;/em&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;"
               aria-label="Graduation clearance criteria details"
             >
               <i class="bi bi-info-circle fs-6"></i>
@@ -71,14 +71,16 @@
 
   <!-- Search & Action Card -->
   <div class="card card-outline card-secondary mb-4 shadow-sm no-print">
-    <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2 py-2">
-      <h3 class="card-title fs-6 fw-bold m-0">
-        <i class="bi bi-funnel me-1"></i> Filter Graduation Candidates
-      </h3>
-      <div class="d-flex gap-2">
-        <a href="{{ route('graduation.honors-roll', request()->query()) }}" class="btn btn-sm btn-outline-primary">
-          <i class="bi bi-journal-bookmark me-1"></i> View Honors Roll Gazette
-        </a>
+    <div class="card-header py-2">
+      <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+        <h3 class="card-title fs-6 fw-bold mb-0">
+          <i class="bi bi-funnel me-1"></i> Filter Graduation Candidates
+        </h3>
+        <div class="card-tools d-flex gap-2 me-0 ms-auto">
+          <a href="{{ route('graduation.honors-roll', request()->query()) }}" class="btn btn-sm btn-outline-primary">
+            <i class="bi bi-journal-bookmark me-1"></i> View Honors Roll Gazette
+          </a>
+        </div>
       </div>
     </div>
     <div class="card-body">
@@ -126,11 +128,13 @@
 
   <!-- Candidates Table Card -->
   <div class="card card-outline card-primary shadow-sm mb-4">
-    <div class="card-header py-2 d-flex justify-content-between align-items-center">
-      <h3 class="card-title fs-6 fw-bold m-0">
-        <i class="bi bi-mortarboard-fill me-1 text-primary"></i> Graduation Candidates Directory
-      </h3>
-      <span class="badge bg-secondary">{{ count($candidates) }} Candidate(s) Displayed</span>
+    <div class="card-header py-2">
+      <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+        <h3 class="card-title fs-6 fw-bold mb-0">
+          <i class="bi bi-mortarboard-fill me-1 text-primary"></i> Graduation Candidates Directory
+        </h3>
+        <span class="badge bg-secondary ms-auto">{{ count($candidates) }} Candidate(s) Displayed</span>
+      </div>
     </div>
     <div class="card-body p-0">
       <div class="table-responsive">
@@ -224,19 +228,39 @@
   </div>
 @endsection
 
-@push('scripts')
+@push('styles')
   <style>
     .clearance-tooltip .tooltip-inner {
       max-width: 380px;
       text-align: left;
-      padding: 12px 14px;
-      font-size: 0.85rem;
-      line-height: 1.5;
+      padding: 14px 16px;
+      font-size: 0.84rem;
+      line-height: 1.55;
+      background-color: var(--bs-body-bg) !important;
+      color: var(--bs-body-color) !important;
+      border: 1px solid var(--bs-border-color) !important;
+      box-shadow: 0 0.5rem 1.25rem rgba(0, 0, 0, 0.25);
+      border-radius: 0.5rem;
+    }
+    .clearance-tooltip.bs-tooltip-top .tooltip-arrow::before {
+      border-top-color: var(--bs-border-color) !important;
+    }
+    .clearance-tooltip.bs-tooltip-bottom .tooltip-arrow::before {
+      border-bottom-color: var(--bs-border-color) !important;
+    }
+    .clearance-tooltip.bs-tooltip-start .tooltip-arrow::before {
+      border-left-color: var(--bs-border-color) !important;
+    }
+    .clearance-tooltip.bs-tooltip-end .tooltip-arrow::before {
+      border-right-color: var(--bs-border-color) !important;
     }
     .cursor-pointer {
       cursor: pointer;
     }
   </style>
+@endpush
+
+@push('scripts')
   <script>
     document.addEventListener('DOMContentLoaded', function () {
       const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');

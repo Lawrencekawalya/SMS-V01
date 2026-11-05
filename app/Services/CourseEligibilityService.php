@@ -106,7 +106,7 @@ class CourseEligibilityService
             if ($cu && $cu->status === 'active') {
                 $mark = StudentMark::where('course_registration_item_id', $unpassedItem->id)->first();
                 $cu->retake_attempts_count = 1;
-                $cu->last_grade_letter = $mark?->grade_letter ?? 'INC';
+                $cu->last_grade_letter = $mark?->grade_letter ?? 'MP';
                 $cu->last_final_score = $mark?->final_score;
                 $cu->is_retake = true;
                 $cu->is_special_exam_eligible = $mark?->isMissedWithPermission() ?? false;

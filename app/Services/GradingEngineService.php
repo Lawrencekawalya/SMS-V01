@@ -11,6 +11,7 @@ use App\Models\Student;
 use App\Models\StudentMark;
 use App\Models\StudentSemesterPerformance;
 use App\Models\User;
+use Illuminate\Support\Collection;
 use InvalidArgumentException;
 
 class GradingEngineService
@@ -47,9 +48,9 @@ class GradingEngineService
                 'ca_score' => $ca,
                 'exam_score' => null,
                 'final_score' => null,
-                'grade_letter' => 'INC',
+                'grade_letter' => 'MP',
                 'grade_point' => null,
-                'classification' => 'Incomplete (Approved Absence / Medical)',
+                'classification' => 'Missed Paper (Approved Absence / Medical)',
                 'badge_class' => 'text-bg-warning text-dark',
                 'is_passed' => false,
                 'is_retake' => false,
@@ -206,8 +207,8 @@ class GradingEngineService
                 continue; // Skip dropped courses
             }
 
-            // Incomplete paper with approved permission (INC) does not penalize GPA divisor
-            if ($mark->isMissedWithPermission() || ($mark->final_score === null && $mark->grade_letter === 'INC')) {
+            // Missed paper with approved permission (MP) does not penalize GPA divisor
+            if ($mark->isMissedWithPermission() || ($mark->final_score === null && in_array($mark->grade_letter, ['MP', 'INC'], true))) {
                 continue;
             }
 
@@ -290,7 +291,7 @@ class GradingEngineService
 
         $allMarks = $marksQuery->get()->filter(function ($mark): bool {
             return ! ($mark->registrationItem && $mark->registrationItem->isDropped())
-                && ! ($mark->isMissedWithPermission() || ($mark->final_score === null && $mark->grade_letter === 'INC'));
+                && ! ($mark->isMissedWithPermission() || ($mark->final_score === null && in_array($mark->grade_letter, ['MP', 'INC'], true)));
         });
 
         $cumulativeCreditsRegistered = 0.0;
@@ -384,6 +385,207 @@ class GradingEngineService
             'cgpa' => $cgpa,
             'academic_standing' => $standing,
         ];
+    }
+
+    /**
+     * Build the multi-semester chronological transcript data for an official academic transcript.
+     *
+     * Academic Regulation: A retaken course unit appears once on the transcript in the original semester
+     * where it belongs, displaying the new/passed grade achieved after retaking it with an "RTK" badge,
+     * and is omitted from subsequent retake semesters. Progressive semester performance metrics
+     * (GPA, CGPA, and CU) are dynamically evaluated to maintain rigorous transcript consistency.
+     *
+     * @return array<int, array{
+     *     performance: object,
+     *     semester: Semester,
+     *     marks: Collection<int, StudentMark>
+     * }>
+     */
+    public function buildTranscriptData(Student $student): array
+    {
+        // 1. Retrieve all chronological semester performances for the student
+        $performances = StudentSemesterPerformance::with(['semester.academicYear'])
+            ->where('student_id', $student->id)
+            ->join('semesters', 'student_semester_performances.semester_id', '=', 'semesters.id')
+            ->join('academic_years', 'semesters.academic_year_id', '=', 'academic_years.id')
+            ->orderBy('academic_years.start_date')
+            ->orderBy('semesters.semester_number')
+            ->select('student_semester_performances.*')
+            ->get();
+
+        // If performances is empty, ensure calculation for all distinct semesters where marks exist
+        if ($performances->isEmpty()) {
+            $distinctSemesterIds = StudentMark::where('student_id', $student->id)
+                ->whereHas('courseAssessmentSheet')
+                ->with('courseAssessmentSheet')
+                ->get()
+                ->pluck('courseAssessmentSheet.semester_id')
+                ->unique()
+                ->filter();
+
+            foreach ($distinctSemesterIds as $semId) {
+                $sem = Semester::find($semId);
+                if ($sem) {
+                    $this->calculateSemesterGpa($student, $sem);
+                }
+            }
+
+            $performances = StudentSemesterPerformance::with(['semester.academicYear'])
+                ->where('student_id', $student->id)
+                ->join('semesters', 'student_semester_performances.semester_id', '=', 'semesters.id')
+                ->join('academic_years', 'semesters.academic_year_id', '=', 'academic_years.id')
+                ->orderBy('academic_years.start_date')
+                ->orderBy('semesters.semester_number')
+                ->select('student_semester_performances.*')
+                ->get();
+        }
+
+        if ($performances->isEmpty()) {
+            return [];
+        }
+
+        // Ordered list of unique semesters
+        $semesters = $performances->map(fn ($p) => $p->semester)->unique('id')->values();
+
+        // 2. Fetch all student marks across all semesters
+        $allMarks = StudentMark::where('student_id', $student->id)
+            ->whereHas('courseAssessmentSheet')
+            ->with([
+                'courseAssessmentSheet.courseUnit',
+                'courseAssessmentSheet.semester.academicYear',
+                'registrationItem',
+            ])
+            ->get();
+
+        // 3. Group by unique course unit
+        $marksByCourse = $allMarks->groupBy(function ($mark) {
+            return $mark->courseAssessmentSheet?->course_unit_id
+                ?? $mark->registrationItem?->course_unit_id;
+        });
+
+        $marksBySemester = [];
+        foreach ($semesters as $sem) {
+            $marksBySemester[$sem->id] = [];
+        }
+
+        foreach ($marksByCourse as $courseMarks) {
+            // Sort attempts chronologically by academic year start date, semester number, and mark ID
+            $sortedAttempts = $courseMarks->sortBy(function ($m) {
+                $sem = $m->courseAssessmentSheet?->semester;
+                $yearStart = $sem?->academicYear?->start_date ? $sem->academicYear->start_date->timestamp : 0;
+                $semNum = (int) ($sem?->semester_number ?? 1);
+
+                return [$yearStart, $semNum, $m->id];
+            })->values();
+
+            $isRetaken = $sortedAttempts->count() > 1
+                || $sortedAttempts->contains(fn ($m) => ($m->registrationItem?->course_type === 'Retake') || $m->is_retake);
+
+            if (! $isRetaken) {
+                $first = $sortedAttempts->first();
+                $semId = $first->courseAssessmentSheet?->semester_id;
+                if ($semId && isset($marksBySemester[$semId])) {
+                    $marksBySemester[$semId][] = $first;
+                }
+            } else {
+                // Retaken course unit:
+                // Must appear once in the original semester where it was first taken / belongs.
+                $firstAttempt = $sortedAttempts->first();
+                $targetSemesterId = $firstAttempt->courseAssessmentSheet?->semester_id;
+
+                // Pick the best/latest attempt with scores:
+                $scoredAttempts = $sortedAttempts->filter(fn ($m) => $m->final_score !== null);
+                if ($scoredAttempts->isNotEmpty()) {
+                    $passed = $scoredAttempts->filter(fn ($m) => (bool) $m->is_passed);
+                    if ($passed->isNotEmpty()) {
+                        $bestAttempt = $passed->sortByDesc(fn ($m) => [
+                            (float) ($m->grade_point ?? 0.0),
+                            (float) ($m->final_score ?? 0.0),
+                        ])->first();
+                    } else {
+                        $bestAttempt = $scoredAttempts->last();
+                    }
+                } else {
+                    $bestAttempt = $firstAttempt;
+                }
+
+                $displayMark = clone $bestAttempt;
+                $displayMark->is_retake_display = true;
+                $displayMark->retake_badge = 'RTK';
+
+                if ($targetSemesterId && isset($marksBySemester[$targetSemesterId])) {
+                    $marksBySemester[$targetSemesterId][] = $displayMark;
+                } elseif (! empty($marksBySemester)) {
+                    $firstKey = array_key_first($marksBySemester);
+                    $marksBySemester[$firstKey][] = $displayMark;
+                }
+            }
+        }
+
+        // 4. Build progressive semester data with recalculated CU, GPA, and CGPA
+        $transcriptData = [];
+        $runningCumRegistered = 0.0;
+        $runningCumEarned = 0.0;
+        $runningCumWeightedPoints = 0.0;
+
+        foreach ($semesters as $semester) {
+            $semesterMarks = collect($marksBySemester[$semester->id] ?? []);
+
+            $registeredCu = 0.0;
+            $earnedCu = 0.0;
+            $weightedPoints = 0.0;
+
+            foreach ($semesterMarks as $mark) {
+                if ($mark->registrationItem && $mark->registrationItem->isDropped()) {
+                    continue;
+                }
+                if ($mark->isMissedWithPermission() || ($mark->final_score === null && in_array($mark->grade_letter, ['MP', 'INC'], true))) {
+                    continue;
+                }
+
+                if ($mark->final_score !== null) {
+                    $credits = (float) ($mark->registrationItem?->credit_units
+                        ?? $mark->courseAssessmentSheet?->courseUnit?->credit_units
+                        ?? 0.0);
+
+                    $registeredCu += $credits;
+                    $weightedPoints += ($credits * (float) ($mark->grade_point ?? 0.0));
+
+                    if ((bool) $mark->is_passed) {
+                        $earnedCu += $credits;
+                    }
+                }
+            }
+
+            $gpa = $registeredCu > 0.0 ? round($weightedPoints / $registeredCu, 2) : 0.00;
+
+            $runningCumRegistered += $registeredCu;
+            $runningCumEarned += $earnedCu;
+            $runningCumWeightedPoints += $weightedPoints;
+            $cgpa = $runningCumRegistered > 0.0 ? round($runningCumWeightedPoints / $runningCumRegistered, 2) : 0.00;
+
+            $standing = $cgpa < 2.00 && $runningCumRegistered > 0.0 ? 'Probation' : 'Normal Progress';
+
+            $perfObject = (object) [
+                'credit_units_registered' => $registeredCu,
+                'credit_units_earned' => $earnedCu,
+                'weighted_grade_points' => $weightedPoints,
+                'gpa' => $gpa,
+                'cumulative_credit_units_registered' => $runningCumRegistered,
+                'cumulative_credit_units_earned' => $runningCumEarned,
+                'cumulative_weighted_grade_points' => $runningCumWeightedPoints,
+                'cgpa' => $cgpa,
+                'academic_standing' => $standing,
+            ];
+
+            $transcriptData[] = [
+                'performance' => $perfObject,
+                'semester' => $semester,
+                'marks' => $semesterMarks,
+            ];
+        }
+
+        return $transcriptData;
     }
 
     /**

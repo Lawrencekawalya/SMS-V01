@@ -125,7 +125,7 @@ class StudentMark extends Model
             'B', 'C+' => 'text-bg-primary',
             'C' => 'text-bg-info',
             'D+', 'D' => 'text-bg-warning',
-            'INC' => 'text-bg-warning text-dark',
+            'MP', 'INC' => 'text-bg-warning text-dark',
             'ABS' => 'text-bg-danger',
             default => 'text-bg-danger',
         };
@@ -202,7 +202,7 @@ class StudentMark extends Model
     public function getExamStatusBadgeAttribute(): string
     {
         return match ($this->exam_status) {
-            'missed_permission' => '<span class="badge text-bg-warning text-dark"><i class="bi bi-hospital me-1"></i>INC (Medical/Permitted)</span>',
+            'missed_permission' => '<span class="badge text-bg-warning text-dark"><i class="bi bi-hospital me-1"></i>MP (Medical/Permitted)</span>',
             'absent' => '<span class="badge text-bg-danger"><i class="bi bi-x-circle me-1"></i>ABS (Unexcused)</span>',
             default => '<span class="badge text-bg-success"><i class="bi bi-check-circle me-1"></i>Present</span>',
         };

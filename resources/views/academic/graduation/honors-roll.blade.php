@@ -13,17 +13,19 @@
 @section('content')
   <!-- Filter & Action Bar (Screen Only) -->
   <div class="card card-outline card-primary mb-4 shadow-sm no-print">
-    <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2 py-2">
-      <h3 class="card-title fs-6 fw-bold m-0">
-        <i class="bi bi-funnel me-1"></i> Programme Filter
-      </h3>
-      <div class="d-flex gap-2">
-        <a href="{{ route('graduation.list') }}" class="btn btn-sm btn-outline-secondary">
-          <i class="bi bi-arrow-left me-1"></i> Candidates Directory
-        </a>
-        <button type="button" onclick="window.print()" class="btn btn-sm btn-outline-dark">
-          <i class="bi bi-printer me-1"></i> Print Gazette Booklet
-        </button>
+    <div class="card-header py-2">
+      <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+        <h3 class="card-title fs-6 fw-bold mb-0">
+          <i class="bi bi-funnel me-1"></i> Programme Filter
+        </h3>
+        <div class="card-tools d-flex gap-2 me-0 ms-auto">
+          <a href="{{ route('graduation.list') }}" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Candidates Directory
+          </a>
+          <button type="button" onclick="window.print()" class="btn btn-sm btn-outline-dark">
+            <i class="bi bi-printer me-1"></i> Print Gazette Booklet
+          </button>
+        </div>
       </div>
     </div>
     <div class="card-body">
@@ -51,8 +53,8 @@
   <!-- Graduation Gazette Booklet Document -->
   <div class="card shadow-sm border-0 mb-4 gazette-card">
     <div class="card-body p-4 p-md-5">
-      <!-- Formal University Gazette Title Header -->
-      <div class="text-center pb-4 border-bottom mb-4">
+      <!-- Formal University Gazette Title Header (Printed PDF Only) -->
+      <div class="d-none d-print-block text-center pb-4 border-bottom mb-4">
         <h3 class="fw-bold mb-1 text-uppercase text-dark">{{ $university->name ?? 'BISHOP STUART UNIVERSITY' }}</h3>
         <h6 class="text-secondary text-uppercase mb-2">OFFICE OF THE ACADEMIC REGISTRAR &bull; 20TH CONGREGATION</h6>
         <div class="badge bg-primary fs-6 px-3 py-2 text-uppercase mb-2">
@@ -122,8 +124,8 @@
         </div>
       @endforelse
 
-      <!-- Formal Senate & Congregation Signoff Block -->
-      <div class="mt-5 pt-4 border-top page-break-inside-avoid">
+      <!-- Formal Senate & Congregation Signoff Block (Printed PDF Only) -->
+      <div class="d-none d-print-block mt-5 pt-4 border-top page-break-inside-avoid">
         <div class="row text-center g-4">
           <div class="col-4">
             <div class="border-bottom border-dark pb-4 mb-2 mx-auto" style="width: 80%;"></div>

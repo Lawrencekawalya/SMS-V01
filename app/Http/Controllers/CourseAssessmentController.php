@@ -470,19 +470,49 @@ class CourseAssessmentController extends Controller
                 ->with('error', "Mark sheet cannot be updated because it is currently '{$sheet->status_label}'.");
         }
 
-        DB::transaction(function () use ($request, $sheet) {
+        $marksData = $request->input('marks', []);
+
+        // Hard-lock verification for graduated students (Pillar 1)
+        foreach ($marksData as $item) {
+            $checkMark = StudentMark::with('student')
+                ->where('course_assessment_sheet_id', $sheet->id)
+                ->where('id', $item['student_mark_id'] ?? null)
+                ->first();
+
+            if ($checkMark && $checkMark->student && $checkMark->student->isGraduated()) {
+                $caInput = isset($item['ca_score']) && $item['ca_score'] !== '' && $item['ca_score'] !== null ? (float) $item['ca_score'] : null;
+                $examInput = isset($item['exam_score']) && $item['exam_score'] !== '' && $item['exam_score'] !== null ? (float) $item['exam_score'] : null;
+                $oldCa = $checkMark->ca_score !== null ? (float) $checkMark->ca_score : null;
+                $oldExam = $checkMark->exam_score !== null ? (float) $checkMark->exam_score : null;
+
+                if (($caInput !== null && $oldCa !== $caInput) || ($examInput !== null && $oldExam !== $examInput)) {
+                    return redirect()
+                        ->back()
+                        ->withInput()
+                        ->with('error', "Security Violation: Mark alteration blocked. Degree has already been conferred to graduated student {$checkMark->student->registration_number} ({$checkMark->student->full_name}).");
+                }
+            }
+        }
+
+        $action = $request->input('action');
+
+        DB::transaction(function () use ($sheet, $marksData, $action) {
             $user = auth()->user() ?? User::first();
-            $marksData = $request->input('marks', []);
 
             $auditPrefix = $sheet->isReopenedForAmendment() && $sheet->senate_approval_reference
                 ? "[Senate Min: {$sheet->senate_approval_reference}] "
-                : '';
+                : ($sheet->isReopenedForAmendment() ? "[Re-Moderation Cycle #{$sheet->revision_cycle}] " : '');
 
             foreach ($marksData as $item) {
                 /** @var StudentMark $mark */
                 $mark = StudentMark::where('course_assessment_sheet_id', $sheet->id)
                     ->where('id', $item['student_mark_id'])
                     ->firstOrFail();
+
+                // Skip updating graduated students
+                if ($mark->student && $mark->student->isGraduated()) {
+                    continue;
+                }
 
                 $caInput = isset($item['ca_score']) && $item['ca_score'] !== '' && $item['ca_score'] !== null
                     ? (float) $item['ca_score']
@@ -504,7 +534,7 @@ class CourseAssessmentController extends Controller
                         'exam_score' => null,
                         'exam_status' => 'missed_permission',
                         'final_score' => null,
-                        'grade_letter' => 'INC',
+                        'grade_letter' => 'MP',
                         'grade_point' => null,
                         'is_passed' => false,
                         'is_retake' => false,
@@ -563,7 +593,13 @@ class CourseAssessmentController extends Controller
                 }
             }
 
-            if ($request->input('action') === 'submit_hod') {
+            if ($action === 'submit_senate') {
+                $sheet->update([
+                    'status' => 'department_moderated',
+                    'moderated_at' => now(),
+                    'moderated_by_id' => $user?->id,
+                ]);
+            } elseif ($action === 'submit_hod') {
                 $sheet->update([
                     'status' => 'submitted_to_hod',
                     'submitted_at' => now(),
@@ -571,7 +607,13 @@ class CourseAssessmentController extends Controller
             }
         });
 
-        if ($request->input('action') === 'submit_hod') {
+        if ($action === 'submit_senate') {
+            return redirect()
+                ->route('moderation.show', $sheet)
+                ->with('success', "Re-moderated marks for {$sheet->courseUnit->code} have been formally submitted to the Senate for final approval and re-publication.");
+        }
+
+        if ($action === 'submit_hod') {
             return redirect()
                 ->route('assessment.show', $sheet)
                 ->with('success', "Marks successfully saved and mark sheet for {$sheet->courseUnit->code} submitted to Head of Department for moderation.");
@@ -667,7 +709,7 @@ class CourseAssessmentController extends Controller
 
     /**
      * University-wide Special & Supplementary Examinations Desk.
-     * Displays all students with pending incomplete (INC) papers awaiting special exams
+     * Displays all students with pending missed (MP) papers awaiting special exams
      * and cleared special/supplementary examination sessions.
      */
     public function specialExamsIndex(Request $request): View

@@ -34,7 +34,7 @@ class SubmitMarksRequest extends FormRequest
             'marks.*.exam_score' => ['nullable', 'numeric', 'min:0', "max:{$examMax}"],
             'marks.*.exam_status' => ['nullable', 'string', 'in:present,missed_permission,absent'],
             'marks.*.lecturer_remarks' => ['nullable', 'string', 'max:255'],
-            'action' => ['nullable', 'string', 'in:save_draft,submit_hod'],
+            'action' => ['nullable', 'string', 'in:save_draft,submit_hod,submit_senate'],
         ];
     }
 

@@ -36,7 +36,7 @@
       <div class="info-box shadow-sm mb-0">
         <span class="info-box-icon text-bg-warning"><i class="bi bi-hospital"></i></span>
         <div class="info-box-content">
-          <span class="info-box-text text-body-secondary">Pending Special Exams (INC)</span>
+          <span class="info-box-text text-body-secondary">Pending Special Exams (MP)</span>
           <span class="info-box-number fs-4">{{ $pendingCount }}</span>
         </div>
       </div>
@@ -80,7 +80,7 @@
           <label class="form-label small text-body-secondary mb-1">Sitting Status</label>
           <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
             <option value="" {{ empty($statusFilter) ? 'selected' : '' }}>All Statuses (Pending &amp; Cleared)</option>
-            <option value="pending" {{ $statusFilter === 'pending' ? 'selected' : '' }}>Pending Special Exams (INC)</option>
+            <option value="pending" {{ $statusFilter === 'pending' ? 'selected' : '' }}>Pending Special Exams (MP)</option>
             <option value="cleared" {{ $statusFilter === 'cleared' ? 'selected' : '' }}>Cleared (Special / Supplementary)</option>
           </select>
         </div>
@@ -172,7 +172,7 @@
                 </td>
                 <td class="text-center">
                   @if ($mark->isMissedWithPermission())
-                    <span class="badge text-bg-warning text-dark"><i class="bi bi-hospital me-1"></i>INC (Medical/Permitted)</span>
+                    <span class="badge text-bg-warning text-dark"><i class="bi bi-hospital me-1"></i>MP (Medical/Permitted)</span>
                   @elseif ($mark->isSpecialExam())
                     <span class="badge text-bg-info text-dark"><i class="bi bi-star-fill me-1"></i>Special Exam</span>
                   @elseif ($mark->isSupplementaryExam())
@@ -206,7 +206,7 @@
                 <td colspan="10" class="text-center py-5 text-muted">
                   <i class="bi bi-clipboard2-check fs-1 d-block mb-2 text-secondary"></i>
                   <h5>No Special or Supplementary Examination Records Found</h5>
-                  <p class="mb-0">There are currently no students marked with pending incomplete papers or supplementary sittings in the selected criteria.</p>
+                  <p class="mb-0">There are currently no students marked with pending missed papers or supplementary sittings in the selected criteria.</p>
                 </td>
               </tr>
             @endforelse

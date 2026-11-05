@@ -117,8 +117,9 @@ class GradeModerationController extends Controller
 
         $statistics = $this->gradingEngine->computeSheetStatistics($sheet);
         $gradingScaleTiers = GradingScaleTier::ordered()->get();
+        $amendedMarksDiff = $sheet->getAmendedMarksDiff();
 
-        return view('academic.assessments.moderation.show', compact('sheet', 'statistics', 'gradingScaleTiers'));
+        return view('academic.assessments.moderation.show', compact('sheet', 'statistics', 'gradingScaleTiers', 'amendedMarksDiff'));
     }
 
     /**
@@ -205,6 +206,38 @@ class GradeModerationController extends Controller
     }
 
     /**
+     * Head of Department initiates post-publication re-moderation on a published mark sheet.
+     * Unlocks active students for score revisions while permanently locking graduated students.
+     */
+    public function initiateReModeration(Request $request, CourseAssessmentSheet $sheet): RedirectResponse
+    {
+        if ($sheet->status !== 'published') {
+            return redirect()
+                ->route('moderation.show', $sheet)
+                ->with('warning', "Only officially published mark sheets can be re-moderated. Current status: {$sheet->status_label}.");
+        }
+
+        $request->validate([
+            'justification' => ['required', 'string', 'min:5', 'max:500'],
+        ]);
+
+        $user = auth()->user() ?? User::first();
+        $justification = trim($request->input('justification'));
+
+        $sheet->update([
+            'status' => 'reopened_for_amendment',
+            'reopened_at' => now(),
+            'reopened_by_id' => $user?->id,
+            'reopen_justification' => $justification,
+            'revision_cycle' => $sheet->revision_cycle + 1,
+        ]);
+
+        return redirect()
+            ->route('assessment.edit', $sheet)
+            ->with('success', "Mark sheet for {$sheet->courseUnit->code} is now unlocked for Departmental Re-Moderation (Cycle #{$sheet->revision_cycle}). Graduated students remain permanently locked.");
+    }
+
+    /**
      * Senate / Academic Registrar officially approves and publishes the marks.
      * This triggers automatic calculation of semester GPAs and cumulative CGPAs.
      */
@@ -222,14 +255,22 @@ class GradeModerationController extends Controller
                 ->with('error', "Mark sheet cannot be published directly from status '{$sheet->status_label}'.");
         }
 
-        DB::transaction(function () use ($sheet) {
+        $senateRef = $request->input('senate_approval_reference');
+
+        DB::transaction(function () use ($sheet, $senateRef) {
             $user = auth()->user() ?? User::first();
 
-            $sheet->update([
+            $updateData = [
                 'status' => 'published',
                 'published_at' => now(),
                 'published_by_id' => $user?->id,
-            ]);
+            ];
+
+            if ($senateRef) {
+                $updateData['senate_approval_reference'] = trim($senateRef);
+            }
+
+            $sheet->update($updateData);
 
             // Retrieve all distinct students on this mark sheet
             $students = $sheet->studentMarks()
@@ -246,9 +287,10 @@ class GradeModerationController extends Controller
         });
 
         $count = $sheet->studentMarks()->count();
+        $cycleInfo = $sheet->revision_cycle > 0 ? " (Revision Cycle #{$sheet->revision_cycle})" : '';
 
         return redirect()
             ->route('moderation.show', $sheet)
-            ->with('success', "Mark sheet for {$sheet->courseUnit->code} has been officially approved and published by Senate. Semester GPAs and cumulative CGPAs recalculated for {$count} students.");
+            ->with('success', "Mark sheet for {$sheet->courseUnit->code} has been officially approved and published by Senate{$cycleInfo}. Semester GPAs and cumulative CGPAs recalculated for {$count} students.");
     }
 }

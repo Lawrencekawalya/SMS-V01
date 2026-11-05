@@ -201,6 +201,7 @@ Route::prefix('academic')->group(function () {
         Route::post('endorse/{sheet}', 'endorse')->name('moderation.endorse');
         Route::post('return/{sheet}', 'returnToLecturer')->name('moderation.return');
         Route::post('reopen/{sheet}', 'reopenForAmendment')->name('moderation.reopen');
+        Route::post('initiate-re-moderation/{sheet}', 'initiateReModeration')->name('moderation.initiate-re-moderation');
         Route::post('publish/{sheet}', 'publish')->name('moderation.publish');
     });
 
@@ -220,6 +221,8 @@ Route::prefix('academic')->group(function () {
     // 20. Departmental & Faculty Academic Performance Analytics
     Route::controller(AcademicAnalyticsController::class)->prefix('analytics')->group(function () {
         Route::get('list', 'index')->name('analytics.list');
+        Route::get('export/program-standing', 'exportProgramStanding')->name('analytics.export.program-standing');
+        Route::get('export/honours-performance', 'exportHonoursPerformance')->name('analytics.export.honours-performance');
     });
 
     // 21. Graduation Clearance, Audit & Official Honors Roll Gazette

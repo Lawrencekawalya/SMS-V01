@@ -70,7 +70,7 @@
               <i class="bi bi-arrow-counterclockwise me-1"></i> Return for Revision
             </button>
             <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#publishModal">
-              <i class="bi bi-patch-check-fill me-1"></i> Senate Approve &amp; Publish
+              <i class="bi bi-patch-check-fill me-1"></i> {{ $sheet->revision_cycle > 0 ? 'Senate Approve & Re-Publish' : 'Senate Approve & Publish' }}
             </button>
           @elseif ($sheet->status === 'returned_for_revision')
             <a href="{{ route('assessment.edit', $sheet) }}" class="btn btn-outline-primary btn-sm">
@@ -81,20 +81,23 @@
             </button>
           @elseif ($sheet->status === 'reopened_for_amendment')
             <a href="{{ route('assessment.edit', $sheet) }}" class="btn btn-primary btn-sm">
-              <i class="bi bi-pencil-square me-1"></i> Amend Marks
+              <i class="bi bi-pencil-square me-1"></i> Re-Moderate Marks
             </a>
             <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#endorseModal">
-              <i class="bi bi-shield-check me-1"></i> Re-endorse Sheet
+              <i class="bi bi-shield-check me-1"></i> Submit Re-Moderated to Senate
             </button>
-            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#publishModal">
-              <i class="bi bi-patch-check-fill me-1"></i> Senate Re-publish
+            <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#publishModal">
+              <i class="bi bi-patch-check-fill me-1"></i> Senate Re-Publish
             </button>
           @elseif ($sheet->status === 'published')
             <span class="badge text-bg-success px-3 py-2 fs-7 me-1">
-              <i class="bi bi-lock-fill me-1"></i> Officially Published &amp; Locked
+              <i class="bi bi-lock-fill me-1"></i> Officially Published
             </span>
-            <button type="button" class="btn btn-outline-warning btn-sm shadow-sm" data-bs-toggle="modal" data-bs-target="#reopenModal">
-              <i class="bi bi-unlock-fill me-1"></i> Reopen for Senate Amendment
+            <button type="button" class="btn btn-warning btn-sm shadow-sm" data-bs-toggle="modal" data-bs-target="#initiateReModerationModal">
+              <i class="bi bi-pencil-square me-1"></i> Initiate Post-Publication Re-Moderation
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-sm shadow-sm" data-bs-toggle="modal" data-bs-target="#reopenModal" title="Senate Administrator Reopen">
+              <i class="bi bi-unlock-fill me-1"></i> Senate Pre-Approval Reopen
             </button>
           @endif
 
@@ -349,6 +352,97 @@
       </div>
     </div>
   </div>
+
+  @if (isset($amendedMarksDiff) && $amendedMarksDiff->isNotEmpty())
+    <!-- Visual Delta Review Card: Isolated List of Revised Student Marks -->
+    <div class="card card-outline card-warning shadow-sm mb-4 border-start border-4 border-warning">
+      <div class="card-header bg-warning-subtle d-flex align-items-center justify-content-between flex-wrap gap-2 py-3">
+        <div>
+          <h5 class="card-title fw-bold text-warning-emphasis mb-1">
+            <i class="bi bi-file-diff-fill me-2 fs-5"></i>Senate Visual Delta Review: Re-Moderated Marks (Cycle #{{ $sheet->revision_cycle }})
+          </h5>
+          <p class="mb-0 small text-body-secondary">
+            Isolating <strong>{{ $amendedMarksDiff->count() }}</strong> candidate(s) with proposed score adjustments. Unamended class marks remain live and undisturbed.
+          </p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge text-bg-warning text-dark px-3 py-2">
+            <i class="bi bi-clock-history me-1"></i> {{ $amendedMarksDiff->count() }} Alteration(s) Awaiting Senate Sign-Off
+          </span>
+          @if ($sheet->status === 'department_moderated')
+            <button type="button" class="btn btn-primary btn-sm fw-semibold shadow-sm" data-bs-toggle="modal" data-bs-target="#publishModal">
+              <i class="bi bi-patch-check-fill me-1"></i> Approve Re-Moderation &amp; Re-Publish
+            </button>
+          @endif
+        </div>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover table-bordered align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th style="width: 40px;" class="text-center">#</th>
+                <th>Candidate Details</th>
+                <th class="text-center" style="width: 150px;">Previous Mark</th>
+                <th class="text-center" style="width: 150px;">New Proposed Mark</th>
+                <th class="text-center" style="width: 110px;">Difference</th>
+                <th>Departmental Justification</th>
+                <th style="width: 170px;">Auditor &amp; Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach ($amendedMarksDiff as $diff)
+                <tr>
+                  <td class="text-center text-muted small fw-bold">{{ $loop->iteration }}</td>
+                  <td>
+                    <div class="fw-bold text-body-emphasis">{{ $diff['student']->full_name }}</div>
+                    <div class="font-monospace small text-primary">{{ $diff['student']->registration_number }}</div>
+                    <small class="text-muted">{{ $diff['student']->programme->code ?? '' }}</small>
+                  </td>
+                  <td class="text-center">
+                    <span class="badge text-bg-secondary font-monospace fs-7">
+                      {{ $diff['previous_final'] !== null ? number_format($diff['previous_final'], 1) . '%' : 'N/A' }}
+                    </span>
+                    <div class="small text-muted mt-1">
+                      CA: {{ $diff['previous_ca'] !== null ? number_format($diff['previous_ca'], 1) : '-' }} | Exam: {{ $diff['previous_exam'] !== null ? number_format($diff['previous_exam'], 1) : '-' }}
+                    </div>
+                  </td>
+                  <td class="text-center bg-warning-subtle">
+                    <span class="badge text-bg-primary font-monospace fs-7">
+                      {{ $diff['new_final'] !== null ? number_format($diff['new_final'], 1) . '%' : 'N/A' }}
+                    </span>
+                    <div class="small text-muted mt-1">
+                      CA: {{ $diff['new_ca'] !== null ? number_format($diff['new_ca'], 1) : '-' }} | Exam: {{ $diff['new_exam'] !== null ? number_format($diff['new_exam'], 1) : '-' }}
+                    </div>
+                  </td>
+                  <td class="text-center font-monospace fw-bold">
+                    @if ($diff['delta'] !== null)
+                      @if ($diff['delta'] > 0)
+                        <span class="text-success"><i class="bi bi-arrow-up-right me-1"></i>+{{ number_format($diff['delta'], 1) }}%</span>
+                      @elseif ($diff['delta'] < 0)
+                        <span class="text-danger"><i class="bi bi-arrow-down-right me-1"></i>{{ number_format($diff['delta'], 1) }}%</span>
+                      @else
+                        <span class="text-muted">0.0%</span>
+                      @endif
+                    @else
+                      <span class="text-muted">-</span>
+                    @endif
+                  </td>
+                  <td>
+                    <div class="small text-body">{{ $diff['reason'] }}</div>
+                  </td>
+                  <td>
+                    <div class="small fw-semibold">{{ $diff['changed_by']?->name ?? 'HoD / Lecturer' }}</div>
+                    <small class="text-muted">{{ $diff['changed_at'] ? $diff['changed_at']->diffForHumans() : 'Recently' }}</small>
+                  </td>
+                </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  @endif
 
   <!-- Student Marks Roster Card -->
   <div class="card card-outline card-primary shadow-sm mb-4">
@@ -610,6 +704,23 @@
               </ul>
             </div>
 
+            @if ($sheet->revision_cycle > 0)
+              <div class="mb-3">
+                <label for="senate_approval_reference_pub" class="form-label fw-semibold small">
+                  Senate Re-Publication Minute / Reference Number
+                </label>
+                <input
+                  type="text"
+                  name="senate_approval_reference"
+                  id="senate_approval_reference_pub"
+                  class="form-control font-monospace"
+                  placeholder="e.g. SEN/MIN/2026/04/12 or SEN/REV/CYCLE-{{ $sheet->revision_cycle }}"
+                  value="{{ old('senate_approval_reference', $sheet->senate_approval_reference) }}"
+                >
+                <div class="form-text small">Enter formal Senate minute approving these re-moderated marks.</div>
+              </div>
+            @endif
+
             <div class="form-check">
               <input class="form-check-input" type="checkbox" id="confirm_publish" required>
               <label class="form-check-label small fw-semibold" for="confirm_publish">
@@ -620,7 +731,67 @@
           <div class="modal-footer">
             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
             <button type="submit" class="btn btn-primary">
-              <i class="bi bi-patch-check-fill me-1"></i> Officially Publish Results
+              <i class="bi bi-patch-check-fill me-1"></i> {{ $sheet->revision_cycle > 0 ? 'Approve Re-Moderation & Re-Publish' : 'Officially Publish Results' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action Modal: Initiate Post-Publication Re-Moderation (HoD) -->
+  <div class="modal fade" id="initiateReModerationModal" tabindex="-1" aria-labelledby="initiateReModerationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form action="{{ route('moderation.initiate-re-moderation', $sheet) }}" method="POST">
+          @csrf
+          <div class="modal-header bg-warning text-dark">
+            <h5 class="modal-title fw-bold" id="initiateReModerationModalLabel">
+              <i class="bi bi-pencil-square me-2"></i> Initiate Departmental Re-Moderation
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="alert alert-warning small mb-3">
+              <div class="d-flex">
+                <i class="bi bi-mortarboard-fill fs-3 me-2 flex-shrink-0 text-dark"></i>
+                <div>
+                  <strong>NCHE Academic Governance &amp; Conferred Degree Lock:</strong>
+                  You are unlocking this published mark sheet for departmental re-moderation (Cycle #{{ $sheet->revision_cycle + 1 }}).
+                  <strong>Students who have already graduated are permanently locked</strong> against alterations to protect awarded degrees.
+                  Once your revision is completed, the sheet will be submitted to the Senate for formal re-publication.
+                </div>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="initiate_justification" class="form-label fw-semibold">
+                Departmental Justification &amp; Appeals Overview <span class="text-danger">*</span>
+              </label>
+              <textarea
+                name="justification"
+                id="initiate_justification"
+                rows="3"
+                class="form-control"
+                required
+                minlength="5"
+                maxlength="500"
+                placeholder="e.g. Student examination remarking appeals reviewed and clerical addition error on Question 3 corrected per Departmental Board resolution..."
+              >{{ old('justification') }}</textarea>
+              <div class="form-text small">Explain why marks are being re-moderated post-publication.</div>
+            </div>
+
+            <div class="form-check p-3 bg-body-secondary rounded border">
+              <input class="form-check-input" type="checkbox" name="confirm_initiate" id="confirm_initiate" value="1" required>
+              <label class="form-check-label small fw-semibold" for="confirm_initiate">
+                I confirm that this re-moderation is initiated under Departmental authority and all amended marks will be submitted to Senate for final re-publication.
+              </label>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-warning text-dark fw-bold">
+              <i class="bi bi-pencil-square me-1"></i> Unlock &amp; Open Score Spreadsheet
             </button>
           </div>
         </form>

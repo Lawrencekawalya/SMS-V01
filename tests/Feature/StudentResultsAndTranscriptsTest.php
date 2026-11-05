@@ -376,4 +376,187 @@ class StudentResultsAndTranscriptsTest extends TestCase
         $response->assertSee('Academic Registrar');
         $response->assertSee('OFFICIAL<br>UNIVERSITY<br>SEAL', false);
     }
+
+    public function test_retaken_course_unit_appears_once_in_original_semester_with_rtk_badge_and_replaces_failed_grade(): void
+    {
+        $regSem1 = CourseRegistration::factory()->create([
+            'student_id' => $this->student->id,
+            'semester_id' => $this->semester1->id,
+            'academic_year_id' => $this->academicYear->id,
+            'status' => 'approved',
+        ]);
+
+        $regSem2 = CourseRegistration::factory()->create([
+            'student_id' => $this->student->id,
+            'semester_id' => $this->semester2->id,
+            'academic_year_id' => $this->academicYear->id,
+            'status' => 'approved',
+        ]);
+
+        // 1. Semester 1: Student takes Course 1 and fails (Score 35, F)
+        $sheet1 = CourseAssessmentSheet::factory()->create([
+            'course_unit_id' => $this->course1->id,
+            'semester_id' => $this->semester1->id,
+            'academic_year_id' => $this->academicYear->id,
+            'status' => 'published',
+        ]);
+
+        $regItem1 = CourseRegistrationItem::factory()->create([
+            'course_registration_id' => $regSem1->id,
+            'course_unit_id' => $this->course1->id,
+            'course_type' => 'Core',
+            'credit_units' => 4.0,
+            'status' => 'approved',
+        ]);
+
+        $failedMark = StudentMark::create([
+            'course_assessment_sheet_id' => $sheet1->id,
+            'course_registration_item_id' => $regItem1->id,
+            'student_id' => $this->student->id,
+            'ca_score' => 20.0,
+            'exam_score' => 15.0,
+            'final_score' => 35.0,
+            'grade_letter' => 'F',
+            'grade_point' => 0.0,
+            'is_passed' => false,
+            'is_retake' => false,
+        ]);
+
+        // Student also takes Course 2 in Semester 1 and passes (Score 70, B, 4.0 GP)
+        $sheet2 = CourseAssessmentSheet::factory()->create([
+            'course_unit_id' => $this->course2->id,
+            'semester_id' => $this->semester1->id,
+            'academic_year_id' => $this->academicYear->id,
+            'status' => 'published',
+        ]);
+
+        $regItem2 = CourseRegistrationItem::factory()->create([
+            'course_registration_id' => $regSem1->id,
+            'course_unit_id' => $this->course2->id,
+            'course_type' => 'Core',
+            'credit_units' => 4.0,
+            'status' => 'approved',
+        ]);
+
+        StudentMark::create([
+            'course_assessment_sheet_id' => $sheet2->id,
+            'course_registration_item_id' => $regItem2->id,
+            'student_id' => $this->student->id,
+            'ca_score' => 30.0,
+            'exam_score' => 40.0,
+            'final_score' => 70.0,
+            'grade_letter' => 'B',
+            'grade_point' => 4.0,
+            'is_passed' => true,
+            'is_retake' => false,
+        ]);
+
+        // 2. Semester 2: Student takes Course 3 (new) and retakes Course 1
+        $course3 = CourseUnit::factory()->create([
+            'department_id' => $this->department->id,
+            'code' => 'CSC1201',
+            'name' => 'Object Oriented Programming',
+            'credit_units' => 4.0,
+        ]);
+
+        $sheet3 = CourseAssessmentSheet::factory()->create([
+            'course_unit_id' => $course3->id,
+            'semester_id' => $this->semester2->id,
+            'academic_year_id' => $this->academicYear->id,
+            'status' => 'published',
+        ]);
+
+        $regItem3 = CourseRegistrationItem::factory()->create([
+            'course_registration_id' => $regSem2->id,
+            'course_unit_id' => $course3->id,
+            'course_type' => 'Core',
+            'credit_units' => 4.0,
+            'status' => 'approved',
+        ]);
+
+        StudentMark::create([
+            'course_assessment_sheet_id' => $sheet3->id,
+            'course_registration_item_id' => $regItem3->id,
+            'student_id' => $this->student->id,
+            'ca_score' => 35.0,
+            'exam_score' => 45.0,
+            'final_score' => 80.0,
+            'grade_letter' => 'A',
+            'grade_point' => 5.0,
+            'is_passed' => true,
+            'is_retake' => false,
+        ]);
+
+        // Course 1 Retake in Semester 2: Scores 78 (B+, 4.5 GP)
+        $sheet1Retake = CourseAssessmentSheet::factory()->create([
+            'course_unit_id' => $this->course1->id,
+            'semester_id' => $this->semester2->id,
+            'academic_year_id' => $this->academicYear->id,
+            'status' => 'published',
+        ]);
+
+        $regItem1Retake = CourseRegistrationItem::factory()->create([
+            'course_registration_id' => $regSem2->id,
+            'course_unit_id' => $this->course1->id,
+            'course_type' => 'Retake',
+            'credit_units' => 4.0,
+            'status' => 'approved',
+        ]);
+
+        StudentMark::create([
+            'course_assessment_sheet_id' => $sheet1Retake->id,
+            'course_registration_item_id' => $regItem1Retake->id,
+            'student_id' => $this->student->id,
+            'ca_score' => 32.0,
+            'exam_score' => 46.0,
+            'final_score' => 78.0,
+            'grade_letter' => 'B+',
+            'grade_point' => 4.5,
+            'is_passed' => true,
+            'is_retake' => false,
+        ]);
+
+        // Access the official transcript
+        $response = $this->get(route('result.transcript', $this->student));
+        $response->assertOk();
+
+        $content = $response->getContent();
+
+        // CSC1101 should appear exactly once in the HTML output
+        $this->assertEquals(1, substr_count($content, 'CSC1101'));
+
+        // The RTK badge should be displayed
+        $this->assertStringContainsString('RTK', $content);
+
+        // In Semester 1, the retake score (78 / B+) replaced the failed score (35 / F)
+        $this->assertStringContainsString('78', $content);
+        $this->assertStringNotContainsString('>35<', $content);
+
+        // Course 3 also appears
+        $this->assertStringContainsString('CSC1201', $content);
+
+        // Check transcript view data directly
+        $transcriptData = $response->viewData('transcriptData');
+        $this->assertCount(2, $transcriptData);
+
+        // Semester 1 contains Course 1 (retake resolved) and Course 2
+        $sem1Marks = $transcriptData[0]['marks'];
+        $this->assertCount(2, $sem1Marks);
+        $c1Mark = $sem1Marks->firstWhere('courseAssessmentSheet.course_unit_id', $this->course1->id);
+        $this->assertNotNull($c1Mark);
+        $this->assertEquals(78.0, $c1Mark->final_score);
+        $this->assertEquals('B+', $c1Mark->grade_letter);
+        $this->assertEquals('RTK', $c1Mark->retake_badge);
+
+        // Semester 2 contains only Course 3 (Course 1 is omitted because it was already presented in Sem 1)
+        $sem2Marks = $transcriptData[1]['marks'];
+        $this->assertCount(1, $sem2Marks);
+        $this->assertEquals($course3->id, $sem2Marks->first()->courseAssessmentSheet->course_unit_id);
+
+        // Semester 1 performance should reflect both courses passed (4.0 + 4.0 = 8.0 CU earned)
+        $sem1Perf = $transcriptData[0]['performance'];
+        $this->assertEquals(8.0, $sem1Perf->credit_units_registered);
+        $this->assertEquals(8.0, $sem1Perf->credit_units_earned);
+        $this->assertEquals(4.25, $sem1Perf->gpa); // (4*4.5 + 4*4.0) / 8 = (18 + 16) / 8 = 34 / 8 = 4.25
+    }
 }

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 
 class CourseAssessmentSheet extends Model
 {
@@ -170,6 +171,67 @@ class CourseAssessmentSheet extends Model
     public function isReopenedForAmendment(): bool
     {
         return $this->status === 'reopened_for_amendment';
+    }
+
+    /**
+     * Get the student marks on this sheet that have been revised during re-moderation cycles.
+     *
+     * @return Collection<int, array<string, mixed>>
+     */
+    public function getAmendedMarksDiff(): Collection
+    {
+        $this->loadMissing(['studentMarks.student.programme', 'studentMarks.auditLogs.changedBy']);
+
+        $diffs = collect();
+
+        foreach ($this->studentMarks as $mark) {
+            $recentLogs = $mark->auditLogs->sortByDesc('created_at');
+
+            if ($this->reopened_at) {
+                $recentLogs = $recentLogs->filter(fn ($log) => $log->created_at >= $this->reopened_at->subMinutes(5));
+            }
+
+            if ($recentLogs->isEmpty()) {
+                continue;
+            }
+
+            $caLog = $recentLogs->firstWhere('score_type', 'ca');
+            $examLog = $recentLogs->firstWhere('score_type', 'exam');
+
+            $previousCa = $caLog ? $caLog->old_score : $mark->ca_score;
+            $newCa = $caLog ? $caLog->new_score : $mark->ca_score;
+
+            $previousExam = $examLog ? $examLog->old_score : $mark->exam_score;
+            $newExam = $examLog ? $examLog->new_score : $mark->exam_score;
+
+            $previousFinal = ($previousCa !== null && $previousExam !== null)
+                ? round((float) $previousCa + (float) $previousExam, 1)
+                : null;
+            $newFinal = $mark->final_score;
+
+            $delta = ($previousFinal !== null && $newFinal !== null)
+                ? round((float) $newFinal - (float) $previousFinal, 1)
+                : null;
+
+            $latestLog = $recentLogs->first();
+
+            $diffs->push([
+                'mark' => $mark,
+                'student' => $mark->student,
+                'previous_ca' => $previousCa,
+                'new_ca' => $newCa,
+                'previous_exam' => $previousExam,
+                'new_exam' => $newExam,
+                'previous_final' => $previousFinal,
+                'new_final' => $newFinal,
+                'delta' => $delta,
+                'reason' => $latestLog?->reason ?? $mark->lecturer_remarks ?? 'Mark revised during re-moderation.',
+                'changed_by' => $latestLog?->changedBy,
+                'changed_at' => $latestLog?->created_at,
+            ]);
+        }
+
+        return $diffs;
     }
 
     /**
