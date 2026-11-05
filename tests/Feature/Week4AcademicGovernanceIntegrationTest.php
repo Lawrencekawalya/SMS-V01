@@ -302,7 +302,7 @@ class Week4AcademicGovernanceIntegrationTest extends TestCase
 
         // 4. Graduation Candidates Directory & Automated Audit
         $graduationDirResponse = $this->actingAs($this->adminUser)
-            ->get(route('graduation.list'));
+            ->get(route('graduation.list', ['status' => 'all']));
 
         $graduationDirResponse->assertOk();
         $graduationDirResponse->assertSee('Graduation Candidates Directory');

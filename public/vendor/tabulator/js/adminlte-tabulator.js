@@ -14,6 +14,17 @@ window.initAdminLteDataTable = function(tableSelector, userOptions = {}) {
   const tableEl = typeof tableSelector === 'string' ? document.querySelector(tableSelector) : tableSelector;
   if (!tableEl) return null;
 
+  // Detect and handle server-side empty state rows (e.g., Blade @empty with <td colspan="...">)
+  // Tabulator treats every <tr> as a data record, so an empty-state row with colspan corrupts column 1.
+  const emptyRow = tableEl.querySelector('tbody tr td[colspan]');
+  if (emptyRow && tableEl.querySelectorAll('tbody tr').length === 1) {
+    const customMessage = emptyRow.innerHTML.trim();
+    if (customMessage && !userOptions.placeholder) {
+      userOptions.placeholder = `<div class="text-center text-muted py-4">${customMessage}</div>`;
+    }
+    emptyRow.closest('tr').remove();
+  }
+
   const defaultOptions = {
     layout: "fitColumns",
     pagination: true,

@@ -271,10 +271,23 @@ class GraduationClearanceTest extends TestCase
         $this->assertStringContainsString('Credit Shortfall', $deficienciesStr);
     }
 
-    public function test_graduation_candidates_directory_loads_successfully(): void
+    public function test_graduation_candidates_directory_defaults_to_cleared_only(): void
     {
         $response = $this->actingAs($this->adminUser)
             ->get(route('graduation.list'));
+
+        $response->assertOk();
+        $response->assertViewIs('academic.graduation.index');
+        $response->assertSee('Graduation Candidates Directory');
+        $response->assertSee('Timothy');
+        $response->assertDontSee('Patience');
+        $response->assertSee('Cleared');
+    }
+
+    public function test_graduation_candidates_directory_loads_all_candidates_when_status_is_all(): void
+    {
+        $response = $this->actingAs($this->adminUser)
+            ->get(route('graduation.list', ['status' => 'all']));
 
         $response->assertOk();
         $response->assertViewIs('academic.graduation.index');

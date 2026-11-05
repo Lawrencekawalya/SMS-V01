@@ -19,7 +19,7 @@
           <i class="bi bi-funnel me-1"></i> Programme Filter
         </h3>
         <div class="card-tools d-flex gap-2 me-0 ms-auto">
-          <a href="{{ route('graduation.list') }}" class="btn btn-sm btn-outline-secondary">
+          <a href="{{ route('graduation.list', ['status' => 'cleared']) }}" class="btn btn-sm btn-outline-secondary">
             <i class="bi bi-arrow-left me-1"></i> Candidates Directory
           </a>
           <button type="button" onclick="window.print()" class="btn btn-sm btn-outline-dark">
@@ -30,7 +30,7 @@
     </div>
     <div class="card-body">
       <form action="{{ route('graduation.honors-roll') }}" method="GET" class="row g-3 align-items-end">
-        <div class="col-12 col-md-8">
+        <div class="col-12 col-md-4">
           <label for="programme_id" class="form-label small fw-semibold">Academic Programme</label>
           <select name="programme_id" id="programme_id" class="form-select form-select-sm">
             <option value="">-- All Academic Programmes --</option>
@@ -41,7 +41,31 @@
             @endforeach
           </select>
         </div>
-        <div class="col-12 col-md-4">
+        <div class="col-12 col-md-3">
+          <label for="academic_year_id" class="form-label small fw-semibold">Academic Year</label>
+          <select name="academic_year_id" id="academic_year_id" class="form-select form-select-sm">
+            <option value="">-- All Academic Years --</option>
+            @foreach ($academicYears as $ay)
+              <option value="{{ $ay->id }}" {{ (string) $selectedAcademicYearId === (string) $ay->id ? 'selected' : '' }}>
+                {{ $ay->name }} {{ $ay->is_current ? '(Current Session)' : '' }}
+              </option>
+            @endforeach
+          </select>
+        </div>
+        <div class="col-12 col-md-3">
+          <label for="semester_id" class="form-label small fw-semibold">Semester</label>
+          <select name="semester_id" id="semester_id" class="form-select form-select-sm">
+            <option value="">-- All Semesters --</option>
+            @foreach ($semesters as $sem)
+              <option value="{{ $sem->id }}"
+                      data-academic-year-id="{{ $sem->academic_year_id }}"
+                      {{ (string) $selectedSemesterId === (string) $sem->id ? 'selected' : '' }}>
+                {{ $sem->name }} ({{ $sem->academicYear->name ?? '' }}) {{ $sem->is_active ? '— (Active)' : '' }}
+              </option>
+            @endforeach
+          </select>
+        </div>
+        <div class="col-12 col-md-2">
           <button type="submit" class="btn btn-sm btn-primary w-100">
             <i class="bi bi-filter me-1"></i> Filter Gazette
           </button>
@@ -78,7 +102,7 @@
             </span>
           </div>
 
-          <div class="border border-top-0 rounded-bottom p-3 bg-white">
+          <div class="border border-top-0 rounded-bottom p-3 bg-body">
             @foreach ($awards as $awardName => $candidates)
               <div class="mb-4">
                 <!-- Award Tier Subheader -->
@@ -175,4 +199,56 @@
     }
   }
 </style>
+@endpush
+
+@push('scripts')
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const yearSelect = document.getElementById('academic_year_id');
+      const semesterSelect = document.getElementById('semester_id');
+      if (yearSelect && semesterSelect) {
+        const allSemesterOptions = Array.from(semesterSelect.options).map(function (opt) {
+          return {
+            value: opt.value,
+            text: opt.text,
+            yearId: String(opt.getAttribute('data-academic-year-id') || ''),
+            isAll: opt.value === ''
+          };
+        });
+
+        function filterSemesterOptions() {
+          const selectedYear = String(yearSelect.value || '');
+          const currentVal = String(semesterSelect.value || '');
+
+          semesterSelect.innerHTML = '';
+
+          const matching = allSemesterOptions.filter(function (opt) {
+            return opt.isAll || !selectedYear || opt.yearId === selectedYear;
+          });
+
+          let valPreserved = false;
+          matching.forEach(function (opt) {
+            const el = document.createElement('option');
+            el.value = opt.value;
+            el.text = opt.text;
+            if (!opt.isAll) {
+              el.setAttribute('data-academic-year-id', opt.yearId);
+            }
+            if (opt.value === currentVal) {
+              valPreserved = true;
+            }
+            semesterSelect.appendChild(el);
+          });
+
+          if (valPreserved) {
+            semesterSelect.value = currentVal;
+          } else {
+            semesterSelect.value = '';
+          }
+        }
+
+        yearSelect.addEventListener('change', filterSemesterOptions);
+      }
+    });
+  </script>
 @endpush

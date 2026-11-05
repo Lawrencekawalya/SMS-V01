@@ -85,16 +85,9 @@
     </div>
     <div class="card-body">
       <form action="{{ route('graduation.list') }}" method="GET" class="row g-3">
-        <div class="col-12 col-md-4">
-          <label for="search" class="form-label small fw-semibold">Search Candidate</label>
-          <div class="input-group input-group-sm">
-            <span class="input-group-text"><i class="bi bi-search"></i></span>
-            <input type="text" name="search" id="search" value="{{ $search }}" class="form-control" placeholder="Reg No, student ID, name...">
-          </div>
-        </div>
-
-        <div class="col-12 col-md-4">
-          <label for="programme_id" class="form-label small fw-semibold">Programme</label>
+        <!-- Flow: Academic Programme -> Academic Year -> Semester -> Clearance Status -->
+        <div class="col-12 col-md-3">
+          <label for="programme_id" class="form-label small fw-semibold">Academic Programme</label>
           <select name="programme_id" id="programme_id" class="form-select form-select-sm">
             <option value="">-- All Academic Programmes --</option>
             @foreach ($programmes as $prog)
@@ -105,20 +98,55 @@
           </select>
         </div>
 
-        <div class="col-12 col-md-2">
-          <label for="status" class="form-label small fw-semibold">Clearance Status</label>
-          <select name="status" id="status" class="form-select form-select-sm">
-            <option value="">-- All Statuses --</option>
-            <option value="cleared" {{ $filterStatus === 'cleared' ? 'selected' : '' }}>Cleared Only</option>
-            <option value="deficiencies" {{ $filterStatus === 'deficiencies' ? 'selected' : '' }}>Deficiencies Only</option>
+        <div class="col-12 col-md-3">
+          <label for="academic_year_id" class="form-label small fw-semibold">Academic Year</label>
+          <select name="academic_year_id" id="academic_year_id" class="form-select form-select-sm">
+            <option value="">-- All Academic Years --</option>
+            @foreach ($academicYears as $ay)
+              <option value="{{ $ay->id }}" {{ (string) $selectedAcademicYearId === (string) $ay->id ? 'selected' : '' }}>
+                {{ $ay->name }} {{ $ay->is_current ? '(Current Session)' : '' }}
+              </option>
+            @endforeach
           </select>
         </div>
 
-        <div class="col-12 col-md-2 d-flex align-items-end gap-2">
+        <div class="col-12 col-md-3">
+          <label for="semester_id" class="form-label small fw-semibold">Semester</label>
+          <select name="semester_id" id="semester_id" class="form-select form-select-sm">
+            <option value="">-- All Semesters --</option>
+            @foreach ($semesters as $sem)
+              <option value="{{ $sem->id }}"
+                      data-academic-year-id="{{ $sem->academic_year_id }}"
+                      {{ (string) $selectedSemesterId === (string) $sem->id ? 'selected' : '' }}>
+                {{ $sem->name }} ({{ $sem->academicYear->name ?? '' }}) {{ $sem->is_active ? '— (Active)' : '' }}
+              </option>
+            @endforeach
+          </select>
+        </div>
+
+        <div class="col-12 col-md-3">
+          <label for="status" class="form-label small fw-semibold">Clearance Status</label>
+          <select name="status" id="status" class="form-select form-select-sm">
+            <option value="cleared" {{ $filterStatus === 'cleared' ? 'selected' : '' }}>Cleared Only</option>
+            <option value="deficiencies" {{ $filterStatus === 'deficiencies' ? 'selected' : '' }}>Deficiencies Only</option>
+            <option value="all" {{ $filterStatus === 'all' ? 'selected' : '' }}>-- All Statuses --</option>
+          </select>
+        </div>
+
+        <!-- Search and Action Row -->
+        <div class="col-12 col-md-8">
+          <label for="search" class="form-label small fw-semibold">Search Candidate</label>
+          <div class="input-group input-group-sm">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input type="text" name="search" id="search" value="{{ $search }}" class="form-control" placeholder="Reg No, student ID, name...">
+          </div>
+        </div>
+
+        <div class="col-12 col-md-4 d-flex align-items-end gap-2">
           <button type="submit" class="btn btn-sm btn-primary w-100">
-            <i class="bi bi-filter me-1"></i> Filter
+            <i class="bi bi-filter me-1"></i> Filter Candidates
           </button>
-          <a href="{{ route('graduation.list') }}" class="btn btn-sm btn-outline-secondary">
+          <a href="{{ route('graduation.list', ['status' => 'cleared']) }}" class="btn btn-sm btn-outline-secondary">
             Reset
           </a>
         </div>
@@ -265,6 +293,52 @@
     document.addEventListener('DOMContentLoaded', function () {
       const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
       [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+
+      const yearSelect = document.getElementById('academic_year_id');
+      const semesterSelect = document.getElementById('semester_id');
+      if (yearSelect && semesterSelect) {
+        const allSemesterOptions = Array.from(semesterSelect.options).map(function (opt) {
+          return {
+            value: opt.value,
+            text: opt.text,
+            yearId: String(opt.getAttribute('data-academic-year-id') || ''),
+            isAll: opt.value === ''
+          };
+        });
+
+        function filterSemesterOptions() {
+          const selectedYear = String(yearSelect.value || '');
+          const currentVal = String(semesterSelect.value || '');
+
+          semesterSelect.innerHTML = '';
+
+          const matching = allSemesterOptions.filter(function (opt) {
+            return opt.isAll || !selectedYear || opt.yearId === selectedYear;
+          });
+
+          let valPreserved = false;
+          matching.forEach(function (opt) {
+            const el = document.createElement('option');
+            el.value = opt.value;
+            el.text = opt.text;
+            if (!opt.isAll) {
+              el.setAttribute('data-academic-year-id', opt.yearId);
+            }
+            if (opt.value === currentVal) {
+              valPreserved = true;
+            }
+            semesterSelect.appendChild(el);
+          });
+
+          if (valPreserved) {
+            semesterSelect.value = currentVal;
+          } else {
+            semesterSelect.value = '';
+          }
+        }
+
+        yearSelect.addEventListener('change', filterSemesterOptions);
+      }
     });
   </script>
 @endpush
