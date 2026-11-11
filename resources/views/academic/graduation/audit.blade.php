@@ -20,7 +20,7 @@
       <a href="{{ route('result.transcript', $student->id) }}" class="btn btn-sm btn-outline-primary">
         <i class="bi bi-file-earmark-text me-1"></i> Official Academic Transcript
       </a>
-      <button type="button" onclick="window.print()" class="btn btn-sm btn-outline-dark">
+      <button type="button" onclick="window.print()" class="btn btn-sm btn-outline-secondary">
         <i class="bi bi-printer me-1"></i> Print Clearance Audit
       </button>
     </div>
@@ -28,9 +28,17 @@
 
   <!-- Formal Institutional Audit Document -->
   <div class="card card-outline card-primary shadow-sm mb-4 print-card">
+    <div class="card-header py-2 no-print">
+      <div class="d-flex justify-content-between align-items-center">
+        <h3 class="card-title fs-6 fw-bold mb-0">
+          <i class="bi bi-file-earmark-ruled me-1 text-primary"></i> Graduation Clearance Audit Sheet
+        </h3>
+        <span class="badge {{ $audit['badge_class'] }}">{{ $audit['status'] }}</span>
+      </div>
+    </div>
     <div class="card-body p-4">
-      <!-- Header -->
-      <div class="text-center pb-3 border-bottom mb-4">
+      <!-- Official Institutional Header (Printed PDF Only) -->
+      <div class="d-none d-print-block text-center pb-3 border-bottom mb-4">
         <div class="d-flex align-items-center justify-content-center gap-3 mb-2">
           <img src="{{ $university?->logo_url ?? $currentUniversity?->logo_url ?? asset('vendor/adminlte/assets/img/AdminLTELogo.png') }}" alt="Logo" style="height: 60px; width: 60px; object-fit: contain;">
           <div>
@@ -46,8 +54,8 @@
       <!-- Student Profile & Status Overview -->
       <div class="row g-3 mb-4">
         <div class="col-12 col-md-7">
-          <div class="p-3 bg-light rounded border">
-            <h6 class="fw-bold text-dark border-bottom pb-2 mb-2">Student Identity &amp; Programme Details</h6>
+          <div class="p-3 bg-body-tertiary rounded border">
+            <h6 class="fw-bold text-body border-bottom pb-2 mb-2">Student Identity &amp; Programme Details</h6>
             <div class="row g-2 small">
               <div class="col-6">
                 <span class="text-muted">Full Name:</span>
@@ -94,7 +102,7 @@
               Projected Award: <span class="badge {{ $audit['badge_class'] }} fs-6">{{ $audit['award_classification'] }}</span>
             </div>
             <div class="text-muted small">
-              Cumulative CGPA: <strong class="fs-6 text-dark">{{ number_format($audit['cgpa'], 2) }}</strong>
+              Cumulative CGPA: <strong class="fs-6 text-body">{{ number_format($audit['cgpa'], 2) }}</strong>
               <span class="text-muted small">(Pass Min: {{ number_format($audit['min_grad_cgpa'] ?? 2.0, 2) }})</span>
             </div>
           </div>
@@ -118,13 +126,13 @@
       <!-- Academic Metrics Audit Bar -->
       <div class="row g-2 mb-4 text-center">
         <div class="col-3">
-          <div class="p-2 border rounded bg-light">
+          <div class="p-2 border rounded bg-body-tertiary">
             <div class="text-muted small">Required Credits</div>
-            <div class="fs-5 fw-bold text-dark">{{ number_format($audit['required_credits'], 1) }} CU</div>
+            <div class="fs-5 fw-bold text-body">{{ number_format($audit['required_credits'], 1) }} CU</div>
           </div>
         </div>
         <div class="col-3">
-          <div class="p-2 border rounded bg-light">
+          <div class="p-2 border rounded bg-body-tertiary">
             <div class="text-muted small">Earned Credits</div>
             <div class="fs-5 fw-bold {{ $audit['earned_credits'] >= $audit['required_credits'] ? 'text-success' : 'text-danger' }}">
               {{ number_format($audit['earned_credits'], 1) }} CU
@@ -132,7 +140,7 @@
           </div>
         </div>
         <div class="col-3">
-          <div class="p-2 border rounded bg-light">
+          <div class="p-2 border rounded bg-body-tertiary">
             <div class="text-muted small">Credit Deficit</div>
             <div class="fs-5 fw-bold {{ $audit['credit_deficit'] > 0 ? 'text-danger' : 'text-success' }}">
               {{ number_format($audit['credit_deficit'], 1) }} CU
@@ -140,7 +148,7 @@
           </div>
         </div>
         <div class="col-3">
-          <div class="p-2 border rounded bg-light">
+          <div class="p-2 border rounded bg-body-tertiary">
             <div class="text-muted small">Courses Passed</div>
             <div class="fs-5 fw-bold text-primary">{{ $audit['passed_courses_count'] }}</div>
           </div>
@@ -149,7 +157,7 @@
 
       <!-- Core Courses Curriculum Checklist -->
       <div class="mb-4">
-        <h6 class="fw-bold text-dark border-bottom pb-2 mb-3">
+        <h6 class="fw-bold text-body border-bottom pb-2 mb-3">
           <i class="bi bi-check2-square me-1 text-primary"></i> Mandatory Core Course Completion Checklist
         </h6>
         <div class="table-responsive">
@@ -227,8 +235,8 @@
         </div>
       @endif
 
-      <!-- Official Institutional Endorsement Block -->
-      <div class="mt-5 pt-3 border-top page-break-inside-avoid">
+      <!-- Official Institutional Endorsement Block (Printed PDF Only) -->
+      <div class="d-none d-print-block mt-5 pt-3 border-top page-break-inside-avoid">
         <div class="row text-center g-4">
           <div class="col-4">
             <div class="border-bottom border-dark pb-4 mb-2 mx-auto" style="width: 80%;"></div>

@@ -22,7 +22,7 @@
           <a href="{{ route('graduation.list', ['status' => 'cleared']) }}" class="btn btn-sm btn-outline-secondary">
             <i class="bi bi-arrow-left me-1"></i> Candidates Directory
           </a>
-          <button type="button" onclick="window.print()" class="btn btn-sm btn-outline-dark">
+          <button type="button" onclick="window.print()" class="btn btn-sm btn-outline-secondary">
             <i class="bi bi-printer me-1"></i> Print Gazette Booklet
           </button>
         </div>
