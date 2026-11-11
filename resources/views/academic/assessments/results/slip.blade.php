@@ -65,6 +65,12 @@
       .table-bordered th, .table-bordered td {
         border: 1px solid #000000 !important;
       }
+      .photo-placeholder {
+        border: 1px solid #000000 !important;
+        background-color: #ffffff !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
     }
   </style>
 </head>
@@ -119,30 +125,47 @@
     <!-- Student Academic Credentials Matrix -->
     <div class="card bg-light border mb-3">
       <div class="card-body p-2">
-        <div class="row g-2 small">
-          <div class="col-6 col-md-4">
-            <span class="text-muted d-block">Student Name:</span>
-            <strong>{{ $student->user->name ?? $student->full_name }}</strong>
+        <div class="d-flex align-items-center justify-content-between gap-3">
+          <div class="row g-2 small flex-grow-1">
+            <div class="col-6 col-md-4">
+              <span class="text-muted d-block">Student Name:</span>
+              <strong>{{ $student->user->name ?? $student->full_name }}</strong>
+            </div>
+            <div class="col-6 col-md-4">
+              <span class="text-muted d-block">Registration No:</span>
+              <strong class="font-monospace text-primary">{{ $student->registration_number }}</strong>
+            </div>
+            <div class="col-6 col-md-4">
+              <span class="text-muted d-block">Student Number:</span>
+              <strong class="font-monospace">{{ $student->student_number }}</strong>
+            </div>
+            <div class="col-12 col-md-6">
+              <span class="text-muted d-block">Programme of Study:</span>
+              <strong>{{ $student->programme->name }} ({{ $student->programme->code }})</strong>
+            </div>
+            <div class="col-6 col-md-3">
+              <span class="text-muted d-block">Faculty / School:</span>
+              <span>{{ $student->programme->department->faculty->code ?? 'FSC' }}</span>
+            </div>
+            <div class="col-6 col-md-3">
+              <span class="text-muted d-block">Academic Stage:</span>
+              <span class="badge text-bg-secondary">{{ $student->academic_stage }}</span>
+            </div>
           </div>
-          <div class="col-6 col-md-4">
-            <span class="text-muted d-block">Registration No:</span>
-            <strong class="font-monospace text-primary">{{ $student->registration_number }}</strong>
-          </div>
-          <div class="col-6 col-md-4">
-            <span class="text-muted d-block">Student Number:</span>
-            <strong class="font-monospace">{{ $student->student_number }}</strong>
-          </div>
-          <div class="col-12 col-md-6">
-            <span class="text-muted d-block">Programme of Study:</span>
-            <strong>{{ $student->programme->name }} ({{ $student->programme->code }})</strong>
-          </div>
-          <div class="col-6 col-md-3">
-            <span class="text-muted d-block">Faculty / School:</span>
-            <span>{{ $student->programme->department->faculty->code ?? 'FSC' }}</span>
-          </div>
-          <div class="col-6 col-md-3">
-            <span class="text-muted d-block">Academic Stage:</span>
-            <span class="badge text-bg-secondary">{{ $student->academic_stage }}</span>
+
+          {{-- Student Passport Photo Placeholder --}}
+          <div class="d-flex flex-column align-items-center justify-content-center border border-2 rounded bg-white text-center p-1 photo-placeholder flex-shrink-0"
+               style="width: 95px; height: 115px; min-width: 95px; max-width: 95px; max-height: 115px; overflow: hidden;"
+               title="Official Student Passport Photo">
+            @php
+              $studentPhoto = $student->photo_url ?? $student->photo_path ?? $student->avatar ?? $student->user->avatar_url ?? null;
+            @endphp
+            @if ($studentPhoto)
+              <img src="{{ $studentPhoto }}" alt="{{ $student->full_name }}" class="w-100 h-100 object-fit-cover rounded">
+            @else
+              <i class="bi bi-person text-secondary" style="font-size: 2.2rem; line-height: 1;"></i>
+              <span class="text-uppercase fw-bold text-muted mt-1" style="font-size: 0.6rem; letter-spacing: 0.5px; line-height: 1.1;">Passport<br>Photo</span>
+            @endif
           </div>
         </div>
       </div>

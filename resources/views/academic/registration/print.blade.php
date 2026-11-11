@@ -56,6 +56,12 @@
         padding: 0;
         max-width: 100%;
       }
+      .photo-placeholder {
+        border: 1px solid #000000 !important;
+        background-color: #f8f9fa !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
     }
   </style>
 </head>
@@ -102,47 +108,68 @@
     </div>
 
     <!-- Student Academic Profile Metadata Grid -->
-    <div class="row g-2 mb-3 small">
-      <div class="col-6">
-        <table class="table table-sm table-borderless mb-0">
-          <tr>
-            <th class="ps-0 text-muted" style="width: 140px;">Student Name:</th>
-            <td class="fw-bold fs-6">{{ $registration->student->full_name }}</td>
-          </tr>
-          <tr>
-            <th class="ps-0 text-muted">Registration No:</th>
-            <td class="fw-bold font-monospace text-primary">{{ $registration->student->registration_number }}</td>
-          </tr>
-          <tr>
-            <th class="ps-0 text-muted">Student Number:</th>
-            <td class="font-monospace">{{ $registration->student->student_number }}</td>
-          </tr>
-          <tr>
-            <th class="ps-0 text-muted">Study Mode / Gender:</th>
-            <td>{{ $registration->student->study_mode }} &bull; {{ ucfirst($registration->student->gender) }}</td>
-          </tr>
-        </table>
+    <div class="row g-2 mb-3 small align-items-center">
+      <div class="col-10">
+        <div class="row g-2">
+          <div class="col-6">
+            <table class="table table-sm table-borderless mb-0">
+              <tr>
+                <th class="ps-0 text-muted" style="width: 140px;">Student Name:</th>
+                <td class="fw-bold fs-6">{{ $registration->student->full_name }}</td>
+              </tr>
+              <tr>
+                <th class="ps-0 text-muted">Registration No:</th>
+                <td class="fw-bold font-monospace text-primary">{{ $registration->student->registration_number }}</td>
+              </tr>
+              <tr>
+                <th class="ps-0 text-muted">Student Number:</th>
+                <td class="font-monospace">{{ $registration->student->student_number }}</td>
+              </tr>
+              <tr>
+                <th class="ps-0 text-muted">Study Mode / Gender:</th>
+                <td>{{ $registration->student->study_mode }} &bull; {{ ucfirst($registration->student->gender) }}</td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="col-6">
+            <table class="table table-sm table-borderless mb-0">
+              <tr>
+                <th class="ps-0 text-muted" style="width: 140px;">Academic Programme:</th>
+                <td class="fw-bold">{{ $registration->student->programme->name }} ({{ $registration->student->programme->code }})</td>
+              </tr>
+              <tr>
+                <th class="ps-0 text-muted">Faculty &amp; Dept:</th>
+                <td>{{ $registration->student->programme->department->name }} &bull; {{ $registration->student->campus->name }}</td>
+              </tr>
+              <tr>
+                <th class="ps-0 text-muted">Current Stage:</th>
+                <td class="fw-semibold">Study Year {{ $registration->study_year }}, Semester {{ $registration->semester_number }}</td>
+              </tr>
+              <tr>
+                <th class="ps-0 text-muted">Slip Reference ID:</th>
+                <td class="font-monospace">#REG-{{ str_pad($registration->id, 5, '0', STR_PAD_LEFT) }} &bull; Status: {{ strtoupper($registration->status) }}</td>
+              </tr>
+            </table>
+          </div>
+        </div>
       </div>
 
-      <div class="col-6">
-        <table class="table table-sm table-borderless mb-0">
-          <tr>
-            <th class="ps-0 text-muted" style="width: 140px;">Academic Programme:</th>
-            <td class="fw-bold">{{ $registration->student->programme->name }} ({{ $registration->student->programme->code }})</td>
-          </tr>
-          <tr>
-            <th class="ps-0 text-muted">Faculty & Dept:</th>
-            <td>{{ $registration->student->programme->department->name }} &bull; {{ $registration->student->campus->name }}</td>
-          </tr>
-          <tr>
-            <th class="ps-0 text-muted">Current Stage:</th>
-            <td class="fw-semibold">Study Year {{ $registration->study_year }}, Semester {{ $registration->semester_number }}</td>
-          </tr>
-          <tr>
-            <th class="ps-0 text-muted">Slip Reference ID:</th>
-            <td class="font-monospace">#REG-{{ str_pad($registration->id, 5, '0', STR_PAD_LEFT) }} &bull; Status: {{ strtoupper($registration->status) }}</td>
-          </tr>
-        </table>
+      <div class="col-2 d-flex justify-content-end align-items-center">
+        {{-- Student Passport Photo Placeholder --}}
+        <div class="d-flex flex-column align-items-center justify-content-center border border-2 rounded bg-light text-center p-1 photo-placeholder"
+             style="width: 95px; height: 115px; min-width: 95px; max-width: 95px; max-height: 115px; overflow: hidden;"
+             title="Official Student Passport Photo">
+          @php
+            $studentPhoto = $registration->student->photo_url ?? $registration->student->photo_path ?? $registration->student->avatar ?? $registration->student->user->avatar_url ?? null;
+          @endphp
+          @if ($studentPhoto)
+            <img src="{{ $studentPhoto }}" alt="{{ $registration->student->full_name }}" class="w-100 h-100 object-fit-cover rounded">
+          @else
+            <i class="bi bi-person text-secondary" style="font-size: 2.2rem; line-height: 1;"></i>
+            <span class="text-uppercase fw-bold text-muted mt-1" style="font-size: 0.6rem; letter-spacing: 0.5px; line-height: 1.1;">Passport<br>Photo</span>
+          @endif
+        </div>
       </div>
     </div>
 

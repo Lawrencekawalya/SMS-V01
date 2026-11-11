@@ -54,32 +54,49 @@
       <!-- Student Profile & Status Overview -->
       <div class="row g-3 mb-4">
         <div class="col-12 col-md-7">
-          <div class="p-3 bg-body-tertiary rounded border">
+          <div class="p-3 bg-body-tertiary rounded border h-100">
             <h6 class="fw-bold text-body border-bottom pb-2 mb-2">Student Identity &amp; Programme Details</h6>
-            <div class="row g-2 small">
-              <div class="col-6">
-                <span class="text-muted">Full Name:</span>
-                <div class="fw-bold fs-6">{{ $student->user->name ?? $student->full_name }}</div>
+            <div class="d-flex align-items-center justify-content-between gap-3">
+              <div class="row g-2 small flex-grow-1">
+                <div class="col-6">
+                  <span class="text-muted">Full Name:</span>
+                  <div class="fw-bold fs-6">{{ $student->user->name ?? $student->full_name }}</div>
+                </div>
+                <div class="col-6">
+                  <span class="text-muted">Registration No:</span>
+                  <div class="fw-bold font-monospace fs-6">{{ $student->registration_number }}</div>
+                </div>
+                <div class="col-6">
+                  <span class="text-muted">Student Number:</span>
+                  <div class="fw-semibold font-monospace">{{ $student->student_number }}</div>
+                </div>
+                <div class="col-6">
+                  <span class="text-muted">Academic Programme:</span>
+                  <div class="fw-semibold">{{ $student->programme->name ?? 'N/A' }} ({{ $student->programme->code ?? '' }})</div>
+                </div>
+                <div class="col-6">
+                  <span class="text-muted">Faculty &amp; Dept:</span>
+                  <div>{{ $student->programme->department->faculty->name ?? 'N/A' }}</div>
+                </div>
+                <div class="col-6">
+                  <span class="text-muted">Curriculum Version:</span>
+                  <div>{{ $audit['curriculum']->version_name ?? 'Standard Active' }}</div>
+                </div>
               </div>
-              <div class="col-6">
-                <span class="text-muted">Registration No:</span>
-                <div class="fw-bold font-monospace fs-6">{{ $student->registration_number }}</div>
-              </div>
-              <div class="col-6">
-                <span class="text-muted">Student Number:</span>
-                <div class="fw-semibold font-monospace">{{ $student->student_number }}</div>
-              </div>
-              <div class="col-6">
-                <span class="text-muted">Academic Programme:</span>
-                <div class="fw-semibold">{{ $student->programme->name ?? 'N/A' }} ({{ $student->programme->code ?? '' }})</div>
-              </div>
-              <div class="col-6">
-                <span class="text-muted">Faculty &amp; Dept:</span>
-                <div>{{ $student->programme->department->faculty->name ?? 'N/A' }}</div>
-              </div>
-              <div class="col-6">
-                <span class="text-muted">Curriculum Version:</span>
-                <div>{{ $audit['curriculum']->version_name ?? 'Standard Active' }}</div>
+
+              {{-- Student Passport Photo Placeholder --}}
+              <div class="d-flex flex-column align-items-center justify-content-center border border-2 rounded bg-body text-center p-1 photo-placeholder flex-shrink-0"
+                   style="width: 95px; height: 115px; min-width: 95px; max-width: 95px; max-height: 115px; overflow: hidden;"
+                   title="Official Student Passport Photo">
+                @php
+                  $studentPhoto = $student->photo_url ?? $student->photo_path ?? $student->avatar ?? $student->user->avatar_url ?? null;
+                @endphp
+                @if ($studentPhoto)
+                  <img src="{{ $studentPhoto }}" alt="{{ $student->full_name }}" class="w-100 h-100 object-fit-cover rounded">
+                @else
+                  <i class="bi bi-person text-secondary" style="font-size: 2.2rem; line-height: 1;"></i>
+                  <span class="text-uppercase fw-bold text-muted mt-1" style="font-size: 0.6rem; letter-spacing: 0.5px; line-height: 1.1;">Passport<br>Photo</span>
+                @endif
               </div>
             </div>
           </div>
@@ -280,6 +297,12 @@
     }
     .page-break-inside-avoid {
       page-break-inside: avoid;
+    }
+    .photo-placeholder {
+      border: 1px solid #000000 !important;
+      background-color: #f8f9fa !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
     }
   }
 </style>

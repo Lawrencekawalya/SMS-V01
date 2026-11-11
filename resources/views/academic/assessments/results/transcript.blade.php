@@ -88,6 +88,12 @@
       .table-bordered th, .table-bordered td {
         border: 1px solid #000000 !important;
       }
+      .photo-placeholder {
+        border: 1px solid #000000 !important;
+        background-color: #ffffff !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
     }
   </style>
 </head>
@@ -137,35 +143,52 @@
 
     <!-- Student Bio-Data & Academic Placement Card -->
     <div class="border rounded p-2 mb-3 bg-light" style="font-size: 0.8rem;">
-      <div class="row g-2">
-        <div class="col-8 col-md-5">
-          <span class="text-muted d-block small">Candidate Name:</span>
-          <strong class="fs-6">{{ strtoupper($student->user->name ?? $student->full_name) }}</strong>
-        </div>
-        <div class="col-4 col-md-3">
-          <span class="text-muted d-block small">Registration No:</span>
-          <strong class="font-monospace text-primary fs-6">{{ $student->registration_number }}</strong>
-        </div>
-        <div class="col-4 col-md-2">
-          <span class="text-muted d-block small">Student Number:</span>
-          <strong class="font-monospace">{{ $student->student_number }}</strong>
-        </div>
-        <div class="col-4 col-md-2">
-          <span class="text-muted d-block small">Gender / Sex:</span>
-          <strong class="text-capitalize">{{ $student->gender ?? 'N/A' }}</strong>
+      <div class="d-flex align-items-center justify-content-between gap-3">
+        <div class="row g-2 flex-grow-1">
+          <div class="col-8 col-md-5">
+            <span class="text-muted d-block small">Candidate Name:</span>
+            <strong class="fs-6">{{ strtoupper($student->user->name ?? $student->full_name) }}</strong>
+          </div>
+          <div class="col-4 col-md-3">
+            <span class="text-muted d-block small">Registration No:</span>
+            <strong class="font-monospace text-primary fs-6">{{ $student->registration_number }}</strong>
+          </div>
+          <div class="col-4 col-md-2">
+            <span class="text-muted d-block small">Student Number:</span>
+            <strong class="font-monospace">{{ $student->student_number }}</strong>
+          </div>
+          <div class="col-4 col-md-2">
+            <span class="text-muted d-block small">Gender / Sex:</span>
+            <strong class="text-capitalize">{{ $student->gender ?? 'N/A' }}</strong>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <span class="text-muted d-block small">Programme of Study:</span>
+            <strong>{{ strtoupper($student->programme->name) }} ({{ $student->programme->code }})</strong>
+          </div>
+          <div class="col-6 col-md-3">
+            <span class="text-muted d-block small">Faculty / Department:</span>
+            <span>{{ $student->programme->department->name ?? 'Department' }}</span>
+          </div>
+          <div class="col-6 col-md-3">
+            <span class="text-muted d-block small">Date of Admission:</span>
+            <span>{{ $student->admissionAcademicYear->name ?? '2026/2027' }}</span>
+          </div>
         </div>
 
-        <div class="col-12 col-md-6">
-          <span class="text-muted d-block small">Programme of Study:</span>
-          <strong>{{ strtoupper($student->programme->name) }} ({{ $student->programme->code }})</strong>
-        </div>
-        <div class="col-6 col-md-3">
-          <span class="text-muted d-block small">Faculty / Department:</span>
-          <span>{{ $student->programme->department->name ?? 'Department' }}</span>
-        </div>
-        <div class="col-6 col-md-3">
-          <span class="text-muted d-block small">Date of Admission:</span>
-          <span>{{ $student->admissionAcademicYear->name ?? '2026/2027' }}</span>
+        {{-- Student Passport Photo Placeholder --}}
+        <div class="d-flex flex-column align-items-center justify-content-center border border-2 rounded bg-white text-center p-1 photo-placeholder flex-shrink-0"
+             style="width: 95px; height: 115px; min-width: 95px; max-width: 95px; max-height: 115px; overflow: hidden;"
+             title="Official Student Passport Photo">
+          @php
+            $studentPhoto = $student->photo_url ?? $student->photo_path ?? $student->avatar ?? $student->user->avatar_url ?? null;
+          @endphp
+          @if ($studentPhoto)
+            <img src="{{ $studentPhoto }}" alt="{{ $student->full_name }}" class="w-100 h-100 object-fit-cover rounded">
+          @else
+            <i class="bi bi-person text-secondary" style="font-size: 2.2rem; line-height: 1;"></i>
+            <span class="text-uppercase fw-bold text-muted mt-1" style="font-size: 0.6rem; letter-spacing: 0.5px; line-height: 1.1;">Passport<br>Photo</span>
+          @endif
         </div>
       </div>
     </div>
