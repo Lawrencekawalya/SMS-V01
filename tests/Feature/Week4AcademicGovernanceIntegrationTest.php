@@ -262,7 +262,7 @@ class Week4AcademicGovernanceIntegrationTest extends TestCase
             ]));
 
         $broadSheetResponse->assertOk();
-        $broadSheetResponse->assertSee('MASTER SENATE BROAD-SHEET');
+        $broadSheetResponse->assertSee('RESULT SHEET');
         $broadSheetResponse->assertSee('Grace Atuhaire');
         $broadSheetResponse->assertSee('Denis Okello');
         $broadSheetResponse->assertSee('85.0');

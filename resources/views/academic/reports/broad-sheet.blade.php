@@ -24,7 +24,7 @@
               <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export CSV
             </a>
             <button type="button" onclick="window.print()" class="btn btn-sm btn-outline-secondary">
-              <i class="bi bi-printer me-1"></i> Print Ledger
+              <i class="bi bi-printer me-1"></i> Print Result Sheet (PDF)
             </button>
           @endif
         </div>
@@ -87,7 +87,7 @@
   </div>
 
   @if ($selectedProgramme && $selectedSemester)
-    <!-- Broad-Sheet Official Header (Printed PDF Only) -->
+    <!-- Result Sheet Official Header (Printed PDF Only) -->
     <div class="d-none d-print-block text-center mb-4 pb-3 border-bottom">
       <div class="d-flex align-items-center justify-content-center gap-3 mb-2">
         <img src="{{ $university?->logo_url ?? $currentUniversity?->logo_url ?? asset('vendor/adminlte/assets/img/AdminLTELogo.png') }}" alt="Logo" style="height: 60px; width: 60px; object-fit: contain;">
@@ -97,7 +97,7 @@
         </div>
       </div>
       <div class="badge bg-primary text-white text-uppercase px-3 py-1 fs-6 mb-2">
-        MASTER SENATE BROAD-SHEET (RESULTS GAZETTE)
+        RESULT SHEET
       </div>
       <p class="small text-muted mb-0">
         <strong>Programme:</strong> {{ $selectedProgramme->name }} ({{ $selectedProgramme->code }}) &bull;

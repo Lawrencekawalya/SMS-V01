@@ -42,7 +42,7 @@ class SenateBroadSheetController extends Controller
         $studentsMatrix = $matrixData['studentsMatrix'];
 
         $fileName = sprintf(
-            'senate_broad_sheet_%s_Y%dS%d_%s.csv',
+            'result_sheet_%s_Y%dS%d_%s.csv',
             $programme ? $programme->code : 'ALL',
             $studyYear,
             $semester ? $semester->semester_number : 1,
@@ -64,7 +64,7 @@ class SenateBroadSheetController extends Controller
             fprintf($handle, chr(0xEF).chr(0xBB).chr(0xBF));
 
             // Report Header metadata
-            fputcsv($handle, ['OFFICIAL SENATE MASTER BROAD-SHEET']);
+            fputcsv($handle, ['OFFICIAL RESULT SHEET']);
             fputcsv($handle, ['Programme:', $programme ? $programme->name.' ('.$programme->code.')' : 'All Programmes']);
             fputcsv($handle, ['Academic Term:', $semester ? $semester->name.' ('.$semester->academicYear->name.')' : 'N/A', 'Study Year:', 'Year '.$studyYear]);
             fputcsv($handle, ['Generated At:', now()->format('d M Y H:i')]);
