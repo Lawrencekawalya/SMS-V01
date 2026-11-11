@@ -454,14 +454,14 @@ class AssessmentDataArchitectureTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('Course Assessment &amp; Mark Sheets', false);
-        $response->assertSee('Master Course Mark Sheets Directory');
+        $response->assertSee('Academic Structure Cascade');
         $response->assertSee('Total Mark Sheets');
         $response->assertSee('Pending HoD Moderation');
         $response->assertSee('Senate Published');
         $response->assertSee($this->courseUnit->code);
         $response->assertSee($this->courseUnit->name);
         $response->assertSee('Dr. Paul Ssemakula');
-        $response->assertSee('sheets-table');
+        $response->assertSee('cascade-accordion');
     }
 
     public function test_assessment_index_filters_work_correctly(): void

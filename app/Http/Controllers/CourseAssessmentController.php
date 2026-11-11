@@ -7,9 +7,12 @@ use App\Http\Requests\UpdateAssessmentPolicyRequest;
 use App\Models\AcademicYear;
 use App\Models\AssessmentPolicy;
 use App\Models\AwardClassification;
+use App\Models\Campus;
 use App\Models\CourseAssessmentSheet;
 use App\Models\CourseRegistrationItem;
+use App\Models\CourseUnit;
 use App\Models\Department;
+use App\Models\Faculty;
 use App\Models\GradingScaleTier;
 use App\Models\Semester;
 use App\Models\Student;
@@ -312,7 +315,7 @@ class CourseAssessmentController extends Controller
     }
 
     /**
-     * Display a listing of course assessment mark sheets.
+     * Display a listing of course assessment mark sheets in an academic structure cascade workspace.
      */
     public function index(Request $request): View
     {
@@ -323,41 +326,166 @@ class CourseAssessmentController extends Controller
         $semesterId = $request->query('semester_id');
         $departmentId = $request->query('department_id');
         $status = $request->query('status');
-
-        $query = CourseAssessmentSheet::with([
-            'courseUnit.department',
-            'semester',
-            'academicYear',
-            'instructor',
-            'moderatedBy',
-            'publishedBy',
-        ])->withCount(['studentMarks as total_students_count', 'studentMarks as graded_students_count' => function ($q) {
-            $q->whereNotNull('final_score');
-        }]);
-
-        if ($academicYearId) {
-            $query->where('academic_year_id', $academicYearId);
-        }
-
-        if ($semesterId) {
-            $query->where('semester_id', $semesterId);
-        }
-
-        if ($departmentId) {
-            $query->whereHas('courseUnit', function ($q) use ($departmentId) {
-                $q->where('department_id', $departmentId);
-            });
-        }
-
-        if ($status) {
-            $query->where('status', $status);
-        }
-
-        $sheets = $query->latest('created_at')->get();
+        $selectedCourseUnitId = $request->query('course_unit_id') ?? $request->query('course');
 
         $academicYears = AcademicYear::orderByDesc('start_date')->get();
         $semesters = Semester::with('academicYear')->orderByDesc('start_date')->get();
-        $departments = Department::where('status', 'active')->orderBy('name')->get();
+
+        $selectedSemester = null;
+        if ($semesterId) {
+            $selectedSemester = $semesters->firstWhere('id', (int) $semesterId);
+        }
+        if (! $selectedSemester) {
+            $selectedSemester = $semesters->firstWhere('is_active', true) ?? $semesters->first();
+        }
+
+        $selectedAcademicYear = null;
+        if ($academicYearId) {
+            $selectedAcademicYear = $academicYears->firstWhere('id', (int) $academicYearId);
+        }
+        if (! $selectedAcademicYear) {
+            $selectedAcademicYear = $selectedSemester?->academicYear ?? $academicYears->first();
+        }
+
+        // Retrieve existing assessment sheets for this semester (keyed by course_unit_id)
+        $sheetsQuery = CourseAssessmentSheet::with(['instructor', 'moderatedBy', 'publishedBy'])
+            ->where('semester_id', $selectedSemester?->id);
+
+        if ($status) {
+            $sheetsQuery->where('status', $status);
+        }
+
+        $existingSheets = $sheetsQuery->get()->keyBy('course_unit_id');
+
+        // Campuses with full hierarchy cascade
+        $campuses = Campus::with([
+            'faculties' => function ($q): void {
+                $q->where('status', 'active')->orderBy('name');
+            },
+            'faculties.departments' => function ($q) use ($departmentId): void {
+                $q->where('status', 'active');
+                if ($departmentId) {
+                    $q->where('id', $departmentId);
+                }
+                $q->orderBy('name');
+            },
+            'faculties.departments.programmes' => function ($q): void {
+                $q->where('status', 'active')->orderBy('name');
+            },
+            'faculties.departments.programmes.curriculums' => function ($q): void {
+                $q->orderByDesc('effective_year');
+            },
+            'faculties.departments.programmes.curriculums.curriculumCourses.courseUnit' => function ($q): void {
+                $q->where('status', 'active')->orderBy('code');
+            },
+            'faculties.departments.courseUnits' => function ($q): void {
+                $q->where('status', 'active')->orderBy('code');
+            },
+        ])->where('status', 'active')->orderBy('name')->get();
+
+        // Also handle orphan faculties without campus if any
+        $orphanFaculties = Faculty::whereNull('campus_id')
+            ->where('status', 'active')
+            ->with([
+                'departments' => function ($q) use ($departmentId): void {
+                    $q->where('status', 'active');
+                    if ($departmentId) {
+                        $q->where('id', $departmentId);
+                    }
+                    $q->orderBy('name');
+                },
+                'departments.programmes.curriculums.curriculumCourses.courseUnit',
+                'departments.courseUnits',
+            ])->get();
+
+        if ($orphanFaculties->isNotEmpty()) {
+            $virtualCampus = new Campus([
+                'id' => 0,
+                'name' => 'Main / Central Campus',
+                'code' => 'MAIN',
+                'status' => 'active',
+            ]);
+            $virtualCampus->setRelation('faculties', $orphanFaculties);
+            $campuses->push($virtualCampus);
+        }
+
+        // Resolve selected Course Unit & Mark Sheet Workspace
+        $selectedCourseUnit = null;
+        $selectedSheet = null;
+        $studentMarks = collect();
+        $activeCampusId = null;
+        $activeFacultyId = null;
+        $activeDepartmentId = null;
+        $activeProgrammeId = null;
+        $activeCurriculumId = null;
+
+        if ($selectedCourseUnitId) {
+            $selectedCourseUnit = CourseUnit::with(['department.faculty.campus', 'curriculums.programme'])->find($selectedCourseUnitId);
+            if ($selectedCourseUnit && $selectedSemester) {
+                $selectedSheet = CourseAssessmentSheet::with([
+                    'courseUnit.department.faculty.campus',
+                    'semester.academicYear',
+                    'academicYear',
+                    'instructor',
+                    'moderatedBy',
+                    'publishedBy',
+                ])->firstOrCreate(
+                    [
+                        'course_unit_id' => $selectedCourseUnit->id,
+                        'semester_id' => $selectedSemester->id,
+                    ],
+                    [
+                        'academic_year_id' => $selectedSemester->academic_year_id,
+                        'ca_weight' => config('academic.assessment_ca_weight', 40.0),
+                        'exam_weight' => config('academic.assessment_exam_weight', 60.0),
+                        'pass_mark' => config('academic.assessment_pass_mark', 50.0),
+                        'status' => 'draft',
+                    ]
+                );
+
+                // Synchronize registered students who are not yet on this sheet
+                $regItems = CourseRegistrationItem::with('courseRegistration')
+                    ->whereHas('courseRegistration', function ($q) use ($selectedSemester): void {
+                        $q->where('semester_id', $selectedSemester->id);
+                    })
+                    ->where('course_unit_id', $selectedCourseUnit->id)
+                    ->where('status', '!=', 'dropped')
+                    ->get();
+
+                foreach ($regItems as $regItem) {
+                    if ($regItem->courseRegistration) {
+                        StudentMark::firstOrCreate(
+                            [
+                                'course_assessment_sheet_id' => $selectedSheet->id,
+                                'student_id' => $regItem->courseRegistration->student_id,
+                            ],
+                            [
+                                'course_registration_item_id' => $regItem->id,
+                            ]
+                        );
+                    }
+                }
+
+                $studentMarks = $selectedSheet->studentMarks()
+                    ->with(['student.programme', 'student.user'])
+                    ->join('students', 'student_marks.student_id', '=', 'students.id')
+                    ->orderBy('students.registration_number')
+                    ->select('student_marks.*')
+                    ->get();
+
+                // Ancestor node IDs for auto-expanding accordion
+                $activeDept = $selectedCourseUnit->department;
+                $activeDepartmentId = $activeDept?->id;
+                $activeFaculty = $activeDept?->faculty;
+                $activeFacultyId = $activeFaculty?->id;
+                $activeCampusId = $activeFaculty?->campus_id ?? 0;
+                $activeCurriculum = $selectedCourseUnit->curriculums->first();
+                $activeCurriculumId = $activeCurriculum?->id;
+                $activeProgrammeId = $activeCurriculum?->programme_id ?? $activeDept?->programmes->first()?->id;
+            }
+        }
+
+        $gradingScaleTiers = GradingScaleTier::ordered()->get();
 
         $stats = [
             'total' => CourseAssessmentSheet::count(),
@@ -371,14 +499,25 @@ class CourseAssessmentController extends Controller
         ];
 
         return view('academic.assessments.index', compact(
-            'sheets',
+            'campuses',
             'academicYears',
             'semesters',
-            'departments',
+            'selectedSemester',
+            'selectedAcademicYear',
+            'existingSheets',
+            'selectedCourseUnit',
+            'selectedSheet',
+            'studentMarks',
+            'gradingScaleTiers',
             'academicYearId',
             'semesterId',
             'departmentId',
             'status',
+            'activeCampusId',
+            'activeFacultyId',
+            'activeDepartmentId',
+            'activeProgrammeId',
+            'activeCurriculumId',
             'stats'
         ));
     }
@@ -607,16 +746,33 @@ class CourseAssessmentController extends Controller
             }
         });
 
+        $returnTo = $request->input('return_to');
+
         if ($action === 'submit_senate') {
+            if ($returnTo) {
+                return redirect($returnTo)
+                    ->with('success', "Re-moderated marks for {$sheet->courseUnit->code} have been formally submitted to the Senate for final approval and re-publication.");
+            }
+
             return redirect()
                 ->route('moderation.show', $sheet)
                 ->with('success', "Re-moderated marks for {$sheet->courseUnit->code} have been formally submitted to the Senate for final approval and re-publication.");
         }
 
         if ($action === 'submit_hod') {
+            if ($returnTo) {
+                return redirect($returnTo)
+                    ->with('success', "Marks successfully saved and mark sheet for {$sheet->courseUnit->code} submitted to Head of Department for moderation.");
+            }
+
             return redirect()
                 ->route('assessment.show', $sheet)
                 ->with('success', "Marks successfully saved and mark sheet for {$sheet->courseUnit->code} submitted to Head of Department for moderation.");
+        }
+
+        if ($returnTo) {
+            return redirect($returnTo)
+                ->with('success', "Student marks for {$sheet->courseUnit->code} saved as draft successfully.");
         }
 
         return redirect()
