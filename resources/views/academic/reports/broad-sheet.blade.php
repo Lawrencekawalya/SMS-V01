@@ -88,10 +88,17 @@
 
   @if ($selectedProgramme && $selectedSemester)
     <!-- Broad-Sheet Official Header (Printed PDF Only) -->
-    <div class="d-none d-print-block text-center mb-4">
-      <h4 class="fw-bold mb-1 text-uppercase">{{ $university->name ?? 'BISHOP STUART UNIVERSITY' }}</h4>
-      <h6 class="text-secondary mb-1">OFFICE OF THE ACADEMIC REGISTRAR &bull; SENATE EXAMINATION BOARD</h6>
-      <h5 class="fw-bold text-primary mb-1">MASTER SENATE BROAD-SHEET (RESULTS GAZETTE)</h5>
+    <div class="d-none d-print-block text-center mb-4 pb-3 border-bottom">
+      <div class="d-flex align-items-center justify-content-center gap-3 mb-2">
+        <img src="{{ $university?->logo_url ?? $currentUniversity?->logo_url ?? asset('vendor/adminlte/assets/img/AdminLTELogo.png') }}" alt="Logo" style="height: 60px; width: 60px; object-fit: contain;">
+        <div>
+          <h4 class="fw-bold mb-0 text-uppercase tracking-wide" style="color: #0d47a1; letter-spacing: 1px;">{{ $university->name ?? 'BISHOP STUART UNIVERSITY' }}</h4>
+          <h6 class="text-secondary mb-0">OFFICE OF THE ACADEMIC REGISTRAR &bull; SENATE EXAMINATION BOARD</h6>
+        </div>
+      </div>
+      <div class="badge bg-primary text-white text-uppercase px-3 py-1 fs-6 mb-2">
+        MASTER SENATE BROAD-SHEET (RESULTS GAZETTE)
+      </div>
       <p class="small text-muted mb-0">
         <strong>Programme:</strong> {{ $selectedProgramme->name }} ({{ $selectedProgramme->code }}) &bull;
         <strong>Department:</strong> {{ $selectedProgramme->department->name ?? 'General' }} &bull;

@@ -79,8 +79,13 @@
     <div class="card-body p-4 p-md-5">
       <!-- Formal University Gazette Title Header (Printed PDF Only) -->
       <div class="d-none d-print-block text-center pb-4 border-bottom mb-4">
-        <h3 class="fw-bold mb-1 text-uppercase text-dark">{{ $university->name ?? 'BISHOP STUART UNIVERSITY' }}</h3>
-        <h6 class="text-secondary text-uppercase mb-2">OFFICE OF THE ACADEMIC REGISTRAR &bull; 20TH CONGREGATION</h6>
+        <div class="d-flex align-items-center justify-content-center gap-3 mb-2">
+          <img src="{{ $university?->logo_url ?? $currentUniversity?->logo_url ?? asset('vendor/adminlte/assets/img/AdminLTELogo.png') }}" alt="Logo" style="height: 65px; width: 65px; object-fit: contain;">
+          <div>
+            <h3 class="fw-bold mb-0 text-uppercase text-dark tracking-wide" style="color: #0d47a1; letter-spacing: 1px;">{{ $university->name ?? 'BISHOP STUART UNIVERSITY' }}</h3>
+            <h6 class="text-secondary text-uppercase mb-0">OFFICE OF THE ACADEMIC REGISTRAR &bull; 20TH CONGREGATION</h6>
+          </div>
+        </div>
         <div class="badge bg-primary fs-6 px-3 py-2 text-uppercase mb-2">
           OFFICIAL GRADUATION GAZETTE &bull; HONORS ROLL
         </div>
