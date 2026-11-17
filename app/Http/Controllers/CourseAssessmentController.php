@@ -373,7 +373,7 @@ class CourseAssessmentController extends Controller
                 $q->where('status', 'active')->orderBy('name');
             },
             'faculties.departments.programmes.curriculums' => function ($q): void {
-                $q->orderByDesc('effective_year');
+                $q->orderByDesc('start_academic_year');
             },
             'faculties.departments.programmes.curriculums.curriculumCourses.courseUnit' => function ($q): void {
                 $q->where('status', 'active')->orderBy('code');

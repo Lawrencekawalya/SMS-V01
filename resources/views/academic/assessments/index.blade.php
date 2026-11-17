@@ -292,7 +292,7 @@
                                                                     aria-expanded="{{ $isCurrActive ? 'true' : 'false' }}"
                                                                     aria-controls="collapse-curr-{{ $curr->id }}">
                                                               <i class="bi bi-journal-code text-primary me-2"></i>
-                                                              <span class="flex-grow-1 text-truncate fw-semibold">{{ $curr->version_name ?? 'Curriculum ' . ($curr->effective_year ?? '') }}</span>
+                                                              <span class="flex-grow-1 text-truncate fw-semibold">{{ $curr->version_name ?? 'Curriculum ' . ($curr->start_academic_year ?? '') }}</span>
                                                               <span class="badge text-bg-light border ms-1">{{ $mappedCourses->count() }} Units</span>
                                                             </button>
                                                           </h6>
