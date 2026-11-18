@@ -10,6 +10,60 @@
   <li class="breadcrumb-item active" aria-current="page">Active Session Cohorts</li>
 @endsection
 
+@push('styles')
+  <style>
+    .architectural-principle-wrapper {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .architectural-principle-popover {
+      position: absolute;
+      top: calc(100% + 12px);
+      left: 50%;
+      transform: translateX(-50%) translateY(6px);
+      width: min(960px, calc(100vw - 40px));
+      z-index: 1055;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.2s;
+      pointer-events: none;
+    }
+
+    /* Invisible hover bridge */
+    .architectural-principle-popover::before {
+      content: '';
+      position: absolute;
+      top: -14px;
+      left: 0;
+      right: 0;
+      height: 14px;
+    }
+
+    /* Top pointer arrow pointing to the info icon */
+    .architectural-principle-popover::after {
+      content: '';
+      position: absolute;
+      top: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-width: 0 8px 8px 8px;
+      border-style: solid;
+      border-color: transparent transparent var(--bs-info) transparent;
+    }
+
+    .architectural-principle-wrapper:hover .architectural-principle-popover,
+    .architectural-principle-wrapper:focus-within .architectural-principle-popover,
+    .architectural-principle-popover.show {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(-50%) translateY(0);
+      pointer-events: auto;
+    }
+  </style>
+@endpush
+
 @section('content')
   @if (session('success'))
     <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -54,9 +108,63 @@
     <div class="card-body">
       <!-- Main Session Title & Timeline -->
       <div class="mb-3 pb-2 border-bottom">
-        <h2 class="h3 fw-bold mb-1 text-success-emphasis">
-          Academic Year {{ $currentSemester ? $currentSemester->academicYear->name : 'N/A' }} — {{ $currentSemester ? $currentSemester->name : 'N/A' }}
-        </h2>
+        <div class="d-flex align-items-center flex-wrap gap-2 mb-1">
+          <h2 class="h3 fw-bold mb-0 text-success-emphasis">
+            Academic Year {{ $currentSemester ? $currentSemester->academicYear->name : 'N/A' }} — {{ $currentSemester ? $currentSemester->name : 'N/A' }}
+          </h2>
+          <div class="architectural-principle-wrapper position-relative d-inline-block">
+            <button type="button"
+                    class="btn btn-sm btn-link text-info p-0 text-decoration-none lh-1 align-middle"
+                    id="principleInfoBtn"
+                    aria-label="View architectural principle details"
+                    title="Architectural Principle: Why a Single Calendar Session Drives All Study Levels"
+                    tabindex="0">
+              <i class="bi bi-info-circle-fill fs-5"></i>
+            </button>
+
+            <!-- Pop-up Floating Callout (styled exactly as original) -->
+            <div class="architectural-principle-popover shadow-lg rounded-3 p-1 bg-body border border-info border-2"
+                 id="principlePopover"
+                 role="tooltip">
+              <div class="callout callout-info bg-body-tertiary border-start border-4 border-info py-2 px-3 rounded-2 shadow-xs mb-0">
+                <div class="d-flex align-items-start gap-3">
+                  <div class="fs-3 text-info">
+                    <i class="bi bi-lightbulb-fill"></i>
+                  </div>
+                  <div>
+                    <h5 class="fw-bold text-info mb-1">
+                      Architectural Principle: Why a Single Calendar Session Drives All Study Levels
+                    </h5>
+                    <p class="mb-2 text-body">
+                      The university operates on <strong>ONE synchronized academic calendar timeline</strong> (e.g. <em>{{ $currentSemester ? $currentSemester->academicYear->name : '2026/2027' }} — Semester 1</em>).
+                      Freshers, continuing students, and finalists all attend classes, register, and sit exams during this exact same operational window.
+                    </p>
+                    <div class="row g-2 small">
+                      <div class="col-12 col-md-4">
+                        <div class="p-2 bg-body rounded border h-100">
+                          <span class="fw-bold text-success d-block mb-1"><i class="bi bi-calendar2-event me-1"></i> 1. Calendar Session (Timeline)</span>
+                          Universal timeline window across the entire university. Controls start/end dates, add/drop deadlines, and financial billing.
+                        </div>
+                      </div>
+                      <div class="col-12 col-md-4">
+                        <div class="p-2 bg-body rounded border h-100">
+                          <span class="fw-bold text-primary d-block mb-1"><i class="bi bi-person-badge me-1"></i> 2. Student Progression Stage (Level)</span>
+                          Where the student is in their academic journey (e.g., <strong>Y1S1</strong>, <strong>Y2S1</strong>, <strong>Y3S1</strong>). Tracks individual cohort seniority.
+                        </div>
+                      </div>
+                      <div class="col-12 col-md-4">
+                        <div class="p-2 bg-body rounded border h-100">
+                          <span class="fw-bold text-warning-emphasis d-block mb-1"><i class="bi bi-book me-1"></i> 3. Curriculum Matrix (Catalog)</span>
+                          Dynamically filters available course units and stage credit limits (Min/Max CU) matching each student's current progression stage.
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
         <p class="text-body-secondary mb-0">
           <i class="bi bi-clock-history me-1 text-success"></i>
           Operational Timeline:
@@ -126,46 +234,6 @@
                 <div class="text-muted small fw-semibold text-uppercase">Approved Slips</div>
                 <div class="fs-2 fw-bold text-success">{{ $stats['approved'] }}</div>
                 <div class="small text-muted">{{ $stats['pending'] }} Pending / {{ $stats['draft'] }} Draft</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Architectural Principle Callout: Demonstration Explainer for Team Lead -->
-      <div class="mt-4 pt-3 border-top">
-        <div class="callout callout-info bg-body-tertiary border-start border-4 border-info p-3 rounded-2 shadow-xs mb-0">
-          <div class="d-flex align-items-start gap-3">
-            <div class="fs-3 text-info">
-              <i class="bi bi-lightbulb-fill"></i>
-            </div>
-            <div>
-              <h5 class="fw-bold text-info mb-1">
-                Architectural Principle: Why a Single Calendar Session Drives All Study Levels
-              </h5>
-              <p class="mb-2 text-body">
-                The university operates on <strong>ONE synchronized academic calendar timeline</strong> (e.g. <em>{{ $currentSemester ? $currentSemester->academicYear->name : '2026/2027' }} — Semester 1</em>).
-                Freshers, continuing students, and finalists all attend classes, register, and sit exams during this exact same operational window.
-              </p>
-              <div class="row g-3 small">
-                <div class="col-12 col-md-4">
-                  <div class="p-2 bg-body rounded border h-100">
-                    <span class="fw-bold text-success d-block mb-1"><i class="bi bi-calendar2-event me-1"></i> 1. Calendar Session (Timeline)</span>
-                    Universal timeline window across the entire university. Controls start/end dates, add/drop deadlines, and financial billing.
-                  </div>
-                </div>
-                <div class="col-12 col-md-4">
-                  <div class="p-2 bg-body rounded border h-100">
-                    <span class="fw-bold text-primary d-block mb-1"><i class="bi bi-person-badge me-1"></i> 2. Student Progression Stage (Level)</span>
-                    Where the student is in their academic journey (e.g., <strong>Y1S1</strong>, <strong>Y2S1</strong>, <strong>Y3S1</strong>). Tracks individual cohort seniority.
-                  </div>
-                </div>
-                <div class="col-12 col-md-4">
-                  <div class="p-2 bg-body rounded border h-100">
-                    <span class="fw-bold text-warning-emphasis d-block mb-1"><i class="bi bi-book me-1"></i> 3. Curriculum Matrix (Catalog)</span>
-                    Dynamically filters available course units and stage credit limits (Min/Max CU) matching each student's current progression stage.
-                  </div>
-                </div>
               </div>
             </div>
           </div>
@@ -427,6 +495,46 @@
         btnPrint: '#roster-print',
         filename: 'active_session_cohort_demonstration_roster',
       });
+
+      const principleWrapper = document.querySelector('.architectural-principle-wrapper');
+      const principleBtn = document.getElementById('principleInfoBtn');
+      const principlePopover = document.getElementById('principlePopover');
+
+      function clampPopoverPosition() {
+        if (!principlePopover) return;
+        principlePopover.style.transform = '';
+        const rect = principlePopover.getBoundingClientRect();
+        const pad = 16;
+        if (rect.right > window.innerWidth - pad) {
+          const overflow = rect.right - (window.innerWidth - pad);
+          principlePopover.style.transform = `translateX(calc(-50% - ${overflow}px)) translateY(0)`;
+        } else if (rect.left < pad) {
+          const underflow = pad - rect.left;
+          principlePopover.style.transform = `translateX(calc(-50% + ${underflow}px)) translateY(0)`;
+        }
+      }
+
+      if (principleWrapper && principlePopover) {
+        principleWrapper.addEventListener('mouseenter', clampPopoverPosition);
+      }
+
+      if (principleBtn && principlePopover) {
+        principleBtn.addEventListener('click', function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          const willShow = !principlePopover.classList.contains('show');
+          principlePopover.classList.toggle('show');
+          if (willShow) {
+            clampPopoverPosition();
+          }
+        });
+
+        document.addEventListener('click', function (e) {
+          if (!principleBtn.contains(e.target) && !principlePopover.contains(e.target)) {
+            principlePopover.classList.remove('show');
+          }
+        });
+      }
     });
   </script>
 @endpush
